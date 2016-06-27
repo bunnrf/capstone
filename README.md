@@ -23,7 +23,7 @@ Imgrr is a web application inspired by Imgur that will be built using Ruby on Ra
   - [ ] Smooth, bug-free navigation
   - [ ] Adequate seed data to demonstrate the site's features
   - [ ] Adequate CSS styling
-- [ ] Editing of posts and notes
+- [ ] Editing of posts and comments
   - [ ] Smooth, bug-free navigation
   - [ ] Adequate seed data to demonstrate the site's features
   - [ ] Adequate CSS styling
@@ -88,7 +88,7 @@ user interface.
 - [ ] position elements on the page
 - [ ] add basic colors & styles
 
-### Phase 5: Comments (1 days, W2 Tu 12pm)
+### Phase 5: Comments (1 day, W2 Tu 12pm)
 
 **Objective:** Comments are polymorphic, belong to a post or comment.
 
@@ -98,25 +98,23 @@ user interface.
   - [ ] commenting on posts
   - [ ] commenting on comments
   - [ ] viewing comment trees
-- Use CSS to style new views
+- [ ] Use CSS to style new views
 
-### Phase 6: Tags (1 days, W2 Th 12pm)
+### Phase 6: Votes (1 day, W2 Th 12pm)
 
-**Objective:** Notes can be tagged with multiple tags, and tags are searchable.
+**Objective:** Posts and comments can be upvoted and downvoted and store their vote count.
 
-- [ ] create `Tag` model and join table
+- [ ] functionality to increment/decrement vote count of post and comment models
 - build out API, Flux loop, and components for:
-  - [ ] fetching tags for notebook
-  - [ ] adding tags to notebook
-  - [ ] creating tags while adding to notebooks
-  - [ ] searching notebooks by tag
+  - [ ] fetching vote count
+  - [ ] upvoting/downvoting
 - [ ] Style new elements
 
-### Phase 7: Allow Complex Styling in Notes (0.5 days, W2 Th 6pm)
+### Phase 7: Multi-image posts (1 day, W2 Th 6pm)
 
-**objective:** Enable complex styling of notes.
+**objective:** Allow posts to optionally feature several images.
 
-- [ ] Integrate `react-quill` (based on Quill.js).
+- [ ] 
 - [ ] Use Rails helpers to sanitize HTML before rendering.
 - [ ] Style the new Quill elements.
 
@@ -132,7 +130,7 @@ user interface.
 - [ ] Advanced search of posts
 - [ ] Pagination / infinite scroll for Posts Index
 - [ ] Favorite posts
-- [ ] Changelogs for Notes
+- [ ] Tags for posts
 - [ ] Multiple sessions
 
 [phase-one]: docs/phases/phase1.md
