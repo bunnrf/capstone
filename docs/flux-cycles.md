@@ -12,118 +12,99 @@ because once you start implementing your flux loops, that's precisely
 what you'll need to do.
 
 
-## Note Cycles
+## post Cycles
 
-### Notes API Request Actions
+### Posts API Request Actions
 
-* `fetchAllNotes`
-  0. invoked from `NotesIndex` `didMount`/`willReceiveProps`
-  0. `GET /api/notes` is called.
-  0. `receiveAllNotes` is set as the callback.
+* `fetchAllPosts`
+  0. invoked from `PostsIndex` `didMount`/`willReceiveProps`
+  0. `GET /api/posts` is called.
+  0. `receiveAllPosts` is set as the callback.
 
-* `createNote`
-  0. invoked from new note button `onClick`
-  0. `POST /api/notes` is called.
-  0. `receiveSingleNote` is set as the callback.
+* `createPost`
+  0. invoked from new post button `onClick`
+  0. `POST /api/posts` is called.
+  0. `receiveSinglePost` is set as the callback.
 
-* `fetchSingleNote`
-  0. invoked from `NoteDetail` `didMount`/`willReceiveProps`
-  0. `GET /api/notes/:id` is called.
-  0. `receiveSingleNote` is set as the callback.
+* `fetchSinglePost`
+  0. invoked from `PostShow` `didMount`/`willReceiveProps`
+  0. `GET /api/posts/:id` is called.
+  0. `receiveSinglePost` is set as the callback.
 
-* `updateNote`
-  0. invoked from `NoteForm` `onSubmit`
-  0. `POST /api/notes` is called.
-  0. `receiveSingleNote` is set as the callback.
+* `updatePost`
+  0. invoked from `PostForm` `onSubmit`
+  0. `POST /api/posts` is called.
+  0. `receiveSinglepost` is set as the callback.
 
-* `destroyNote`
-  0. invoked from delete note button `onClick`
-  0. `DELETE /api/notes/:id` is called.
-  0. `removeNote` is set as the callback.
+* `destroyPost`
+  0. invoked from delete post button `onClick`
+  0. `DELETE /api/posts/:id` is called.
+  0. `removePost` is set as the callback.
 
-### Notes API Response Actions
+### posts API Response Actions
 
-* `receiveAllNotes`
+* `receiveAllPosts`
   0. invoked from an API callback.
-  0. `Note` store updates `_notes` and emits change.
+  0. `post` store updates `_posts` and emits change.
 
-* `receiveSingleNote`
+* `receiveSinglePost`
   0. invoked from an API callback.
-  0. `Note` store updates `_notes[id]` and emits change.
+  0. `post` store updates `_posts[id]` and emits change.
 
-* `removeNote`
+* `removePost`
   0. invoked from an API callback.
-  0. `Note` store removes `_notes[id]` and emits change.
+  0. `post` store removes `_posts[id]` and emits change.
 
 ### Store Listeners
 
-* `NotesIndex` component listens to `Note` store.
-* `NoteDetail` component listens to `Note` store.
+* `postsIndex` component listens to `post` store.
+* `postShow` component listens to `post` store.
 
 
-## Notebook Cycles
+## Comment Cycles
 
-### Notebooks API Request Actions
+### Comments API Request Actions
 
-* `fetchAllNotebooks`
-  0. invoked from `NotebooksIndex` `didMount`/`willReceiveProps`
-  0. `GET /api/notebooks` is called.
-  0. `receiveAllNotebooks` is set as the callback.
+* `fetchAllComments`
+  0. invoked from `CommentsIndex` `didMount`/`willReceiveProps`
+  0. `GET /api/posts/:postId/comments` is called.
+  0. `receiveAllComments` is set as the callback.
 
-* `createNotebook`
-  0. invoked from new notebook button `onClick`
-  0. `POST /api/notebooks` is called.
-  0. `receiveSingleNotebook` is set as the callback.
+* `createComment`
+  0. invoked from new Comment button `onClick`
+  0. `POST /api/posts/:postId/comments` is called.
+  0. `receiveSingleComment` is set as the callback.
 
-* `fetchSingleNotebook`
-  0. invoked from `NotebookDetail` `didMount`/`willReceiveProps`
-  0. `GET /api/notebooks/:id` is called.
-  0. `receiveSingleNotebook` is set as the callback.
+* `fetchSingleComment`
+  0. invoked from `CommentShow` `didMount`/`willReceiveProps`
+  0. `GET /api/posts/:postId/comments/:commentId` is called.
+  0. `receiveSingleComment` is set as the callback.
 
-* `updateNotebook`
-  0. invoked from `NotebookForm` `onSubmit`
-  0. `POST /api/notebooks` is called.
-  0. `receiveSingleNotebook` is set as the callback.
+* `updateComment`
+  0. invoked from `CommentForm` `onSubmit`
+  0. `POST /api/posts/:postId/comments` is called.
+  0. `receiveSingleComment` is set as the callback.
 
-* `destroyNotebook`
-  0. invoked from delete notebook button `onClick`
-  0. `DELETE /api/notebooks/:id` is called.
-  0. `removeNotebook` is set as the callback.
+* `destroyComment`
+  0. invoked from delete Comment button `onClick`
+  0. `DELETE /api/comments/:id` is called.
+  0. `removeComment` is set as the callback.
 
-### Notebooks API Response Actions
+### Comments API Response Actions
 
-* `receiveAllNotebooks`
+* `receiveAllComments`
   0. invoked from an API callback.
-  0. `Notebook` store updates `_notebooks` and emits change.
+  0. `Comment` store updates `_comments` and emits change.
 
-* `receiveSingleNotebook`
+* `receiveSingleComment`
   0. invoked from an API callback.
-  0. `Notebook` store updates `_notebooks[id]` and emits change.
+  0. `Comment` store updates `_comments[id]` and emits change.
 
-* `removeNotebook`
+* `removeComment`
   0. invoked from an API callback.
-  0. `Notebook` store removes `_notebooks[id]` and emits change.
+  0. `Comment` store removes `_comments[id]` and emits change.
 
 ### Store Listeners
 
-* `NotebooksIndex` component listens to `Notebook` store.
+* `CommentsIndex` component listens to `Comment` store.
 
-
-## SearchSuggestion Cycles
-
-* `fetchSearchSuggestions`
-  0. invoked from `NoteSearchBar` `onChange` when there is text
-  0. `GET /api/notes` is called with `text` param.
-  0. `receiveSearchSuggestions` is set as the callback.
-
-* `receiveSearchSuggestions`
-  0. invoked from an API callback.
-  0. `SearchSuggestion` store updates `_suggestions` and emits change.
-
-* `removeSearchSuggestions`
-  0. invoked from `NoteSearchBar` `onChange` when empty
-  0. `SearchSuggestion` store resets `_suggestions` and emits change.
-
-### Store Listeners
-
-* `SearchBarSuggestions` component listens to `SearchSuggestion` store.
