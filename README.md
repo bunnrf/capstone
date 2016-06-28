@@ -1,4 +1,4 @@
-# Imgrr
+# Imagr
 
 [Heroku link][heroku]
 
@@ -6,7 +6,7 @@
 
 ## Minimum Viable Product
 
-Imgrr is a web application inspired by Imgur that will be built using Ruby on Rails and React.js.  By the end of Week 9, this app will, at a minimum, satisfy the following criteria:
+Imagr is a web application inspired by Imgur that will be built using Ruby on Rails and React.js.  By the end of Week 9, this app will, at a minimum, satisfy the following criteria:
 
 - [ ] Hosting on Heroku
 - [ ] New account creation, login, and guest/demo login
@@ -100,7 +100,7 @@ user interface.
   - [ ] viewing comment trees
 - [ ] Use CSS to style new views
 
-### Phase 6: Votes (1 day, W2 Th 12pm)
+### Phase 6: Upvoting/downvoting (1 day, W2 Th 12pm)
 
 **Objective:** Posts and comments can be upvoted and downvoted and store their vote count.
 
@@ -110,15 +110,7 @@ user interface.
   - [ ] upvoting/downvoting
 - [ ] Style new elements
 
-### Phase 7: Multi-image posts (1 day, W2 Th 6pm)
-
-**objective:** Allow posts to optionally feature several images.
-
-- [ ] 
-- [ ] Use Rails helpers to sanitize HTML before rendering.
-- [ ] Style the new Quill elements.
-
-### Phase 8: Styling Cleanup and Seeding (1 day, W2 F 6pm)
+### Phase 7: Styling Cleanup, Seeding, and bonus (2 days, W2 F 6pm)
 
 **objective:** Make the site feel more cohesive and awesome.
 
