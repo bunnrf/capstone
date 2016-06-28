@@ -10,24 +10,23 @@ _**exactly**_ match the nesting of your routes.)
   * PostsIndex
     * Search
     * PostIndexItem
-    * PostForm
+    * **PostForm**
+  * PostShow
     * ImagesIndex
-  * **NotesIndex**
-    * NoteForm
-    * NoteIndexItem
-    * **NoteDetail**
-      * NoteTags
-      * NoteEditArea
+      * ImageDetail
+    * **CommentsIndex**
+      * CommentForm
+      * CommentIndexItem
+      * **CommentDetail**
+        * CommentEditArea
 
 
 ## Routes
 
 * **component:** `App` **path:** `/`
-  * **component:** `NotesIndex` **path:** index
-  * **component:** `NotesIndex` **path:** `notebooks/:notebookId`
-    * **component:** `NoteDetail` **path:** `notes/:noteId`
-  * **component:** `NotesIndex` **path:** none
-    * **component:** `NoteDetail` **path:** `notes/:noteId`
+  * **component:** `PostsIndex` **path:** index
+  * **component:** `PostShow` **path:** `posts/:postId`
+    * **component:** `ImagesIndex` **path:** `posts/:postId`
+  * **component:** `CommentsIndex` **path:** `posts/:postId`
+    * **component:** `CommentDetail` **path:** `comments/:CommentId`
 
-For Routes that have no `notebookId`, `NotesIndex` will render all
-notes.
