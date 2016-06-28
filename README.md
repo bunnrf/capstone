@@ -100,7 +100,7 @@ user interface.
   - [ ] viewing comment trees
 - [ ] Use CSS to style new views
 
-### Phase 6: Upvoting/downvoting (1 day, W2 Th 12pm)
+### Phase 6: Upvoting/downvoting (1 day, W2 W 12pm)
 
 **Objective:** Posts and comments can be upvoted and downvoted and store their vote count.
 
@@ -110,7 +110,7 @@ user interface.
   - [ ] upvoting/downvoting
 - [ ] Style new elements
 
-### Phase 7: Styling Cleanup, Seeding, and bonus (2 days, W2 F 6pm)
+### Phase 7: Styling Cleanup, Seeding, and bonus (3 days, W2 F 6pm)
 
 **objective:** Make the site feel more cohesive and awesome.
 
