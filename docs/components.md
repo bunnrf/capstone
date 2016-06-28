@@ -26,7 +26,7 @@ _**exactly**_ match the nesting of your routes.)
 * **component:** `App` **path:** `/`
   * **component:** `PostsIndex` **path:** index
   * **component:** `PostShow` **path:** `posts/:postId`
-    * **component:** `ImagesIndex` **path:** `posts/:postId`
-  * **component:** `CommentsIndex` **path:** `posts/:postId`
+    * **component:** `ImagesIndex` **path:** `posts/:postId/images`
+  * **component:** `CommentsIndex` **path:** `posts/:postId/comments`
     * **component:** `CommentDetail` **path:** `comments/:CommentId`
 
