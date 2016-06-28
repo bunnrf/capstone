@@ -7,10 +7,11 @@ associated routes, so the nesting of your bolded components must
 _**exactly**_ match the nesting of your routes.)
 
 * **App**
-  * NotebooksIndex
+  * PostsIndex
     * Search
-    * NotebookIndexItem
-    * NotebookForm
+    * PostIndexItem
+    * PostForm
+    * ImagesIndex
   * **NotesIndex**
     * NoteForm
     * NoteIndexItem
