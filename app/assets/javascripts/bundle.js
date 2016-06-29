@@ -52,7 +52,7 @@
 	var PostIndex = __webpack_require__(169);
 	
 	document.addEventListener('DOMContentLoaded', function () {
-	  ReactDOM.render(Router, document.getElementById('content'));
+	  ReactDOM.render(React.createElement(PostIndex, null), document.getElementById('content'));
 	});
 
 /***/ },

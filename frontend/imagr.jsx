@@ -4,5 +4,5 @@ const PostStore = require('./stores/post_store');
 const PostIndex = require('./components/post_index');
 
 document.addEventListener('DOMContentLoaded', () => {
-  ReactDOM.render(Router, document.getElementById('content'));
+  ReactDOM.render(<PostIndex />, document.getElementById('content'));
 })
