@@ -17,6 +17,6 @@
 
 [new-user]: ./wireframes/new_user.png
 [new-session]: ./wireframes/new_session.png
-[posts]: ./wireframes/root_posts.png
+[posts]: ./wireframes/posts_index.png
 [post]: ./wireframes/post_show.png
 [post-form]: ./wireframes/post_form.png
