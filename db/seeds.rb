@@ -34,3 +34,11 @@ images = Image.create([ { title: "post1 image1", description: "image1 descriptio
                         { title: "post8 image1", description: "image2 description", image_url: "https://i.imgur.com/eZoZkfx.jpg", ordinal: 1, post_id: 8 },
                         { title: "post9 image1", description: "image2 description", image_url: "https://i.imgur.com/ApIR0YL.jpg", ordinal: 1, post_id: 9 },
                         { title: "post10 image1", description: "image2 description", image_url: "http://i.imgur.com/h9M99vS.jpg", ordinal: 1, post_id: 10 }])
+
+comments = Comment.create([ { body: "post1 comment1", commenter_id: 2, commentable_id: 1, commentable_type: "Post" },
+                            { body: "post1 comment2", commenter_id: 1, commentable_id: 1, commentable_type: "Post" },
+                            { body: "post1 comment3", commenter_id: 3, commentable_id: 1, commentable_type: "Post" },
+                            { body: "post1 comment4", commenter_id: 2, commentable_id: 1, commentable_type: "Post" },
+                            { body: "post1 comment5", commenter_id: 1, commentable_id: 1, commentable_type: "Post" },
+                            { body: "post1 comment6", commenter_id: 2, commentable_id: 1, commentable_type: "Post" },
+                            { body: "comment1 comment1", commenter_id: 1, commentable_id: 1, commentable_type: "Comment" }])

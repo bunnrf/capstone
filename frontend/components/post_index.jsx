@@ -27,7 +27,7 @@ const PostIndex = React.createClass({
     return(
       <div className="post-index-container">
         {keys.map((key) => {
-          return <PostIndexItem key={key} post={posts[key]} />;
+          return <PostIndexItem key={ key } post={ posts[key] } />;
         })}
       </div>
     );

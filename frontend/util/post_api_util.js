@@ -8,6 +8,15 @@ const PostApiUtil = {
     })
   },
 
+  fetchSinglePost: function(id, callback){
+    $.ajax({
+      url: "api/posts/" + id,
+      success: function(resp){
+        callback(resp)
+      }
+    })
+  },
+
   createPost: function(callback){
     $.ajax({
       url: "api/posts",

@@ -7,6 +7,10 @@ const PostActions = {
     PostApiUtil.fetchAllPosts(this.receiveAllPosts)
   },
 
+  fetchSinglePost: function(id){
+    PostApiUtil.fetchSinglePost(id, this.receiveSinglePost)
+  },
+
   receiveAllPosts: function(posts){
     dispatcher.dispatch({
       actionType: PostConstants.POSTS_RECEIVED,
