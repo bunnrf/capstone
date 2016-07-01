@@ -70,7 +70,9 @@
 	    Route,
 	    { path: '/', component: App },
 	    React.createElement(IndexRoute, { component: PostIndex }),
+	    '// ',
 	    React.createElement(Route, { path: '/login', component: LoginForm }),
+	    '// ',
 	    React.createElement(Route, { path: '/signup', component: LoginForm }),
 	    React.createElement(Route, { path: '/posts/:postId', component: PostShow })
 	  )
@@ -28235,11 +28237,7 @@
 	            )
 	          )
 	        ),
-	        React.createElement(
-	          'ul',
-	          { className: 'nav-right' },
-	          React.createElement(UserNav, null)
-	        )
+	        React.createElement(UserNav, null)
 	      )
 	    );
 	  }
@@ -28263,30 +28261,42 @@
 	  render: function render() {
 	    if (SessionStore.isUserLoggedIn()) {
 	      return React.createElement(
-	        'hgroup',
-	        { className: 'header-group' },
+	        'ul',
+	        { className: 'user-nav' },
 	        React.createElement(
-	          'h2',
+	          'li',
 	          { className: 'header-name' },
 	          'Hi, ',
 	          SessionStore.currentUser().username,
 	          '!'
 	        ),
-	        React.createElement('input', { className: 'header-button', type: 'submit', value: 'logout', onClick: SessionActions.logout })
+	        React.createElement(
+	          'li',
+	          null,
+	          React.createElement('input', { className: 'header-button', type: 'submit', value: 'logout', onClick: SessionActions.logout })
+	        )
 	      );
 	    } else {
 	      return React.createElement(
-	        'div',
+	        'ul',
 	        { className: 'user-nav' },
 	        React.createElement(
-	          Link,
-	          { to: '/signup', className: 'navigation-link' },
-	          'Sign Up!'
+	          'li',
+	          { className: 'signin-link' },
+	          React.createElement(
+	            Link,
+	            { to: '/login', className: 'navigation-link' },
+	            'sign in'
+	          )
 	        ),
 	        React.createElement(
-	          Link,
-	          { to: '/login', className: 'navigation-link' },
-	          'Log In!'
+	          'li',
+	          { className: 'signup-link' },
+	          React.createElement(
+	            Link,
+	            { to: '/signup', className: 'navigation-link' },
+	            'sign up'
+	          )
 	        )
 	      );
 	    }
@@ -35674,11 +35684,12 @@
 	var ErrorStore = __webpack_require__(293);
 	
 	var Modal = __webpack_require__(230);
+	
 	var LoginForm = React.createClass({
 		displayName: 'LoginForm',
 	
 	
-		DEMO_USERNAME: "demo",
+		DEMO_USERNAME: "user1",
 		DEMO_PASSWORD: "password",
 	
 		demoLoginHandler: function demoLoginHandler(e) {
@@ -35803,6 +35814,24 @@
 			this.context.router.push("/");
 		},
 	
+		customStyle: function customStyle() {
+			return {
+				overlay: {
+					backgroundColor: 'rgba(0, 0, 0, 0.9)'
+				},
+				content: {
+					position: 'absolute',
+					border: 'none',
+					background: '#2B2B2B',
+					overflow: 'auto',
+					WebkitOverflowScrolling: 'touch',
+					borderRadius: '0px',
+					outline: 'none',
+					padding: '20px'
+				}
+			};
+		},
+	
 		render: function render() {
 			console.log(this.state.modalOpen);
 			var navLink = void 0;
@@ -35822,10 +35851,10 @@
 	
 			return React.createElement(
 				Modal,
-				{ isOpen: this.state.modalOpen, onRequestClose: this.closeModal },
+				{ className: 'login-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
 				React.createElement(
 					'button',
-					{ onClick: this.closeModal },
+					{ className: 'close-modal', onClick: this.closeModal },
 					'X'
 				),
 				React.createElement(
@@ -35845,27 +35874,19 @@
 							'div',
 							{ className: 'login-form' },
 							React.createElement('br', null),
-							React.createElement(
-								'label',
-								null,
-								' Username:',
-								this.fieldErrors("username"),
-								React.createElement('input', { type: 'text',
-									value: this.state.username,
-									onChange: this.update("username"),
-									className: 'login-input' })
-							),
+							this.fieldErrors("username"),
+							React.createElement('input', { type: 'text',
+								value: this.state.username,
+								onChange: this.update("username"),
+								className: 'login-input',
+								placeholder: 'Username' }),
 							React.createElement('br', null),
-							React.createElement(
-								'label',
-								null,
-								' Password:',
-								this.fieldErrors("password"),
-								React.createElement('input', { type: 'password',
-									value: this.state.password,
-									onChange: this.update("password"),
-									className: 'login-input' })
-							),
+							this.fieldErrors("password"),
+							React.createElement('input', { type: 'password',
+								value: this.state.password,
+								onChange: this.update("password"),
+								className: 'login-input',
+								placeholder: 'Password' }),
 							React.createElement('br', null),
 							React.createElement('input', { type: 'submit', value: 'Submit' })
 						),

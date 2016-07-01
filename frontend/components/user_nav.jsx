@@ -7,17 +7,17 @@ const UserNav = React.createClass({
   render (){
     if (SessionStore.isUserLoggedIn()){
       return (
-      		<hgroup className="header-group">
-      			<h2 className="header-name">Hi, {SessionStore.currentUser().username}!</h2>
-      			<input className="header-button" type="submit" value="logout" onClick={ SessionActions.logout } />
-      		</hgroup>
+      		<ul className="user-nav">
+      			<li className="header-name">Hi, {SessionStore.currentUser().username}!</li>
+      			<li><input className="header-button" type="submit" value="logout" onClick={ SessionActions.logout } /></li>
+      		</ul>
       	);
       } else {
       return (
-        <div className='user-nav'>
-          <Link to="/signup" className="navigation-link">Sign Up!</Link>
-          <Link to="/login" className="navigation-link">Log In!</Link>
-        </div>
+        <ul className="user-nav">
+          <li className="signin-link"><Link to="/login" className="navigation-link">sign in</Link></li>
+          <li className="signup-link"><Link to="/signup" className="navigation-link">sign up</Link></li>
+        </ul>
       );
     }
   }

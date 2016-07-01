@@ -19,8 +19,8 @@ const appRouter = (
   <Router history={ hashHistory }>
     <Route path="/" component={ App }>
       <IndexRoute component={ PostIndex } />
-      <Route path="/login" component={ LoginForm } />
-      <Route path="/signup" component={ LoginForm } />
+      // <Route path="/login" component={ LoginForm } />
+      // <Route path="/signup" component={ LoginForm } />
       <Route path="/posts/:postId" component={ PostShow } />
     </Route>
   </Router>

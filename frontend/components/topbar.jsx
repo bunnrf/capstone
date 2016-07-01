@@ -16,9 +16,7 @@ const Topbar = React.createClass({
             <li><h2>DD</h2></li>
             <li><h3>upload images</h3></li>
           </ul>
-          <ul className="nav-right">
-            <UserNav />
-          </ul>
+          <UserNav />
         </div>
       </div>
     )

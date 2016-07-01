@@ -5,9 +5,10 @@ const SessionStore = require('../stores/session_store');
 const ErrorStore = require('../stores/error_store');
 
 const Modal = require('react-modal');
+
 const LoginForm = React.createClass({
 
-	DEMO_USERNAME: "demo",
+	DEMO_USERNAME: "user1",
 	DEMO_PASSWORD: "password",
 
 	demoLoginHandler(e) {
@@ -122,6 +123,24 @@ const LoginForm = React.createClass({
 		this.context.router.push("/");
   },
 
+	customStyle: function(){
+		return {
+		  overlay : {
+		    backgroundColor   : 'rgba(0, 0, 0, 0.9)'
+		  },
+  		content : {
+		    position                   : 'absolute',
+		    border                     : 'none',
+		    background                 : '#2B2B2B',
+		    overflow                   : 'auto',
+		    WebkitOverflowScrolling    : 'touch',
+		    borderRadius               : '0px',
+		    outline                    : 'none',
+		    padding                    : '20px'
+  		}
+		}
+	},
+
 	render() {
 		console.log(this.state.modalOpen);
     let navLink;
@@ -132,44 +151,42 @@ const LoginForm = React.createClass({
     }
 
 		return (
-			<Modal isOpen={this.state.modalOpen} onRequestClose={this.closeModal}>
+			<Modal className="login-modal" isOpen={this.state.modalOpen} onRequestClose={this.closeModal} style={this.customStyle()}>
 
-			<button onClick={this.closeModal}>X</button>
-			<div className="login-form-container">
-				<form onSubmit={this.handleSubmit} className="login-form-box">
-	        Welcome!
-					<br/>
-					Please { this.formType() } or { navLink }
+				<button className="close-modal" onClick={this.closeModal}>X</button>
+				<div className="login-form-container">
+					<form onSubmit={this.handleSubmit} className="login-form-box">
+		        Welcome!
+						<br/>
+						Please { this.formType() } or { navLink }
 
-	        { this.fieldErrors("base") }
-					<div className="login-form">
-		        <br />
-						<label> Username:
+		        { this.fieldErrors("base") }
+						<div className="login-form">
+			        <br />
 		          { this.fieldErrors("username") }
 							<input type="text"
 		            value={this.state.username}
 		            onChange={this.update("username")}
-								className="login-input" />
-						</label>
+								className="login-input"
+								placeholder="Username" />
 
-		        <br />
-						<label> Password:
+			        <br />
 		          { this.fieldErrors("password") }
 		          <input type="password"
 		            value={this.state.password}
 		            onChange={this.update("password")}
-								className="login-input" />
-						</label>
+								className="login-input"
+								placeholder="Password" />
 
-		        <br />
-						<input type="submit" value="Submit" />
-					</div>
-					<div id="demo-login" className="modal-submit"	onClick={this.demoLoginHandler}>
-						Demo Login
-				 </div>
-				</form>
-			</div>
-		</Modal>
+			        <br />
+							<input type="submit" value="Submit" />
+						</div>
+						<div id="demo-login" className="modal-submit"	onClick={this.demoLoginHandler}>
+							Demo Login
+					 </div>
+					</form>
+				</div>
+			</Modal>
 		);
 	}
 });
