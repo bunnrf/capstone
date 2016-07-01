@@ -1,6 +1,11 @@
 const React = require('react');
+const UserNav = require('./user_nav');
+// const SessionStore = require('../stores/session_store');
+// const Modal = require('react-modal');
 
 const Topbar = React.createClass({
+
+
 
   render(){
     return(
@@ -12,7 +17,7 @@ const Topbar = React.createClass({
             <li><h3>upload images</h3></li>
           </ul>
           <ul className="nav-right">
-
+            <UserNav />
           </ul>
         </div>
       </div>
