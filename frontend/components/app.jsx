@@ -4,12 +4,7 @@ const SessionStore = require('../stores/session_store');
 
 const App = React.createClass({
   componentDidMount(){
-    SessionStore.addListener(this._sessionUpdate);
-  },
-
-  _sessionUpdate(){
-    console.log("session update");
-    this.forceUpdate();
+    SessionStore.addListener(this.forceUpdate.bind(this));
   },
 
   render(){

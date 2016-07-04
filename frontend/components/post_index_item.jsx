@@ -5,6 +5,9 @@ const PostIndexItem = React.createClass({
   handleClick(){
     const postId = this.props.post.id;
     hashHistory.push("posts/" + postId);
+    if (this.props.postChanged) {
+      this.props.postChanged();
+    }
   },
 
   render(){

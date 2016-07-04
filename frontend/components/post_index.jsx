@@ -22,12 +22,13 @@ const PostIndex = React.createClass({
   },
 
   render(){
+    // debugger
     const posts = this.state.posts;
     const keys = Object.keys(posts);
     return(
-      <div className="post-index-container">
+      <div className={this.props.className || "post-index-container"}>
         {keys.map((key) => {
-          return <PostIndexItem key={ key } post={ posts[key] } />;
+          return <PostIndexItem key={ key } post={ posts[key] } postChanged={ this.props.postChanged } />;
         })}
       </div>
     );

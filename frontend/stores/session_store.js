@@ -20,7 +20,6 @@ const _logout = function() {
 SessionStore.__onDispatch = payload => {
   switch(payload.actionType) {
     case SessionConstants.LOGIN:
-      console.log(payload);
       _login(payload.currentUser);
       SessionStore.__emitChange();
       break;

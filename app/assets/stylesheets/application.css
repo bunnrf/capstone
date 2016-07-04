@@ -117,8 +117,12 @@ body {
   cursor: pointer;
 }
 
-.login-modal-input {
+.login-input-username {
+  width: 304px;
+}
 
+.login-input-password {
+  width: 304px;
 }
 
 .post-index-container {
@@ -144,9 +148,16 @@ body {
   margin: 0 auto;
 }
 
+.post :hover {
+  border-color: #C29F37;
+  cursor: pointer;
+}
+
 .post img {
   margin: 0 auto;
   min-width: 180px;
+  outline: 1px solid #121211;
+  outline-offset: -1px;
   min-height: 180px;
   max-width: 300px;
   max-height: 240px;
@@ -169,13 +180,6 @@ body {
   width: 680px;
 }
 
-.post-show-right {
-  width: 300px;
-  height: 580px;
-  background-color: #262626;
-  border-radius: 5px;
-}
-
 .post-container {
   display: flex;
   flex-direction: column;
@@ -184,13 +188,20 @@ body {
 }
 
 .post-header {
+  display: flex;
+  justify-content: space-between;
   background-color: #262626;
   padding: 10px 20px;
   border-radius: 5px;
   z-index: 1;
 }
 
+.post-nav {
+  
+}
+
 .image-detail-container {
+
 }
 
 .image-detail-header {
@@ -223,4 +234,45 @@ body {
 }
 
 .comment-container {
+
+}
+
+.post-show-right {
+  width: 300px;
+  height: 580px;
+  background-color: #262626;
+  border-radius: 5px;
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.post-show-post-index-container {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  background-color: inherit;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.post-show-post-index-container .post {
+  width: 141px;
+  height: 141px;
+  position: relative;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.post-show-post-index-container .post :hover {
+  border-color: #C29F37;
+  cursor: pointer;
+}
+
+.post-show-post-index-container .post img {
+  margin: 0 auto;
+  min-width: 180px;
+  min-height: 180px;
+  max-width: 300px;
+  max-height: 240px;
 }

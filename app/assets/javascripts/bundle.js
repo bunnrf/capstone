@@ -61,7 +61,7 @@
 	var PostIndex = __webpack_require__(283);
 	var PostShow = __webpack_require__(287);
 	var SessionActions = __webpack_require__(277);
-	var LoginForm = __webpack_require__(292);
+	var LoginForm = __webpack_require__(293);
 	
 	var appRouter = React.createElement(
 	  Router,
@@ -28168,11 +28168,7 @@
 	var App = React.createClass({
 	  displayName: 'App',
 	  componentDidMount: function componentDidMount() {
-	    SessionStore.addListener(this._sessionUpdate);
-	  },
-	  _sessionUpdate: function _sessionUpdate() {
-	    console.log("session update");
-	    this.forceUpdate();
+	    SessionStore.addListener(this.forceUpdate.bind(this));
 	  },
 	  render: function render() {
 	    return React.createElement(
@@ -28333,7 +28329,6 @@
 	SessionStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case SessionConstants.LOGIN:
-	      console.log(payload);
 	      _login(payload.currentUser);
 	      SessionStore.__emitChange();
 	      break;
@@ -35295,13 +35290,18 @@
 	  return Object.assign({}, _posts[postId]);
 	};
 	
+	PostStore.add = function (post) {};
+	
 	function resetAllPosts(posts) {
 	  _posts = posts;
 	  PostStore.__emitChange();
 	}
 	
+	// keep the post thumb for display in index
 	function resetSinglePost(post) {
+	  var thumb = _posts[post.id].thumb;
 	  _posts[post.id] = post;
+	  _posts[post.id]['thumb'] = thumb;
 	  PostStore.__emitChange();
 	}
 	
@@ -35358,13 +35358,16 @@
 	    this.postsListener.remove();
 	  },
 	  render: function render() {
+	    var _this = this;
+	
+	    // debugger
 	    var posts = this.state.posts;
 	    var keys = Object.keys(posts);
 	    return React.createElement(
 	      'div',
-	      { className: 'post-index-container' },
+	      { className: this.props.className || "post-index-container" },
 	      keys.map(function (key) {
-	        return React.createElement(PostIndexItem, { key: key, post: posts[key] });
+	        return React.createElement(PostIndexItem, { key: key, post: posts[key], postChanged: _this.props.postChanged });
 	      })
 	    );
 	  }
@@ -35464,6 +35467,9 @@
 	  handleClick: function handleClick() {
 	    var postId = this.props.post.id;
 	    hashHistory.push("posts/" + postId);
+	    if (this.props.postChanged) {
+	      this.props.postChanged();
+	    }
 	  },
 	  render: function render() {
 	    var post = this.props.post;
@@ -35486,80 +35492,25 @@
 	var React = __webpack_require__(1);
 	var PostStore = __webpack_require__(281);
 	var PostActions = __webpack_require__(284);
-	var ImageDetail = __webpack_require__(288);
-	var CommentDetail = __webpack_require__(291);
+	var PostIndex = __webpack_require__(283);
+	var PostDetail = __webpack_require__(288);
 	
 	var PostShow = React.createClass({
 	  displayName: 'PostShow',
-	  getInitialState: function getInitialState() {
-	    var postId = this.props.params.postId;
-	    var post = PostStore.find(postId) || {};
-	    return { post: post };
-	  },
-	  componentDidMount: function componentDidMount() {
-	    this.postListener = PostStore.addListener(this._postChanged);
-	    PostActions.fetchSinglePost(this.props.params.postId);
-	  },
-	  componentWillUnmount: function componentWillUnmount() {
-	    this.postListener.remove();
-	  },
-	  _postChanged: function _postChanged() {
-	    var postId = this.props.params.postId;
-	    var post = PostStore.find(postId);
-	    this.setState({ post: post });
-	  },
 	  render: function render() {
-	    var post = this.state.post;
-	    var images = [];
-	    var comments = [];
-	
-	    if (post.images) {
-	      images = post.images.map(function (image) {
-	        return React.createElement(ImageDetail, { key: image.id, image: image });
-	      });
-	    }
-	    if (post.comments) {
-	      comments = post.comments.map(function (comment) {
-	        return React.createElement(CommentDetail, { key: comment.id, comment: comment });
-	      });
-	    }
 	    return React.createElement(
 	      'div',
 	      { className: 'single-post-show' },
 	      React.createElement(
 	        'div',
 	        { className: 'post-show-left' },
-	        React.createElement(
-	          'div',
-	          { className: 'post-container' },
-	          React.createElement(
-	            'div',
-	            { className: 'post-header' },
-	            React.createElement(
-	              'h2',
-	              null,
-	              post.title
-	            )
-	          ),
-	          images,
-	          React.createElement(
-	            'div',
-	            { className: 'post-description' },
-	            post.description
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'post-comments-container' },
-	          React.createElement(
-	            'h2',
-	            null,
-	            'Comments'
-	          ),
-	          comments
-	        )
+	        React.createElement(PostDetail, { post: PostStore.find(this.props.params.postId) })
 	      ),
-	      React.createElement('div', { className: 'post-show-right' })
+	      React.createElement(
+	        'div',
+	        { className: 'post-show-right' },
+	        React.createElement(PostIndex, { className: 'post-show-post-index-container', postChanged: this._postChanged })
+	      )
 	    );
 	  }
 	});
@@ -35573,8 +35524,107 @@
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var ImageDetailHeader = __webpack_require__(289);
-	var ImageDetailDescription = __webpack_require__(290);
+	var ImageDetail = __webpack_require__(289);
+	var CommentDetail = __webpack_require__(292);
+	var PostActions = __webpack_require__(284);
+	var PostStore = __webpack_require__(281);
+	
+	var PostDetail = React.createClass({
+	  displayName: 'PostDetail',
+	  getInitialState: function getInitialState() {
+	    return { post: PostStore.find(this.props.post.id) };
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.PostListener = PostStore.addListener(this._onChange);
+	  },
+	  _onChange: function _onChange() {
+	    this.setState({ post: PostStore.find(this.props.post.id) });
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps() {
+	    PostActions.fetchSinglePost(this.props.post.id);
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.PostListener.remove();
+	  },
+	  render: function render() {
+	    var post = this.state.post || {};
+	    var imagesIndex = [];
+	    var commentsIndex = [];
+	
+	    // debugger
+	
+	    if (post.images) {
+	      imagesIndex = post.images.map(function (image) {
+	        return React.createElement(ImageDetail, { key: image.id, image: image });
+	      });
+	    }
+	    if (post.comments) {
+	      commentsIndex = post.comments.map(function (comment) {
+	        return React.createElement(CommentDetail, { key: comment.id, comment: comment });
+	      });
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      { className: 'post-detail' },
+	      React.createElement(
+	        'div',
+	        { className: 'post-container' },
+	        React.createElement(
+	          'div',
+	          { className: 'post-header' },
+	          React.createElement(
+	            'h2',
+	            null,
+	            post.title
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'post-nav' },
+	            React.createElement(
+	              'button',
+	              { className: 'post-show-next', onClick: this.nextPost },
+	              'Previous Post'
+	            ),
+	            React.createElement(
+	              'button',
+	              { className: 'post-show-next', onClick: this.nextPost },
+	              'Next Post'
+	            )
+	          )
+	        ),
+	        imagesIndex,
+	        React.createElement(
+	          'div',
+	          { className: 'post-description' },
+	          post.description
+	        )
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: 'post-comments-container' },
+	        React.createElement(
+	          'h2',
+	          null,
+	          'Comments'
+	        ),
+	        commentsIndex
+	      )
+	    );
+	  }
+	});
+	
+	module.exports = PostDetail;
+
+/***/ },
+/* 289 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var ImageDetailHeader = __webpack_require__(290);
+	var ImageDetailDescription = __webpack_require__(291);
 	
 	var ImageDetail = React.createClass({
 	  displayName: 'ImageDetail',
@@ -35597,7 +35647,7 @@
 	module.exports = ImageDetail;
 
 /***/ },
-/* 289 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35622,7 +35672,7 @@
 	module.exports = ImageDetailHeader;
 
 /***/ },
-/* 290 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35647,7 +35697,7 @@
 	module.exports = ImageDetailDescription;
 
 /***/ },
-/* 291 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35670,7 +35720,7 @@
 	module.exports = CommentDetail;
 
 /***/ },
-/* 292 */
+/* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35681,7 +35731,7 @@
 	var Link = __webpack_require__(168).Link;
 	var SessionActions = __webpack_require__(277);
 	var SessionStore = __webpack_require__(254);
-	var ErrorStore = __webpack_require__(293);
+	var ErrorStore = __webpack_require__(294);
 	
 	var Modal = __webpack_require__(230);
 	
@@ -35757,7 +35807,6 @@
 		},
 		redirectIfLoggedIn: function redirectIfLoggedIn() {
 			if (SessionStore.isUserLoggedIn()) {
-				console.log(SessionStore.currentUser());
 				this.closeModal();
 				this.context.router.push("/");
 			}
@@ -35768,13 +35817,10 @@
 			var formData = { username: this.state.username, password: this.state.password };
 	
 			if (this.props.location.pathname === "/login") {
-				console.log("login");
 				SessionActions.login(formData);
 			} else {
 				SessionActions.signup(formData);
 			}
-	
-			// this.closeModal();
 		},
 		fieldErrors: function fieldErrors(field) {
 			var errors = ErrorStore.formErrors(this.formType());
@@ -35833,7 +35879,6 @@
 		},
 	
 		render: function render() {
-			console.log(this.state.modalOpen);
 			var navLink = void 0;
 			if (this.formType() === "login") {
 				navLink = React.createElement(
@@ -35878,14 +35923,15 @@
 							React.createElement('input', { type: 'text',
 								value: this.state.username,
 								onChange: this.update("username"),
-								className: 'login-input',
-								placeholder: 'Username' }),
+								className: 'login-input-username',
+								placeholder: 'Username',
+								minlength: '4' }),
 							React.createElement('br', null),
 							this.fieldErrors("password"),
 							React.createElement('input', { type: 'password',
 								value: this.state.password,
 								onChange: this.update("password"),
-								className: 'login-input',
+								className: 'login-input-password',
 								placeholder: 'Password' }),
 							React.createElement('br', null),
 							React.createElement('input', { type: 'submit', value: 'Submit' })
@@ -35904,7 +35950,7 @@
 	module.exports = LoginForm;
 
 /***/ },
-/* 293 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

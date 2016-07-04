@@ -14,13 +14,20 @@ PostStore.find = function(postId) {
   return Object.assign({}, _posts[postId]);
 };
 
+PostStore.add = function(post) {
+
+};
+
 function resetAllPosts(posts){
   _posts = posts;
   PostStore.__emitChange();
 }
 
+// keep the post thumb for display in index
 function resetSinglePost(post){
+  let thumb = _posts[post.id].thumb;
   _posts[post.id] = post;
+  _posts[post.id]['thumb'] = thumb;
   PostStore.__emitChange();
 }
 

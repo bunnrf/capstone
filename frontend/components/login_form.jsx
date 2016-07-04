@@ -77,7 +77,6 @@ const LoginForm = React.createClass({
 
   redirectIfLoggedIn() {
     if (SessionStore.isUserLoggedIn()) {
-			console.log(SessionStore.currentUser());
 			this.closeModal();
       this.context.router.push("/");
     }
@@ -89,13 +88,10 @@ const LoginForm = React.createClass({
 		const formData = { username: this.state.username, password: this.state.password };
 
     if (this.props.location.pathname === "/login") {
-			console.log("login");
       SessionActions.login(formData);
     } else {
       SessionActions.signup(formData);
     }
-
-		// this.closeModal();
 	},
 
   fieldErrors(field) {
@@ -142,7 +138,6 @@ const LoginForm = React.createClass({
 	},
 
 	render() {
-		console.log(this.state.modalOpen);
     let navLink;
     if (this.formType() === "login") {
       navLink = <Link to="/signup">sign up instead</Link>;
@@ -167,15 +162,16 @@ const LoginForm = React.createClass({
 							<input type="text"
 		            value={this.state.username}
 		            onChange={this.update("username")}
-								className="login-input"
-								placeholder="Username" />
+								className="login-input-username"
+								placeholder="Username"
+								minlength="4"/>
 
 			        <br />
 		          { this.fieldErrors("password") }
 		          <input type="password"
 		            value={this.state.password}
 		            onChange={this.update("password")}
-								className="login-input"
+								className="login-input-password"
 								placeholder="Password" />
 
 			        <br />
