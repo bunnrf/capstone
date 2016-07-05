@@ -163,8 +163,7 @@ const LoginForm = React.createClass({
 		            value={this.state.username}
 		            onChange={this.update("username")}
 								className="login-input-username"
-								placeholder="Username"
-								minlength="4"/>
+								placeholder="Username" />
 
 			        <br />
 		          { this.fieldErrors("password") }
@@ -179,7 +178,7 @@ const LoginForm = React.createClass({
 						</div>
 						<div id="demo-login" className="modal-submit"	onClick={this.demoLoginHandler}>
 							Demo Login
-					 </div>
+					  </div>
 					</form>
 				</div>
 			</Modal>

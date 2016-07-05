@@ -62,6 +62,7 @@
 	var PostShow = __webpack_require__(287);
 	var SessionActions = __webpack_require__(277);
 	var LoginForm = __webpack_require__(293);
+	var PostUploadForm = __webpack_require__(297);
 	
 	var appRouter = React.createElement(
 	  Router,
@@ -70,10 +71,9 @@
 	    Route,
 	    { path: '/', component: App },
 	    React.createElement(IndexRoute, { component: PostIndex }),
-	    '// ',
 	    React.createElement(Route, { path: '/login', component: LoginForm }),
-	    '// ',
 	    React.createElement(Route, { path: '/signup', component: LoginForm }),
+	    React.createElement(Route, { path: '/upload', component: PostUploadForm }),
 	    React.createElement(Route, { path: '/posts/:postId', component: PostShow })
 	  )
 	);
@@ -28163,6 +28163,7 @@
 	
 	var React = __webpack_require__(1);
 	var Topbar = __webpack_require__(252);
+	var SentenceSorting = __webpack_require__(300);
 	var SessionStore = __webpack_require__(254);
 	
 	var App = React.createClass({
@@ -28175,6 +28176,7 @@
 	      'div',
 	      null,
 	      React.createElement(Topbar, null),
+	      React.createElement(SentenceSorting, null),
 	      this.props.children
 	    );
 	  }
@@ -28190,8 +28192,7 @@
 	
 	var React = __webpack_require__(1);
 	var UserNav = __webpack_require__(253);
-	// const SessionStore = require('../stores/session_store');
-	// const Modal = require('react-modal');
+	var Link = __webpack_require__(168).Link;
 	
 	var Topbar = React.createClass({
 	  displayName: 'Topbar',
@@ -28227,8 +28228,8 @@
 	            'li',
 	            null,
 	            React.createElement(
-	              'h3',
-	              null,
+	              Link,
+	              { to: '/upload', className: 'navigation-link' },
 	              'upload images'
 	            )
 	          )
@@ -35358,8 +35359,6 @@
 	    this.postsListener.remove();
 	  },
 	  render: function render() {
-	    var _this = this;
-	
 	    // debugger
 	    var posts = this.state.posts;
 	    var keys = Object.keys(posts);
@@ -35367,7 +35366,7 @@
 	      'div',
 	      { className: this.props.className || "post-index-container" },
 	      keys.map(function (key) {
-	        return React.createElement(PostIndexItem, { key: key, post: posts[key], postChanged: _this.props.postChanged });
+	        return React.createElement(PostIndexItem, { key: key, post: posts[key] });
 	      })
 	    );
 	  }
@@ -35402,6 +35401,7 @@
 	  },
 	
 	  createPost: function createPost(post) {
+	    console.log(post);
 	    PostApiUtil.createPost(post, this.receiveSinglePost);
 	  },
 	
@@ -35441,9 +35441,10 @@
 	    });
 	  },
 	
-	  createPost: function createPost(callback) {
+	  createPost: function createPost(post, callback) {
 	    $.ajax({
 	      url: "api/posts",
+	      data: { post: post },
 	      success: function success(resp) {
 	        callback(resp);
 	      }
@@ -35467,9 +35468,6 @@
 	  handleClick: function handleClick() {
 	    var postId = this.props.post.id;
 	    hashHistory.push("posts/" + postId);
-	    if (this.props.postChanged) {
-	      this.props.postChanged();
-	    }
 	  },
 	  render: function render() {
 	    var post = this.props.post;
@@ -35497,6 +35495,23 @@
 	
 	var PostShow = React.createClass({
 	  displayName: 'PostShow',
+	  getInitialState: function getInitialState() {
+	    return { post: PostStore.find(this.props.params.postId) };
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.PostListener = PostStore.addListener(this._onChange);
+	    PostActions.fetchSinglePost(this.props.params.postId);
+	  },
+	  _onChange: function _onChange() {
+	    this.setState({ post: PostStore.find(this.props.params.postId) });
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+	    var props = newProps || this.props;
+	    PostActions.fetchSinglePost(props.params.postId);
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.PostListener.remove();
+	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
@@ -35504,12 +35519,12 @@
 	      React.createElement(
 	        'div',
 	        { className: 'post-show-left' },
-	        React.createElement(PostDetail, { post: PostStore.find(this.props.params.postId) })
+	        React.createElement(PostDetail, { post: this.state.post })
 	      ),
 	      React.createElement(
 	        'div',
 	        { className: 'post-show-right' },
-	        React.createElement(PostIndex, { className: 'post-show-post-index-container', postChanged: this._postChanged })
+	        React.createElement(PostIndex, { className: 'post-show-post-index-container' })
 	      )
 	    );
 	  }
@@ -35531,27 +35546,10 @@
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
-	  getInitialState: function getInitialState() {
-	    return { post: PostStore.find(this.props.post.id) };
-	  },
-	  componentDidMount: function componentDidMount() {
-	    this.PostListener = PostStore.addListener(this._onChange);
-	  },
-	  _onChange: function _onChange() {
-	    this.setState({ post: PostStore.find(this.props.post.id) });
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps() {
-	    PostActions.fetchSinglePost(this.props.post.id);
-	  },
-	  componentWillUnmount: function componentWillUnmount() {
-	    this.PostListener.remove();
-	  },
 	  render: function render() {
-	    var post = this.state.post || {};
+	    var post = this.props.post;
 	    var imagesIndex = [];
 	    var commentsIndex = [];
-	
-	    // debugger
 	
 	    if (post.images) {
 	      imagesIndex = post.images.map(function (image) {
@@ -35924,8 +35922,7 @@
 								value: this.state.username,
 								onChange: this.update("username"),
 								className: 'login-input-username',
-								placeholder: 'Username',
-								minlength: '4' }),
+								placeholder: 'Username' }),
 							React.createElement('br', null),
 							this.fieldErrors("password"),
 							React.createElement('input', { type: 'password',
@@ -36006,6 +36003,262 @@
 	};
 	
 	module.exports = ErrorStore;
+
+/***/ },
+/* 295 */,
+/* 296 */,
+/* 297 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var React = __webpack_require__(1);
+	var ImageUploadForm = __webpack_require__(299);
+	var PostActions = __webpack_require__(284);
+	var SessionStore = __webpack_require__(254);
+	var ErrorStore = __webpack_require__(294);
+	
+	var Modal = __webpack_require__(230);
+	
+	var LoginForm = React.createClass({
+		displayName: 'LoginForm',
+	
+		contextTypes: {
+			router: React.PropTypes.object.isRequired
+		},
+	
+		getInitialState: function getInitialState() {
+			return { title: "", imageForms: [React.createElement(ImageUploadForm, { key: 0 })], modalOpen: true };
+		},
+		componentDidMount: function componentDidMount() {
+			this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
+		},
+		componentWillUnmount: function componentWillUnmount() {
+			this.errorListener.remove();
+		},
+		handleSubmit: function handleSubmit(e) {
+			e.preventDefault();
+			var post = {
+				author_id: SessionStore.currentUser().id,
+				title: this.state.title,
+				description: this.state.description,
+				images: this.getImages()
+			};
+	
+			PostActions.createPost(post);
+			this.closeModal();
+		},
+	
+	
+		getImages: function getImages() {
+			console.log(this.refs);
+	
+			return this.refs.map(function (image) {
+				return { title: image.state.title, url: image.state.url, description: image.state.description };
+			});
+		},
+	
+		fieldErrors: function fieldErrors(field) {
+			var errors = ErrorStore.formErrors("post_upload");
+	
+			if (!errors[field]) {
+				return;
+			}
+	
+			var messages = errors[field].map(function (errorMsg, i) {
+				return React.createElement(
+					'li',
+					{ key: i },
+					errorMsg
+				);
+			});
+	
+			return React.createElement(
+				'ul',
+				null,
+				messages
+			);
+		},
+	
+	
+		closeModal: function closeModal() {
+			this.setState({ modalOpen: false });
+			this.context.router.push("/");
+		},
+	
+		update: function update(property) {
+			var _this = this;
+	
+			return function (e) {
+				return _this.setState(_defineProperty({}, property, e.target.value));
+			};
+		},
+	
+	
+		addImageUploadForm: function addImageUploadForm() {
+			callbacks.push();
+			this.setState({ imageForms: this.state.imageForms.concat(React.createElement(ImageUploadForm, { key: this.state.imageForms.length })) });
+		},
+	
+		customStyle: function customStyle() {
+			return {
+				overlay: {
+					backgroundColor: 'rgba(0, 0, 0, 0.9)'
+				},
+				content: {
+					position: 'absolute',
+					border: 'none',
+					background: '#2B2B2B',
+					overflow: 'auto',
+					WebkitOverflowScrolling: 'touch',
+					borderRadius: '0px',
+					outline: 'none',
+					padding: '20px'
+				}
+			};
+		},
+	
+		render: function render() {
+			return React.createElement(
+				Modal,
+				{ className: 'upload-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
+				React.createElement(
+					'button',
+					{ className: 'close-modal', onClick: this.closeModal },
+					'X'
+				),
+				React.createElement(
+					'div',
+					{ className: 'post-upload-form-container' },
+					React.createElement(
+						'form',
+						{ onSubmit: this.handleSubmit, className: 'post-upload-form-box' },
+						'Upload Images',
+						this.fieldErrors("base"),
+						React.createElement('input', { type: 'text', value: this.state.description, onChange: this.update("description"), placeholder: 'Post Title' }),
+						React.createElement(
+							'div',
+							{ className: 'post-upload-form' },
+							this.state.imageForms,
+							React.createElement('input', { type: 'button', className: 'add-image-button', onClick: this.addImageUploadForm, value: 'Add Image' }),
+							React.createElement('textarea', { value: this.state.description, onChange: this.update("description"), placeholder: 'Post Description(optional)' }),
+							React.createElement('input', { type: 'submit', value: 'Submit' })
+						)
+					)
+				)
+			);
+		}
+	});
+	
+	module.exports = LoginForm;
+
+/***/ },
+/* 298 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var React = __webpack_require__(1);
+	
+	var UploadImageButton = React.createClass({
+	  displayName: "UploadImageButton",
+	
+	  upload: function upload(e) {
+	    var _this = this;
+	
+	    e.preventDefault();
+	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
+	      if (!error) {
+	        _this.props.postImage(results[0]);
+	      }
+	    });
+	  },
+	
+	  render: function render() {
+	    return React.createElement(
+	      "button",
+	      { className: "upload-button", onClick: this.upload },
+	      "Upload Image(s)"
+	    );
+	  }
+	});
+	
+	module.exports = UploadImageButton;
+
+/***/ },
+/* 299 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var React = __webpack_require__(1);
+	var ImageUploadButton = __webpack_require__(298);
+	
+	var ImageUploadForm = React.createClass({
+	  displayName: 'ImageUploadForm',
+	
+	  getInitialState: function getInitialState() {
+	    return {};
+	  },
+	
+	  handleUpload: function handleUpload(results) {
+	    this.setState({ url: results.url });
+	  },
+	
+	  update: function update(property) {
+	    var _this = this;
+	
+	    return function (e) {
+	      return _this.setState(_defineProperty({}, property, e.target.value));
+	    };
+	  },
+	
+	
+	  render: function render() {
+	    var imageOption = void 0;
+	
+	    if (this.state.url) {
+	      imageOption = React.createElement('img', { src: this.state.url });
+	    } else {
+	      imageOption = React.createElement(ImageUploadButton, { postImage: this.handleUpload });
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      { className: 'image-upload-container' },
+	      React.createElement('input', { type: 'text', value: this.state.title, onChange: this.update("title"), placeholder: 'Caption(optional)' }),
+	      imageOption,
+	      React.createElement('textarea', { value: this.state.description, onChange: this.update("description"), placeholder: 'Description(optional)' })
+	    );
+	  }
+	});
+	
+	module.exports = ImageUploadForm;
+
+/***/ },
+/* 300 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var React = __webpack_require__(1);
+	
+	var SentenceSorting = React.createClass({
+	  displayName: "SentenceSorting",
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      { className: "sentence-sorting" },
+	      "The Most Viral images on the internet, sorted by Popularity"
+	    );
+	  }
+	});
+	
+	module.exports = SentenceSorting;
 
 /***/ }
 /******/ ]);

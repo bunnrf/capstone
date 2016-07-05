@@ -16,7 +16,7 @@ PostStore.find = function(postId) {
 
 PostStore.add = function(post) {
 
-};
+}
 
 function resetAllPosts(posts){
   _posts = posts;

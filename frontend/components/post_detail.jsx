@@ -5,32 +5,10 @@ const PostActions = require('../actions/post_actions');
 const PostStore = require('../stores/post_store');
 
 const PostDetail = React.createClass({
-  getInitialState(){
-    return { post: PostStore.find(this.props.post.id) };
-  },
-
-  componentDidMount(){
-    this.PostListener = PostStore.addListener(this._onChange);
-  },
-
-  _onChange(){
-    this.setState({ post: PostStore.find(this.props.post.id) });
-  },
-
-  componentWillReceiveProps(){
-    PostActions.fetchSinglePost(this.props.post.id);
-  },
-
-  componentWillUnmount(){
-    this.PostListener.remove();
-  },
-
   render(){
-    let post = this.state.post || {};
+    let post = this.props.post;
     let imagesIndex = [];
     let commentsIndex = [];
-
-    // debugger
 
     if(post.images){
       imagesIndex = post.images.map((image) => {

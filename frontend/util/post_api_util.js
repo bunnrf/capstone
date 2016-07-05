@@ -17,9 +17,10 @@ const PostApiUtil = {
     })
   },
 
-  createPost: function(callback){
+  createPost: function(post, callback){
     $.ajax({
       url: "api/posts",
+      data: { post: post },
       success: function(resp){
         callback(resp)
       }

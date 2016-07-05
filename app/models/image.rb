@@ -1,5 +1,5 @@
 class Image < ActiveRecord::Base
-  validates :title, :image_url, :post_id, presence: true
+  validates :image_url, :post, presence: true
 
   belongs_to :post, dependent: :destroy
 end

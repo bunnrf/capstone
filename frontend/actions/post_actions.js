@@ -19,6 +19,7 @@ const PostActions = {
   },
 
   createPost(post){
+    console.log(post);
     PostApiUtil.createPost(post, this.receiveSinglePost);
   },
 

@@ -12,7 +12,8 @@ class Api::PostsController < ApplicationController
   end
 
   def create
-
+    @post = Post.create!(post_params)
+    render :show
   end
 
   def edit
@@ -29,6 +30,6 @@ class Api::PostsController < ApplicationController
 
   private
   def post_params
-    params.require(:post).permit(:title, :description, :points, :author_id)
+    params.require(:post).permit(:title, :description, :points, :author_id, :images)
   end
 end
