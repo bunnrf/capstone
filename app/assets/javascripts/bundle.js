@@ -36098,7 +36098,6 @@
 	
 	
 		addImageUploadForm: function addImageUploadForm() {
-			callbacks.push();
 			this.setState({ imageForms: this.state.imageForms.concat(React.createElement(ImageUploadForm, { key: this.state.imageForms.length })) });
 		},
 	

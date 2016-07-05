@@ -66,7 +66,6 @@ const LoginForm = React.createClass({
   },
 
 	addImageUploadForm: function(){
-		callbacks.push()
 		this.setState({ imageForms: this.state.imageForms.concat(<ImageUploadForm key={this.state.imageForms.length}/>) });
 	},
 
