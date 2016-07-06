@@ -3,31 +3,35 @@ const ImageUploadButton = require('./image_upload_button');
 
 const ImageUploadForm = React.createClass({
   getInitialState: function() {
-    return {}
+    return { image_url: this.props.image_url }
   },
 
   handleUpload: function(results) {
-    this.setState({ url: results.url })
+    this.props.updateState(this.props.ordinal, "image_url", results.url);
+    this.setState({ image_url: results.url })
   },
 
   update(property) {
-    return (e) => this.setState({[property]: e.target.value});
+    return (e) => {
+      this.props.updateState(this.props.ordinal, property, e.target.value);
+      this.setState({[property]: e.target.value})
+    };
   },
 
   render: function() {
     let imageOption;
 
-    if (this.state.url) {
-      imageOption = <img src={this.state.url} />
+    if (this.state.image_url) {
+      imageOption = <img src={this.state.image_url} />
     } else {
       imageOption = <ImageUploadButton postImage={this.handleUpload} />
     }
 
     return (
       <div className="image-upload-container">
-        <input type="text" value={this.state.title} onChange={this.update("title")} placeholder="Caption(optional)" />
+        <input type="text" value={this.props.title} onChange={this.update("title")} placeholder="Caption(optional)" />
         {imageOption}
-        <textarea value={this.state.description} onChange={this.update("description")} placeholder="Description(optional)" />
+        <textarea value={this.props.description} onChange={this.update("description")} placeholder="Description(optional)" />
       </div>
     );
   }

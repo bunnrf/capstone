@@ -6,17 +6,21 @@ const ErrorStore = require('../stores/error_store');
 
 const Modal = require('react-modal');
 
-const LoginForm = React.createClass({
+const PostUploadForm = React.createClass({
 	contextTypes: {
 		router: React.PropTypes.object.isRequired
 	},
 
   getInitialState() {
-    return { title: "", imageForms: [<ImageUploadForm key={0} />], modalOpen: true };
+    return { title: "",
+				images: [],
+				uploadTrigger: false,
+				modalOpen: true };
   },
 
   componentDidMount() {
     this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
+		this.setState({ images: [ { title: undefined, image_url: null, description: undefined, ordinal: 0 } ] });
   },
 
   componentWillUnmount() {
@@ -24,24 +28,18 @@ const LoginForm = React.createClass({
   },
 
 	handleSubmit(e) {
+		this.setState({ uploadTrigger: true });
+		console.log("submit");
 		e.preventDefault();
 		let post = {
 			author_id: SessionStore.currentUser().id,
 			title: this.state.title,
 		  description: this.state.description,
-			images: this.getImages()
+			images_attributes: this.state.images
 		};
 
     PostActions.createPost(post);
-		this.closeModal();
-	},
-
-	getImages: function() {
-		console.log(this.refs);
-
-		return this.refs.map((image) => {
-			return { title: image.state.title, url: image.state.url, description: image.state.description}
-		})
+		// this.closeModal();
 	},
 
   fieldErrors(field) {
@@ -65,8 +63,15 @@ const LoginForm = React.createClass({
     return (e) => this.setState({[property]: e.target.value});
   },
 
+	updateImage(index, property, value) {
+		let images = this.state.images;
+		images[index][property] = value;
+
+		this.setState( { images: images } );
+	},
+
 	addImageUploadForm: function(){
-		this.setState({ imageForms: this.state.imageForms.concat(<ImageUploadForm key={this.state.imageForms.length}/>) });
+		this.setState({ images: this.state.images.concat( { title: undefined, image_url: null, description: undefined, ordinal: this.state.images.length } ) });
 	},
 
 	customStyle: function(){
@@ -96,9 +101,11 @@ const LoginForm = React.createClass({
 					<form onSubmit={this.handleSubmit} className="post-upload-form-box">
 						Upload Images
 		        { this.fieldErrors("base") }
-						<input type="text" value={this.state.description} onChange={this.update("description")} placeholder="Post Title" />
+						<input type="text" value={this.state.title} onChange={this.update("title")} placeholder="Post Title" />
 						<div className="post-upload-form">
-							{this.state.imageForms}
+							{this.state.images.map((image) => {
+								return <ImageUploadForm key={image.ordinal} title={image.title} image_url={image.url} description={image.description} updateState={this.updateImage} ordinal={image.ordinal} />
+							})}
 							<input type="button" className="add-image-button" onClick={this.addImageUploadForm} value="Add Image" />
 							<textarea value={this.state.description} onChange={this.update("description")} placeholder="Post Description(optional)"></textarea>
 							<input type="submit" value="Submit" />
@@ -110,4 +117,4 @@ const LoginForm = React.createClass({
 	}
 });
 
-module.exports = LoginForm;
+module.exports = PostUploadForm;

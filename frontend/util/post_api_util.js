@@ -18,8 +18,10 @@ const PostApiUtil = {
   },
 
   createPost: function(post, callback){
+    console.log(post);
     $.ajax({
       url: "api/posts",
+      method: "POST",
       data: { post: post },
       success: function(resp){
         callback(resp)
