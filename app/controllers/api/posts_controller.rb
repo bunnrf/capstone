@@ -1,6 +1,6 @@
 class Api::PostsController < ApplicationController
   def index
-    @posts = Post.all.includes(:author, :comments).joins(:images).where(:images => { :ordinal => 1 }).includes(:images)
+    @posts = Post.all.includes(:author, :comments).joins(:images).where(:images => { :ordinal => 0 }).includes(:images)
   end
 
   def show

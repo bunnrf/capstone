@@ -39,7 +39,7 @@ const PostUploadForm = React.createClass({
 		};
 
     PostActions.createPost(post);
-		// this.closeModal();
+		this.closeModal();
 	},
 
   fieldErrors(field) {
@@ -104,10 +104,17 @@ const PostUploadForm = React.createClass({
 						<input type="text" value={this.state.title} onChange={this.update("title")} placeholder="Post Title" />
 						<div className="post-upload-form">
 							{this.state.images.map((image) => {
-								return <ImageUploadForm key={image.ordinal} title={image.title} image_url={image.url} description={image.description} updateState={this.updateImage} ordinal={image.ordinal} />
+								return <ImageUploadForm key={image.ordinal}
+																			title={image.title}
+																	image_url={image.url}
+																description={image.description}
+																updateState={this.updateImage}
+																		ordinal={image.ordinal} />
 							})}
 							<input type="button" className="add-image-button" onClick={this.addImageUploadForm} value="Add Image" />
-							<textarea value={this.state.description} onChange={this.update("description")} placeholder="Post Description(optional)"></textarea>
+							<textarea value={this.state.description}
+										 onChange={this.update("description")}
+									placeholder="Post Description(optional)"></textarea>
 							<input type="submit" value="Submit" />
 						</div>
 					</form>

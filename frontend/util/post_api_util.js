@@ -1,29 +1,39 @@
 const PostApiUtil = {
-  fetchAllPosts: function(callback){
+  fetchAllPosts: function(callback) {
     $.ajax({
       url: "api/posts",
-      success: function(resp){
+      success: function(resp) {
         callback(resp)
       }
     })
   },
 
-  fetchSinglePost: function(id, callback){
+  fetchSinglePost: function(id, callback) {
     $.ajax({
       url: "api/posts/" + id,
-      success: function(resp){
+      success: function(resp) {
         callback(resp)
       }
     })
   },
 
-  createPost: function(post, callback){
-    console.log(post);
+  createPost: function(post, callback) {
     $.ajax({
       url: "api/posts",
       method: "POST",
       data: { post: post },
-      success: function(resp){
+      success: function(resp) {
+        callback(resp)
+      }
+    })
+  },
+
+  createComment: function(comment, callback) {
+    $.ajax({
+      url: "api/comments",
+      method: "POST",
+      data: { comment: comment },
+      success: function(resp) {
         callback(resp)
       }
     })

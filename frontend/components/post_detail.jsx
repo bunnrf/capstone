@@ -1,6 +1,7 @@
 const React = require('react');
 const ImageDetail = require('./image_detail');
 const CommentDetail = require('./comment_detail');
+const CommentCreate = require('./comment_create');
 const PostActions = require('../actions/post_actions');
 const PostStore = require('../stores/post_store');
 
@@ -38,6 +39,7 @@ const PostDetail = React.createClass({
         </div>
         <div className="post-comments-container">
           <h2>Comments</h2>
+          <CommentCreate postId={post.id}/>
           {commentsIndex}
         </div>
       </div>

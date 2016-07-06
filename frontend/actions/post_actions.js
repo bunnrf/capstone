@@ -3,30 +3,34 @@ const PostApiUtil = require('../util/post_api_util');
 const dispatcher = require('../dispatcher/dispatcher');
 
 const PostActions = {
-  fetchAllPosts: function(){
+  fetchAllPosts: function() {
     PostApiUtil.fetchAllPosts(this.receiveAllPosts)
   },
 
-  fetchSinglePost: function(id){
+  fetchSinglePost: function(id) {
     PostApiUtil.fetchSinglePost(id, this.receiveSinglePost)
   },
 
-  receiveAllPosts: function(posts){
+  receiveAllPosts: function(posts) {
     dispatcher.dispatch({
       actionType: PostConstants.POSTS_RECEIVED,
       posts: posts
     })
   },
 
-  createPost(post){
+  createPost(post) {
     PostApiUtil.createPost(post, this.receiveSinglePost);
   },
 
-  receiveSinglePost: function(post){
+  receiveSinglePost: function(post) {
     dispatcher.dispatch({
       actionType: PostConstants.POST_RECEIVED,
       post: post
     })
+  },
+
+  createComment(comment) {
+    PostApiUtil.createComment(comment, this.receiveSinglePost);
   }
 }
 

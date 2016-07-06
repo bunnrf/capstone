@@ -70,7 +70,7 @@
 	  { history: hashHistory },
 	  React.createElement(
 	    Route,
-	    { path: '/', component: App, onEnter: _ensureUserFetched },
+	    { path: '/', component: App },
 	    React.createElement(IndexRoute, { component: PostIndex }),
 	    React.createElement(Route, { path: '/login', component: LoginForm }),
 	    React.createElement(Route, { path: '/signup', component: LoginForm }),
@@ -79,18 +79,18 @@
 	  )
 	);
 	
-	function _ensureUserFetched(nextState, replace, asyncDoneCallback) {
-	  //Any time we render the app, we want to ensure that we have already
-	  //checked to see if the user is logged in. This should only fire once --
-	  //when the user first visits our website / after a reload
-	  if (SessionStore.currentUserHasBeenFetched()) {
-	    //If the current user has already been fetched, we're done.
-	    asyncDoneCallback();
-	  } else {
-	    //If not, initiate the fetch, and pass the asyncDoneCallback to be invoked upon completion
-	    SessionActions.fetchCurrentUser(asyncDoneCallback);
-	  }
-	}
+	// function _ensureUserFetched(nextState, replace, asyncDoneCallback){
+	//   //Any time we render the app, we want to ensure that we have already
+	//   //checked to see if the user is logged in. This should only fire once --
+	//   //when the user first visits our website / after a reload
+	//   if ( SessionStore.currentUserHasBeenFetched() ) {
+	//     //If the current user has already been fetched, we're done.
+	//     asyncDoneCallback();
+	//   } else {
+	//     //If not, initiate the fetch, and pass the asyncDoneCallback to be invoked upon completion
+	//     SessionActions.fetchCurrentUser(asyncDoneCallback);
+	//   }
+	// }
 	
 	function _ensureLoggedIn(nextState, replace) {
 	  if (!SessionStore.isUserLoggedIn()) {
@@ -35445,6 +35445,10 @@
 	      actionType: PostConstants.POST_RECEIVED,
 	      post: post
 	    });
+	  },
+	
+	  createComment: function createComment(comment) {
+	    PostApiUtil.createComment(comment, this.receiveSinglePost);
 	  }
 	};
 	
@@ -35476,11 +35480,21 @@
 	  },
 	
 	  createPost: function createPost(post, callback) {
-	    console.log(post);
 	    $.ajax({
 	      url: "api/posts",
 	      method: "POST",
 	      data: { post: post },
+	      success: function success(resp) {
+	        callback(resp);
+	      }
+	    });
+	  },
+	
+	  createComment: function createComment(comment, callback) {
+	    $.ajax({
+	      url: "api/comments",
+	      method: "POST",
+	      data: { comment: comment },
 	      success: function success(resp) {
 	        callback(resp);
 	      }
@@ -35577,6 +35591,7 @@
 	var React = __webpack_require__(1);
 	var ImageDetail = __webpack_require__(290);
 	var CommentDetail = __webpack_require__(293);
+	var CommentCreate = __webpack_require__(299);
 	var PostActions = __webpack_require__(285);
 	var PostStore = __webpack_require__(282);
 	
@@ -35642,6 +35657,7 @@
 	          null,
 	          'Comments'
 	        ),
+	        React.createElement(CommentCreate, { postId: post.id }),
 	        commentsIndex
 	      )
 	    );
@@ -36088,7 +36104,7 @@
 			};
 	
 			PostActions.createPost(post);
-			// this.closeModal();
+			this.closeModal();
 		},
 		fieldErrors: function fieldErrors(field) {
 			var errors = ErrorStore.formErrors("post_upload");
@@ -36179,10 +36195,17 @@
 							'div',
 							{ className: 'post-upload-form' },
 							this.state.images.map(function (image) {
-								return React.createElement(ImageUploadForm, { key: image.ordinal, title: image.title, image_url: image.url, description: image.description, updateState: _this2.updateImage, ordinal: image.ordinal });
+								return React.createElement(ImageUploadForm, { key: image.ordinal,
+									title: image.title,
+									image_url: image.url,
+									description: image.description,
+									updateState: _this2.updateImage,
+									ordinal: image.ordinal });
 							}),
 							React.createElement('input', { type: 'button', className: 'add-image-button', onClick: this.addImageUploadForm, value: 'Add Image' }),
-							React.createElement('textarea', { value: this.state.description, onChange: this.update("description"), placeholder: 'Post Description(optional)' }),
+							React.createElement('textarea', { value: this.state.description,
+								onChange: this.update("description"),
+								placeholder: 'Post Description(optional)' }),
 							React.createElement('input', { type: 'submit', value: 'Submit' })
 						)
 					)
@@ -36279,6 +36302,64 @@
 	});
 	
 	module.exports = UploadImageButton;
+
+/***/ },
+/* 299 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var SessionStore = __webpack_require__(254);
+	var PostActions = __webpack_require__(285);
+	
+	var CommentCreate = React.createClass({
+	  displayName: 'CommentCreate',
+	  getInitialState: function getInitialState() {
+	    return { focused: false };
+	  },
+	  revealSubmit: function revealSubmit() {
+	    this.setState({ focused: true });
+	  },
+	  submit: function submit() {
+	    console.log(this.state.body);
+	    var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, commentable_id: this.props.postId, commentable_type: "Post" });
+	    PostActions.createComment(comment);
+	    this.setState({ body: undefined, focused: false });
+	  },
+	  updateBody: function updateBody() {
+	    var _this = this;
+	
+	    return function (e) {
+	      return _this.setState({ body: e.target.value });
+	    };
+	  },
+	
+	
+	  render: function render() {
+	    if (this.state.focused) {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create-focused' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
+	        React.createElement(
+	          'button',
+	          { onClick: this.submit },
+	          'Submit'
+	        )
+	      );
+	    } else {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.revealSubmit })
+	      );
+	    }
+	  }
+	
+	});
+	
+	module.exports = CommentCreate;
 
 /***/ }
 /******/ ]);
