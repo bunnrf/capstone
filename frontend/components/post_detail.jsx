@@ -4,18 +4,19 @@ const CommentDetail = require('./comment_detail');
 const CommentCreate = require('./comment_create');
 const PostActions = require('../actions/post_actions');
 const PostStore = require('../stores/post_store');
+const TimeUtil = require('../util/time_util');
 
 const PostDetail = React.createClass({
   getInitialState() {
-    return { header_class: "post-header" };
+    return { headerClass: "post-header" };
   },
 
   stickyScroll(e) {
-    if( window.pageYOffset > 144 ) {
-      this.setState( { header_class: "post-header-fixed" } );
+    if( window.pageYOffset >= 144) {
+      this.setState( { headerClass: "post-header-fixed" } );
     }
-    if( window.pageYOffset < 144 ) {
-      this.setState( { header_class: "post-header" } );
+    if( window.pageYOffset < 144) {
+      this.setState( { headerClass: "post-header" } );
     }
   },
 
@@ -31,7 +32,8 @@ const PostDetail = React.createClass({
     let post = this.props.post;
     let imagesIndex = [];
     let commentsIndex = [];
-    let style = { "padding-top": 0 };
+    let style = { paddingTop: 0 };
+    let authorData;
 
     if(post.images){
       imagesIndex = post.images.map((image) => {
@@ -43,21 +45,34 @@ const PostDetail = React.createClass({
         return <CommentDetail key={ comment.id } comment={ comment } />
       })
     }
+    if (post.author) {
+      authorData = <div className="post-header-details">
+        <span>by </span><a href={"users/" + post.author.id}>{post.author.username}</a><span> · {TimeUtil.timeSince(post.time_since)} </span>
+      </div>
+    } else {
+      <div className="post-header-details">
+        author unrecognized
+      </div>
+    }
 
-    if (this.state.header_class === "post-header-fixed") {
-      style = { "padding-top": 60 + 'px' };
+    if (this.state.headerClass === "post-header-fixed") {
+      let headerHeight = $(".post-header-fixed").eq(0).height() || $(".post-header").eq(0).height();
+      style = { paddingTop: headerHeight + 20 + 'px' };
     }
 
     return(
       <div className="post-detail">
         <div className="post-container" style={ style }>
-          <div className={this.state.header_class}>
-            <div className="post-header-title">
-              <h1>{post.title}</h1>
+          <div className={this.state.headerClass}>
+            <div className="post-header-content-container">
+              <div className="post-header-title">
+                <h1>{post.title}</h1>
+              </div>
+              {authorData}
             </div>
             <div className="post-nav">
-              <button className="post-show-next" onClick={this.nextPost}>Previous Post</button>
-              <button className="post-show-next" onClick={this.nextPost}>Next Post</button>
+              <div className="post-show-prev" onClick={this.nextPost}>{ "<" }</div>
+              <div className="post-show-next" onClick={this.nextPost}>{ "Next Post >" }</div>
             </div>
           </div>
           {imagesIndex}

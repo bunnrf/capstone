@@ -289,6 +289,7 @@ textarea {
 }
 
 .post-header {
+  min-height: 40px;
   display: flex;
   justify-content: space-between;
   background-color: #262626;
@@ -298,6 +299,7 @@ textarea {
 }
 
 .post-header-fixed {
+  min-height: 40px;
   position: fixed;
   top: 0;
   width: 640px;
@@ -309,8 +311,12 @@ textarea {
   z-index: 1;
 }
 
+.post-header-content-container {
+  width: 65%;
+}
+
 .post-header-title {
-  max-width: 75%;
+
 }
 
 .post-header-title h1 {
@@ -318,11 +324,44 @@ textarea {
   font-size: 16px;
   line-height: normal;
   word-wrap: break-word;
-  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+.post-header-details {
+
 }
 
 .post-nav {
-  width: 25%;
+  right: 0;
+  display: flex;
+}
+
+.post-nav div {
+  height: 34px;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 700;
+  text-shadow: 1px 1px 1px rgba(0,0,0,.2);
+  border-radius: 2px;
+  font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.post-show-next {
+  width: 110px;
+  background: #3274e5;
+  border: 1px solid #4d8eff;
+  border-bottom: 1px solid #1f478c;
+}
+
+.post-show-prev {
+  width: 32px;
+  border: 1px solid #464646;
+  margin-right: 10px;
+  background-color: rgba(100,100,100,.15);
 }
 
 .image-detail-container {
@@ -405,16 +444,22 @@ textarea {
   background: rgba(0, 0, 0, 0.5);
 }
 
+.post-show-post-index-header {
+  width: 300px;
+  height: 60px;
+}
+
 .post-show-right-scroll-container {
   width: 311px;
-  height: 100%;
+  height: 500px;
   overflow-x: hidden;
+  overflow-y: scroll:
 }
 
 .post-show-post-index-container {
   left: 0px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   flex-wrap: wrap;
   background-color: inherit;
   width: 300px;
@@ -427,12 +472,12 @@ textarea {
   height: 141px;
   position: relative;
   overflow: hidden;
-  margin: 0 auto;
+  margin: 2px auto;
+  border: 0;
 }
 
 .post-show-post-index-container .post :hover {
-  border-color: #C29F37;
-  cursor: pointer;
+  
 }
 
 .post-show-post-index-container .post img {
@@ -441,4 +486,5 @@ textarea {
   min-height: 180px;
   max-width: 300px;
   max-height: 240px;
+  border: 0;
 }

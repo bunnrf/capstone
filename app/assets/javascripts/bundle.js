@@ -35574,6 +35574,7 @@
 	      React.createElement(
 	        'div',
 	        { className: 'post-show-right' },
+	        React.createElement('div', { className: 'post-show-post-index-header' }),
 	        React.createElement(
 	          'div',
 	          { className: 'post-show-right-scroll-container' },
@@ -35598,18 +35599,19 @@
 	var CommentCreate = __webpack_require__(299);
 	var PostActions = __webpack_require__(285);
 	var PostStore = __webpack_require__(282);
+	var TimeUtil = __webpack_require__(300);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
 	  getInitialState: function getInitialState() {
-	    return { header_class: "post-header" };
+	    return { headerClass: "post-header" };
 	  },
 	  stickyScroll: function stickyScroll(e) {
-	    if (window.pageYOffset > 144) {
-	      this.setState({ header_class: "post-header-fixed" });
+	    if (window.pageYOffset >= 144) {
+	      this.setState({ headerClass: "post-header-fixed" });
 	    }
 	    if (window.pageYOffset < 144) {
-	      this.setState({ header_class: "post-header" });
+	      this.setState({ headerClass: "post-header" });
 	    }
 	  },
 	  componentDidMount: function componentDidMount() {
@@ -35622,7 +35624,8 @@
 	    var post = this.props.post;
 	    var imagesIndex = [];
 	    var commentsIndex = [];
-	    var style = { "padding-top": 0 };
+	    var style = { paddingTop: 0 };
+	    var authorData = void 0;
 	
 	    if (post.images) {
 	      imagesIndex = post.images.map(function (image) {
@@ -35634,9 +35637,39 @@
 	        return React.createElement(CommentDetail, { key: comment.id, comment: comment });
 	      });
 	    }
+	    if (post.author) {
+	      authorData = React.createElement(
+	        'div',
+	        { className: 'post-header-details' },
+	        React.createElement(
+	          'span',
+	          null,
+	          'by '
+	        ),
+	        React.createElement(
+	          'a',
+	          { href: "users/" + post.author.id },
+	          post.author.username
+	        ),
+	        React.createElement(
+	          'span',
+	          null,
+	          ' · ',
+	          TimeUtil.timeSince(post.time_since),
+	          ' '
+	        )
+	      );
+	    } else {
+	      React.createElement(
+	        'div',
+	        { className: 'post-header-details' },
+	        'author unrecognized'
+	      );
+	    }
 	
-	    if (this.state.header_class === "post-header-fixed") {
-	      style = { "padding-top": 60 + 'px' };
+	    if (this.state.headerClass === "post-header-fixed") {
+	      var headerHeight = $(".post-header-fixed").eq(0).height() || $(".post-header").eq(0).height();
+	      style = { paddingTop: headerHeight + 20 + 'px' };
 	    }
 	
 	    return React.createElement(
@@ -35647,28 +35680,33 @@
 	        { className: 'post-container', style: style },
 	        React.createElement(
 	          'div',
-	          { className: this.state.header_class },
+	          { className: this.state.headerClass },
 	          React.createElement(
 	            'div',
-	            { className: 'post-header-title' },
+	            { className: 'post-header-content-container' },
 	            React.createElement(
-	              'h1',
-	              null,
-	              post.title
-	            )
+	              'div',
+	              { className: 'post-header-title' },
+	              React.createElement(
+	                'h1',
+	                null,
+	                post.title
+	              )
+	            ),
+	            authorData
 	          ),
 	          React.createElement(
 	            'div',
 	            { className: 'post-nav' },
 	            React.createElement(
-	              'button',
-	              { className: 'post-show-next', onClick: this.nextPost },
-	              'Previous Post'
+	              'div',
+	              { className: 'post-show-prev', onClick: this.nextPost },
+	              "<"
 	            ),
 	            React.createElement(
-	              'button',
+	              'div',
 	              { className: 'post-show-next', onClick: this.nextPost },
-	              'Next Post'
+	              "Next Post >"
 	            )
 	          )
 	        ),
@@ -35775,67 +35813,42 @@
 /* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
 	var React = __webpack_require__(1);
+	var TimeUtil = __webpack_require__(300);
 	
 	var CommentDetail = React.createClass({
-	  displayName: "CommentDetail",
-	  timeSince: function timeSince(time_since) {
-	    var seconds = Math.floor((new Date() - time_since) / 1000);
-	
-	    var interval = Math.floor(seconds / 31536000);
-	
-	    if (interval > 1) {
-	      return interval + " years";
-	    }
-	    interval = Math.floor(seconds / 2592000);
-	    if (interval > 1) {
-	      return interval + " months";
-	    }
-	    interval = Math.floor(seconds / 86400);
-	    if (interval > 1) {
-	      return interval + " days";
-	    }
-	    interval = Math.floor(seconds / 3600);
-	    if (interval > 1) {
-	      return interval + " hours";
-	    }
-	    interval = Math.floor(seconds / 60);
-	    if (interval > 1) {
-	      return interval + " minutes";
-	    }
-	    return Math.floor(seconds) + " seconds";
-	  },
+	  displayName: 'CommentDetail',
 	  render: function render() {
 	    var comment = this.props.comment;
 	    return React.createElement(
-	      "div",
-	      { className: "comment-container" },
+	      'div',
+	      { className: 'comment-container' },
 	      React.createElement(
-	        "div",
-	        { className: "comment-text-container" },
+	        'div',
+	        { className: 'comment-text-container' },
 	        React.createElement(
-	          "div",
-	          { className: "details" },
+	          'div',
+	          { className: 'details' },
 	          React.createElement(
-	            "a",
+	            'a',
 	            { href: "users/" + comment.commenter.id },
 	            comment.commenter.username
 	          ),
 	          React.createElement(
-	            "span",
+	            'span',
 	            null,
-	            " ",
+	            ' ',
 	            comment.points,
-	            " points : ",
-	            this.timeSince(comment.time_since),
-	            " ago"
+	            ' points : ',
+	            TimeUtil.timeSince(comment.time_since),
+	            ' '
 	          )
 	        ),
 	        React.createElement(
-	          "div",
-	          { className: "body" },
+	          'div',
+	          { className: 'body' },
 	          comment.body
 	        )
 	      )
@@ -36436,6 +36449,43 @@
 	});
 	
 	module.exports = CommentCreate;
+
+/***/ },
+/* 300 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var TimeUtil = {
+	    timeSince: function timeSince(time_since) {
+	        var seconds = Math.floor((new Date() - time_since) / 1000);
+	
+	        var interval = Math.floor(seconds / 31536000);
+	
+	        if (interval > 1) {
+	            return interval + " years ago";
+	        }
+	        interval = Math.floor(seconds / 2592000);
+	        if (interval > 1) {
+	            return interval + " months ago";
+	        }
+	        interval = Math.floor(seconds / 86400);
+	        if (interval > 1) {
+	            return interval + " days ago";
+	        }
+	        interval = Math.floor(seconds / 3600);
+	        if (interval > 1) {
+	            return interval + " hours ago";
+	        }
+	        interval = Math.floor(seconds / 60);
+	        if (interval > 1) {
+	            return interval + " minutes ago";
+	        }
+	        return Math.floor(seconds) + " seconds ago";
+	    }
+	};
+	
+	module.exports = TimeUtil;
 
 /***/ }
 /******/ ]);
