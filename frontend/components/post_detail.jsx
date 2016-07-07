@@ -6,10 +6,32 @@ const PostActions = require('../actions/post_actions');
 const PostStore = require('../stores/post_store');
 
 const PostDetail = React.createClass({
+  getInitialState() {
+    return { header_class: "post-header" };
+  },
+
+  stickyScroll(e) {
+    if( window.pageYOffset > 144 ) {
+      this.setState( { header_class: "post-header-fixed" } );
+    }
+    if( window.pageYOffset < 144 ) {
+      this.setState( { header_class: "post-header" } );
+    }
+  },
+
+  componentDidMount() {
+    this.windowListener = window.addEventListener('scroll', this.stickyScroll, false);
+  },
+
+  componentWillUnmount() {
+    this.windowListener.remove();
+  },
+
   render(){
     let post = this.props.post;
     let imagesIndex = [];
     let commentsIndex = [];
+    let style = { "padding-top": 0 };
 
     if(post.images){
       imagesIndex = post.images.map((image) => {
@@ -22,11 +44,17 @@ const PostDetail = React.createClass({
       })
     }
 
+    if (this.state.header_class === "post-header-fixed") {
+      style = { "padding-top": 60 + 'px' };
+    }
+
     return(
       <div className="post-detail">
-        <div className="post-container">
-          <div className="post-header">
-            <h2>{post.title}</h2>
+        <div className="post-container" style={ style }>
+          <div className={this.state.header_class}>
+            <div className="post-header-title">
+              <h1>{post.title}</h1>
+            </div>
             <div className="post-nav">
               <button className="post-show-next" onClick={this.nextPost}>Previous Post</button>
               <button className="post-show-next" onClick={this.nextPost}>Next Post</button>
@@ -38,7 +66,6 @@ const PostDetail = React.createClass({
           </div>
         </div>
         <div className="post-comments-container">
-          <h2>Comments</h2>
           <CommentCreate postId={post.id}/>
           {commentsIndex}
         </div>

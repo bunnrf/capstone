@@ -35574,7 +35574,11 @@
 	      React.createElement(
 	        'div',
 	        { className: 'post-show-right' },
-	        React.createElement(PostIndex, { className: 'post-show-post-index-container' })
+	        React.createElement(
+	          'div',
+	          { className: 'post-show-right-scroll-container' },
+	          React.createElement(PostIndex, { className: 'post-show-post-index-container' })
+	        )
 	      )
 	    );
 	  }
@@ -35597,10 +35601,28 @@
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
+	  getInitialState: function getInitialState() {
+	    return { header_class: "post-header" };
+	  },
+	  stickyScroll: function stickyScroll(e) {
+	    if (window.pageYOffset > 144) {
+	      this.setState({ header_class: "post-header-fixed" });
+	    }
+	    if (window.pageYOffset < 144) {
+	      this.setState({ header_class: "post-header" });
+	    }
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.windowListener = window.addEventListener('scroll', this.stickyScroll, false);
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.windowListener.remove();
+	  },
 	  render: function render() {
 	    var post = this.props.post;
 	    var imagesIndex = [];
 	    var commentsIndex = [];
+	    var style = { "padding-top": 0 };
 	
 	    if (post.images) {
 	      imagesIndex = post.images.map(function (image) {
@@ -35613,19 +35635,27 @@
 	      });
 	    }
 	
+	    if (this.state.header_class === "post-header-fixed") {
+	      style = { "padding-top": 60 + 'px' };
+	    }
+	
 	    return React.createElement(
 	      'div',
 	      { className: 'post-detail' },
 	      React.createElement(
 	        'div',
-	        { className: 'post-container' },
+	        { className: 'post-container', style: style },
 	        React.createElement(
 	          'div',
-	          { className: 'post-header' },
+	          { className: this.state.header_class },
 	          React.createElement(
-	            'h2',
-	            null,
-	            post.title
+	            'div',
+	            { className: 'post-header-title' },
+	            React.createElement(
+	              'h1',
+	              null,
+	              post.title
+	            )
 	          ),
 	          React.createElement(
 	            'div',
@@ -35652,11 +35682,6 @@
 	      React.createElement(
 	        'div',
 	        { className: 'post-comments-container' },
-	        React.createElement(
-	          'h2',
-	          null,
-	          'Comments'
-	        ),
 	        React.createElement(CommentCreate, { postId: post.id }),
 	        commentsIndex
 	      )
@@ -35756,13 +35781,64 @@
 	
 	var CommentDetail = React.createClass({
 	  displayName: "CommentDetail",
+	  timeSince: function timeSince(time_since) {
+	    var seconds = Math.floor((new Date() - time_since) / 1000);
+	
+	    var interval = Math.floor(seconds / 31536000);
+	
+	    if (interval > 1) {
+	      return interval + " years";
+	    }
+	    interval = Math.floor(seconds / 2592000);
+	    if (interval > 1) {
+	      return interval + " months";
+	    }
+	    interval = Math.floor(seconds / 86400);
+	    if (interval > 1) {
+	      return interval + " days";
+	    }
+	    interval = Math.floor(seconds / 3600);
+	    if (interval > 1) {
+	      return interval + " hours";
+	    }
+	    interval = Math.floor(seconds / 60);
+	    if (interval > 1) {
+	      return interval + " minutes";
+	    }
+	    return Math.floor(seconds) + " seconds";
+	  },
 	  render: function render() {
 	    var comment = this.props.comment;
 	    return React.createElement(
 	      "div",
 	      { className: "comment-container" },
-	      comment.commenter.username,
-	      comment.body
+	      React.createElement(
+	        "div",
+	        { className: "comment-text-container" },
+	        React.createElement(
+	          "div",
+	          { className: "details" },
+	          React.createElement(
+	            "a",
+	            { href: "users/" + comment.commenter.id },
+	            comment.commenter.username
+	          ),
+	          React.createElement(
+	            "span",
+	            null,
+	            " ",
+	            comment.points,
+	            " points : ",
+	            this.timeSince(comment.time_since),
+	            " ago"
+	          )
+	        ),
+	        React.createElement(
+	          "div",
+	          { className: "body" },
+	          comment.body
+	        )
+	      )
 	    );
 	  }
 	});

@@ -34,7 +34,9 @@ const PostShow = React.createClass({
           <PostDetail post={ this.state.post } />
         </div>
         <div className="post-show-right">
-          <PostIndex className="post-show-post-index-container" />
+          <div className="post-show-right-scroll-container">            
+            <PostIndex className="post-show-post-index-container" />
+          </div>
         </div>
       </div>
     )
