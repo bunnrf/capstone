@@ -14,16 +14,11 @@ const SessionStore = require('./stores/session_store');
 const PostIndex = require('./components/post_index');
 const PostShow = require('./components/post_show');
 const SessionActions = require('./actions/session_actions');
-const LoginForm = require('./components/login_form');
-const PostUploadForm = require('./components/post_upload_form');
 
 const appRouter = (
   <Router history={ hashHistory }>
     <Route path="/" component={ App }>
       <IndexRoute component={ PostIndex } />
-      <Route path="/login" component={ LoginForm } />
-      <Route path="/signup" component={ LoginForm } />
-      <Route path="/upload" component={ PostUploadForm } onEnter={ _ensureLoggedIn }/>
       <Route path="/posts/:postId" component={ PostShow } />
     </Route>
   </Router>

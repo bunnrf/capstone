@@ -55,12 +55,15 @@ a :hover {
   margin-right: auto;
 }
 
-.nav-left {
+.main-nav {
   width: 25%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .user-nav {
@@ -74,14 +77,14 @@ a :hover {
   list-style: none;
 }
 
-.user-nav li {
+.nav-container li {
   width: 30%;
   display: flex;
   align-items: center;
   height: 100%;
 }
 
-.user-nav li :hover {
+.nav-container li :hover {
   height: inherit;
   width: 100%;
   display: flex;
@@ -89,10 +92,11 @@ a :hover {
   background-color: #444442;
 }
 
-.user-nav a {
+.nav-container a {
   display: flex;
   justify-content: center;
   align-items: center;
+  cursor: pointer;
   margin: 0 auto;
   height: 100%;
   width: 100%;
@@ -105,6 +109,7 @@ a :hover {
 .ReactModal__Overlay.ReactModal__Overlay--after-open {
   display: flex;
   justify-content: center;
+  z-index: 100;
 }
 
 .ReactModal__Content.ReactModal__Content--after-open {
@@ -113,6 +118,7 @@ a :hover {
   margin-top: 100px;
   width: 360px;
   height: 300px;
+  z-index: 101;
 }
 
 input[type="text"], input[type="password"], textarea {
@@ -357,6 +363,14 @@ textarea {
   border-bottom: 1px solid #1f478c;
 }
 
+div .post-show-next :hover {
+  width: 110px;
+  background: #000;
+  border: 1px solid #4d8eff;
+  border-bottom: 1px solid #1f478c;
+}
+
+
 .post-show-prev {
   width: 32px;
   border: 1px solid #464646;
@@ -463,6 +477,7 @@ textarea {
   flex-wrap: wrap;
   background-color: inherit;
   width: 300px;
+  column-gap: 2px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -472,12 +487,12 @@ textarea {
   height: 141px;
   position: relative;
   overflow: hidden;
-  margin: 2px auto;
+  margin-bottom: 5px;
   border: 0;
 }
 
 .post-show-post-index-container .post :hover {
-  
+
 }
 
 .post-show-post-index-container .post img {

@@ -57,13 +57,11 @@
 	var Modal = __webpack_require__(230);
 	
 	var App = __webpack_require__(251);
-	var PostStore = __webpack_require__(282);
+	var PostStore = __webpack_require__(277);
 	var SessionStore = __webpack_require__(254);
-	var PostIndex = __webpack_require__(284);
-	var PostShow = __webpack_require__(288);
-	var SessionActions = __webpack_require__(277);
-	var LoginForm = __webpack_require__(294);
-	var PostUploadForm = __webpack_require__(296);
+	var PostIndex = __webpack_require__(279);
+	var PostShow = __webpack_require__(284);
+	var SessionActions = __webpack_require__(292);
 	
 	var appRouter = React.createElement(
 	  Router,
@@ -72,9 +70,6 @@
 	    Route,
 	    { path: '/', component: App },
 	    React.createElement(IndexRoute, { component: PostIndex }),
-	    React.createElement(Route, { path: '/login', component: LoginForm }),
-	    React.createElement(Route, { path: '/signup', component: LoginForm }),
-	    React.createElement(Route, { path: '/upload', component: PostUploadForm, onEnter: _ensureLoggedIn }),
 	    React.createElement(Route, { path: '/posts/:postId', component: PostShow })
 	  )
 	);
@@ -28177,7 +28172,6 @@
 	
 	var React = __webpack_require__(1);
 	var Topbar = __webpack_require__(252);
-	var SentenceSorting = __webpack_require__(281);
 	var SessionStore = __webpack_require__(254);
 	
 	var App = React.createClass({
@@ -28190,7 +28184,6 @@
 	      'div',
 	      null,
 	      React.createElement(Topbar, null),
-	      React.createElement(SentenceSorting, null),
 	      this.props.children
 	    );
 	  }
@@ -28204,13 +28197,121 @@
 
 	'use strict';
 	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
 	var React = __webpack_require__(1);
 	var UserNav = __webpack_require__(253);
-	var Link = __webpack_require__(168).Link;
+	var ImageUploadForm = __webpack_require__(299);
+	var PostActions = __webpack_require__(280);
+	var SessionStore = __webpack_require__(254);
+	var ErrorStore = __webpack_require__(297);
+	
+	var Modal = __webpack_require__(230);
 	
 	var Topbar = React.createClass({
 	  displayName: 'Topbar',
+	
+	  contextTypes: {
+	    router: React.PropTypes.object.isRequired
+	  },
+	
+	  getInitialState: function getInitialState() {
+	    return { title: "",
+	      images: [],
+	      uploadTrigger: false,
+	      modalOpen: false };
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
+	    this.setState({ images: [{ title: undefined, image_url: null, description: undefined, ordinal: 0 }] });
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.errorListener.remove();
+	  },
+	  handleSubmit: function handleSubmit(e) {
+	    this.setState({ uploadTrigger: true });
+	    console.log("submit");
+	    e.preventDefault();
+	    var post = {
+	      author_id: SessionStore.currentUser().id,
+	      title: this.state.title,
+	      description: this.state.description,
+	      images_attributes: this.state.images
+	    };
+	
+	    PostActions.createPost(post);
+	    this.closeModal();
+	  },
+	  fieldErrors: function fieldErrors(field) {
+	    var errors = ErrorStore.formErrors("post_upload");
+	
+	    if (!errors[field]) {
+	      return;
+	    }
+	
+	    var messages = errors[field].map(function (errorMsg, i) {
+	      return React.createElement(
+	        'li',
+	        { key: i },
+	        errorMsg
+	      );
+	    });
+	
+	    return React.createElement(
+	      'ul',
+	      null,
+	      messages
+	    );
+	  },
+	  openModal: function openModal() {
+	    this.setState({ modalOpen: true });
+	  },
+	
+	
+	  closeModal: function closeModal() {
+	    this.setState({ modalOpen: false });
+	  },
+	
+	  update: function update(property) {
+	    var _this = this;
+	
+	    return function (e) {
+	      return _this.setState(_defineProperty({}, property, e.target.value));
+	    };
+	  },
+	  updateImage: function updateImage(index, property, value) {
+	    var images = this.state.images;
+	    images[index][property] = value;
+	
+	    this.setState({ images: images });
+	  },
+	
+	
+	  addImageUploadForm: function addImageUploadForm() {
+	    this.setState({ images: this.state.images.concat({ title: undefined, image_url: null, description: undefined, ordinal: this.state.images.length }) });
+	  },
+	
+	  customStyle: function customStyle() {
+	    return {
+	      overlay: {
+	        backgroundColor: 'rgba(0, 0, 0, 0.9)'
+	      },
+	      content: {
+	        position: 'absolute',
+	        border: 'none',
+	        background: '#2B2B2B',
+	        overflow: 'auto',
+	        WebkitOverflowScrolling: 'touch',
+	        borderRadius: '0px',
+	        outline: 'none',
+	        padding: '20px'
+	      }
+	    };
+	  },
+	
 	  render: function render() {
+	    var _this2 = this;
+	
 	    return React.createElement(
 	      'div',
 	      { id: 'topbar' },
@@ -28219,36 +28320,73 @@
 	        { className: 'nav-container' },
 	        React.createElement(
 	          'ul',
-	          { className: 'nav-left' },
+	          { className: 'main-nav' },
 	          React.createElement(
 	            'li',
 	            null,
 	            React.createElement(
-	              'h2',
-	              null,
-	              'Imagr'
+	              'div',
+	              { className: '' },
+	              'imagr'
 	            )
 	          ),
 	          React.createElement(
 	            'li',
 	            null,
 	            React.createElement(
-	              'h2',
-	              null,
-	              'DD'
+	              'div',
+	              { className: 'menu-icon' },
+	              'dd'
 	            )
 	          ),
 	          React.createElement(
 	            'li',
 	            null,
 	            React.createElement(
-	              Link,
-	              { to: '/upload', className: 'navigation-link' },
+	              'a',
+	              { className: 'upload-button', onClick: this.openModal },
 	              'upload images'
 	            )
 	          )
 	        ),
 	        React.createElement(UserNav, null)
+	      ),
+	      React.createElement(
+	        Modal,
+	        { className: 'upload-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
+	        React.createElement(
+	          'button',
+	          { className: 'close-modal', onClick: this.closeModal },
+	          'X'
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'post-upload-form-container' },
+	          React.createElement(
+	            'form',
+	            { onSubmit: this.handleSubmit, className: 'post-upload-form-box' },
+	            'Upload Images',
+	            this.fieldErrors("base"),
+	            React.createElement('input', { type: 'text', value: this.state.title, onChange: this.update("title"), placeholder: 'Post Title' }),
+	            React.createElement(
+	              'div',
+	              { className: 'post-upload-form' },
+	              this.state.images.map(function (image) {
+	                return React.createElement(ImageUploadForm, { key: image.ordinal,
+	                  title: image.title,
+	                  image_url: image.url,
+	                  description: image.description,
+	                  updateState: _this2.updateImage,
+	                  ordinal: image.ordinal });
+	              }),
+	              React.createElement('input', { type: 'button', className: 'add-image-button', onClick: this.addImageUploadForm, value: 'Add Image' }),
+	              React.createElement('textarea', { value: this.state.description,
+	                onChange: this.update("description"),
+	                placeholder: 'Post Description(optional)' }),
+	              React.createElement('input', { type: 'submit', value: 'Submit' })
+	            )
+	          )
+	        )
 	      )
 	    );
 	  }
@@ -28262,14 +28400,179 @@
 
 	'use strict';
 	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
 	var React = __webpack_require__(1);
 	var Link = __webpack_require__(168).Link;
 	var SessionStore = __webpack_require__(254);
-	var SessionActions = __webpack_require__(277);
+	var SessionActions = __webpack_require__(292);
+	var ErrorStore = __webpack_require__(297);
+	
+	var Modal = __webpack_require__(230);
 	
 	var UserNav = React.createClass({
 	  displayName: 'UserNav',
+	
+	
+	  DEMO_USERNAME: "user1",
+	  DEMO_PASSWORD: "password",
+	
+	  demoLoginHandler: function demoLoginHandler(e) {
+	    e.preventDefault();
+	    this.setState({ username: "", password: "", mode: "login" });
+	    var _username = this.DEMO_USERNAME.split("").slice();
+	    this.fillDemoUsername(_username);
+	  },
+	
+	
+	  fillDemoUsername: function fillDemoUsername(_username) {
+	    var self = this;
+	    if (_username.length > 0) {
+	      setTimeout(function () {
+	        self.setState({
+	          username: self.state.username + _username.shift()
+	        });
+	
+	        self.fillDemoUsername(_username);
+	      }, 120);
+	    } else {
+	      var _password = this.DEMO_PASSWORD.split("").slice();
+	      this.fillDemoPassword(_password);
+	    }
+	  },
+	
+	  fillDemoPassword: function fillDemoPassword(_password) {
+	    var self = this;
+	    if (_password.length > 0) {
+	      setTimeout(function () {
+	        self.setState({
+	          password: self.state.password + _password.shift()
+	        });
+	        self.fillDemoPassword(_password);
+	      }, 120);
+	    } else {
+	      var e = { preventDefault: function preventDefault() {} };
+	      this.handleDemoSubmit(e);
+	    }
+	  },
+	
+	  handleDemoSubmit: function handleDemoSubmit(e) {
+	    e.preventDefault();
+	
+	    var formData = { username: this.state.username, password: this.state.password };
+	
+	    SessionActions.login(formData);
+	  },
+	
+	
+	  contextTypes: {
+	    router: React.PropTypes.object.isRequired
+	  },
+	
+	  getInitialState: function getInitialState() {
+	    return { username: "", password: "", mode: this.props.mode, modalOpen: false };
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
+	    this.sessionListener = SessionStore.addListener(this.redirectIfLoggedIn);
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.errorListener.remove();
+	    this.sessionListener.remove();
+	  },
+	  redirectIfLoggedIn: function redirectIfLoggedIn() {
+	    if (SessionStore.isUserLoggedIn()) {
+	      this.closeModal();
+	      this.context.router.push("/");
+	    }
+	  },
+	  handleSubmit: function handleSubmit(e) {
+	    e.preventDefault();
+	
+	    var formData = { username: this.state.username, password: this.state.password };
+	
+	    if (this.state.mode === "login") {
+	      SessionActions.login(formData);
+	    } else {
+	      SessionActions.signup(formData);
+	    }
+	  },
+	  fieldErrors: function fieldErrors(field) {
+	    var errors = ErrorStore.formErrors(this.state.mode);
+	
+	    if (!errors[field]) {
+	      return;
+	    }
+	
+	    var messages = errors[field].map(function (errorMsg, i) {
+	      return React.createElement(
+	        'li',
+	        { key: i },
+	        errorMsg
+	      );
+	    });
+	
+	    return React.createElement(
+	      'ul',
+	      null,
+	      messages
+	    );
+	  },
+	  update: function update(property) {
+	    var _this = this;
+	
+	    return function (e) {
+	      return _this.setState(_defineProperty({}, property, e.target.value));
+	    };
+	  },
+	
+	
+	  openLogin: function openLogin() {
+	    this.setState({ modalOpen: true, mode: "login" });
+	  },
+	
+	  openSignup: function openSignup() {
+	    this.setState({ modalOpen: true, mode: "sign up" });
+	  },
+	
+	  closeModal: function closeModal() {
+	    this.setState({ modalOpen: false });
+	  },
+	
+	  customStyle: function customStyle() {
+	    return {
+	      overlay: {
+	        backgroundColor: 'rgba(0, 0, 0, 0.9)'
+	      },
+	      content: {
+	        position: 'absolute',
+	        border: 'none',
+	        background: '#2B2B2B',
+	        overflow: 'auto',
+	        WebkitOverflowScrolling: 'touch',
+	        borderRadius: '0px',
+	        outline: 'none',
+	        padding: '20px'
+	      }
+	    };
+	  },
+	
 	  render: function render() {
+	    var navLink = void 0;
+	    if (this.state.mode === "login") {
+	      navLink = React.createElement(
+	        'a',
+	        { onClick: this.openSignup },
+	        'sign up instead'
+	      );
+	    } else {
+	      navLink = React.createElement(
+	        'a',
+	        { onClick: this.openLogin },
+	        'log in instead'
+	      );
+	    }
+	
 	    if (SessionStore.isUserLoggedIn()) {
 	      return React.createElement(
 	        'ul',
@@ -28284,7 +28587,11 @@
 	        React.createElement(
 	          'li',
 	          null,
-	          React.createElement('input', { className: 'header-button', type: 'submit', value: 'logout', onClick: SessionActions.logout })
+	          React.createElement(
+	            'a',
+	            { className: 'logout-button', onClick: SessionActions.logout },
+	            'logout'
+	          )
 	        )
 	      );
 	    } else {
@@ -28295,8 +28602,8 @@
 	          'li',
 	          { className: 'signin-link' },
 	          React.createElement(
-	            Link,
-	            { to: '/login', className: 'navigation-link' },
+	            'a',
+	            { onClick: this.openLogin, className: 'navigation-link' },
 	            'sign in'
 	          )
 	        ),
@@ -28304,9 +28611,58 @@
 	          'li',
 	          { className: 'signup-link' },
 	          React.createElement(
-	            Link,
-	            { to: '/signup', className: 'navigation-link' },
+	            'a',
+	            { onClick: this.openSignup, className: 'navigation-link' },
 	            'sign up'
+	          )
+	        ),
+	        React.createElement(
+	          Modal,
+	          { className: 'login-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
+	          React.createElement(
+	            'button',
+	            { className: 'close-modal', onClick: this.closeModal },
+	            'X'
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'login-form-container' },
+	            React.createElement(
+	              'form',
+	              { onSubmit: this.handleSubmit, className: 'login-form-box' },
+	              'Welcome!',
+	              React.createElement('br', null),
+	              'Please ',
+	              this.state.mode,
+	              ' or ',
+	              navLink,
+	              this.fieldErrors("base"),
+	              React.createElement(
+	                'div',
+	                { className: 'login-form' },
+	                React.createElement('br', null),
+	                this.fieldErrors("username"),
+	                React.createElement('input', { type: 'text',
+	                  value: this.state.username,
+	                  onChange: this.update("username"),
+	                  className: 'login-input-username',
+	                  placeholder: 'Username' }),
+	                React.createElement('br', null),
+	                this.fieldErrors("password"),
+	                React.createElement('input', { type: 'password',
+	                  value: this.state.password,
+	                  onChange: this.update("password"),
+	                  className: 'login-input-password',
+	                  placeholder: 'Password' }),
+	                React.createElement('br', null),
+	                React.createElement('input', { type: 'submit', value: 'Submit' })
+	              ),
+	              React.createElement(
+	                'div',
+	                { id: 'demo-login', className: 'modal-submit', onClick: this.demoLoginHandler },
+	                'Demo Login'
+	              )
+	            )
 	          )
 	        )
 	      );
@@ -35148,170 +35504,8 @@
 
 	'use strict';
 	
-	var SessionApiUtil = __webpack_require__(278);
-	var ErrorActions = __webpack_require__(279);
-	var dispatcher = __webpack_require__(255);
-	var SessionConstants = __webpack_require__(276);
-	var hashHistory = __webpack_require__(168).hashHistory;
-	
-	var SessionActions = {
-	  signup: function signup(user) {
-	    SessionApiUtil.signup(user, this.receiveCurrentUser, ErrorActions.setErrors);
-	  },
-	
-	  login: function login(user) {
-	    SessionApiUtil.login(user, this.receiveCurrentUser, ErrorActions.setErrors);
-	  },
-	
-	  logout: function logout() {
-	    SessionApiUtil.logout(SessionActions.removeCurrentUser);
-	  },
-	  fetchCurrentUser: function fetchCurrentUser(complete) {
-	    SessionApiUtil.fetchCurrentUser(SessionActions.receiveCurrentUser, complete);
-	  },
-	  receiveCurrentUser: function receiveCurrentUser(currentUser) {
-	    dispatcher.dispatch({
-	      actionType: SessionConstants.LOGIN,
-	      currentUser: currentUser
-	    });
-	  },
-	  removeCurrentUser: function removeCurrentUser() {
-	    dispatcher.dispatch({
-	      actionType: SessionConstants.LOGOUT
-	    });
-	    hashHistory.push("/");
-	  }
-	};
-	
-	module.exports = SessionActions;
-
-/***/ },
-/* 278 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var SessionApiUtil = {
-		login: function login(user, success, _error) {
-			$.ajax({
-				url: '/api/session',
-				type: 'POST',
-				data: { user: user },
-				success: success,
-				error: function error(xhr) {
-					var errors = xhr.responseJSON;
-					_error("login", errors);
-				}
-			});
-		},
-		logout: function logout(success) {
-			$.ajax({
-				url: '/api/session',
-				method: 'DELETE',
-				success: success,
-				error: function error() {
-					console.log("Logout error in SessionApiUtil#logout");
-				}
-			});
-		},
-		signup: function signup(user, success, _error2) {
-			$.ajax({
-				url: '/api/user',
-				type: 'POST',
-				dataType: 'json',
-				data: { user: user },
-				success: success,
-				error: function error(xhr) {
-					var errors = xhr.responseJSON;
-					_error2("signup", errors);
-				}
-			});
-		},
-		fetchCurrentUser: function fetchCurrentUser(success, _complete) {
-			$.ajax({
-				url: '/api/session',
-				method: 'GET',
-				success: success,
-				error: function error(xhr) {
-					console.log("Error in SessionApiUtil#fetchCurrentUser");
-				},
-				complete: function complete() {
-					_complete();
-				}
-			});
-		}
-	};
-	
-	module.exports = SessionApiUtil;
-
-/***/ },
-/* 279 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var dispatcher = __webpack_require__(255);
-	var ErrorConstants = __webpack_require__(280);
-	
-	var ErrorActions = {
-	  setErrors: function setErrors(form, errors) {
-	    dispatcher.dispatch({
-	      actionType: ErrorConstants.SET_ERRORS,
-	      form: form,
-	      errors: errors
-	    });
-	  },
-	  clearErrors: function clearErrors() {
-	    dispatcher.dispatch({
-	      actionType: ErrorConstants.CLEAR_ERRORS
-	    });
-	  }
-	};
-	
-	module.exports = ErrorActions;
-
-/***/ },
-/* 280 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var ErrorConstants = {
-	  SET_ERRORS: "SET_ERRORS",
-	  CLEAR_ERRORS: "CLEAR_ERRORS"
-	};
-	
-	module.exports = ErrorConstants;
-
-/***/ },
-/* 281 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var React = __webpack_require__(1);
-	
-	var SentenceSorting = React.createClass({
-	  displayName: "SentenceSorting",
-	  render: function render() {
-	    return React.createElement(
-	      "div",
-	      { className: "sentence-sorting" },
-	      "The Most Viral images on the internet, sorted by Popularity"
-	    );
-	  }
-	});
-	
-	module.exports = SentenceSorting;
-
-/***/ },
-/* 282 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
 	var Store = __webpack_require__(259).Store;
-	var PostConstants = __webpack_require__(283);
+	var PostConstants = __webpack_require__(278);
 	var dispatcher = __webpack_require__(255);
 	
 	var _posts = {};
@@ -35324,6 +35518,10 @@
 	
 	PostStore.find = function (postId) {
 	  return Object.assign({}, _posts[postId]);
+	};
+	
+	PostStore.indexOf = function (postId) {
+	  return Object.keys(_posts).indexOf(postId);
 	};
 	
 	PostStore.add = function (post) {};
@@ -35355,7 +35553,7 @@
 	module.exports = PostStore;
 
 /***/ },
-/* 283 */
+/* 278 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35368,20 +35566,21 @@
 	module.exports = PostConstants;
 
 /***/ },
-/* 284 */
+/* 279 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var PostStore = __webpack_require__(282);
-	var PostActions = __webpack_require__(285);
-	var PostIndexItem = __webpack_require__(287);
+	var PostStore = __webpack_require__(277);
+	var PostActions = __webpack_require__(280);
+	var PostIndexItem = __webpack_require__(282);
+	var SentenceSorting = __webpack_require__(283);
 	
 	var PostIndex = React.createClass({
 	  displayName: 'PostIndex',
 	  getInitialState: function getInitialState() {
-	    return { posts: PostStore.all() };
+	    return { posts: PostStore.all(), activePostIndex: this.props.activePostIndex };
 	  },
 	  _onChange: function _onChange() {
 	    this.setState({ posts: PostStore.all() });
@@ -35393,30 +35592,60 @@
 	  componentWillUnmount: function componentWillUnmount() {
 	    this.postsListener.remove();
 	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {},
 	  render: function render() {
 	    // debugger
 	    var posts = this.state.posts;
 	    var keys = Object.keys(posts);
-	    return React.createElement(
-	      'div',
-	      { className: this.props.className || "post-index-container" },
-	      keys.map(function (key) {
-	        return React.createElement(PostIndexItem, { key: key, post: posts[key] });
-	      })
-	    );
+	
+	    if (this.props.className) {
+	      return React.createElement(
+	        'div',
+	        { className: 'post-show-right' },
+	        React.createElement(
+	          'div',
+	          { className: 'post-show-post-index-header' },
+	          'header'
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'post-show-right-scroll-container' },
+	          React.createElement(
+	            'div',
+	            { className: this.props.className },
+	            keys.map(function (key) {
+	              return React.createElement(PostIndexItem, { key: key, post: posts[key] });
+	            })
+	          )
+	        )
+	      );
+	    } else {
+	      return React.createElement(
+	        'div',
+	        { className: 'post-index-content' },
+	        React.createElement(SentenceSorting, null),
+	        React.createElement(
+	          'div',
+	          { className: "post-index-container" },
+	          keys.map(function (key) {
+	            return React.createElement(PostIndexItem, { key: key, post: posts[key] });
+	          })
+	        )
+	      );
+	    }
 	  }
 	});
 	
 	module.exports = PostIndex;
 
 /***/ },
-/* 285 */
+/* 280 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var PostConstants = __webpack_require__(283);
-	var PostApiUtil = __webpack_require__(286);
+	var PostConstants = __webpack_require__(278);
+	var PostApiUtil = __webpack_require__(281);
 	var dispatcher = __webpack_require__(255);
 	
 	var PostActions = {
@@ -35455,7 +35684,7 @@
 	module.exports = PostActions;
 
 /***/ },
-/* 286 */
+/* 281 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35505,7 +35734,7 @@
 	module.exports = PostApiUtil;
 
 /***/ },
-/* 287 */
+/* 282 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35516,8 +35745,7 @@
 	var PostIndexItem = React.createClass({
 	  displayName: 'PostIndexItem',
 	  handleClick: function handleClick() {
-	    var postId = this.props.post.id;
-	    hashHistory.push("posts/" + postId);
+	    hashHistory.push("posts/" + this.props.post.id);
 	  },
 	  render: function render() {
 	    var post = this.props.post;
@@ -35532,25 +35760,62 @@
 	module.exports = PostIndexItem;
 
 /***/ },
-/* 288 */
+/* 283 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var React = __webpack_require__(1);
+	
+	var SentenceSorting = React.createClass({
+	  displayName: "SentenceSorting",
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      { className: "sentence-sorting" },
+	      "The Most Viral images on the internet, sorted by Popularity"
+	    );
+	  }
+	});
+	
+	module.exports = SentenceSorting;
+
+/***/ },
+/* 284 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var PostStore = __webpack_require__(282);
-	var PostActions = __webpack_require__(285);
-	var PostIndex = __webpack_require__(284);
-	var PostDetail = __webpack_require__(289);
+	var PostStore = __webpack_require__(277);
+	var PostActions = __webpack_require__(280);
+	var PostIndex = __webpack_require__(279);
+	var PostDetail = __webpack_require__(285);
+	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var PostShow = React.createClass({
 	  displayName: 'PostShow',
 	  getInitialState: function getInitialState() {
-	    return { post: PostStore.find(this.props.params.postId) };
+	    var postId = this.props.params.postId;
+	    return { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) };
 	  },
 	  componentDidMount: function componentDidMount() {
-	    this.PostListener = PostStore.addListener(this._onChange);
+	    var _this = this;
+	
 	    PostActions.fetchSinglePost(this.props.params.postId);
+	    this.PostListener = PostStore.addListener(this._onChange);
+	    this.keyListener = window.addEventListener("keydown", function (event) {
+	      switch (event.keyCode) {
+	        case 37:
+	          event.preventDefault();
+	          _this.prevPost();
+	          break;
+	        case 39:
+	          event.preventDefault();
+	          _this.nextPost();
+	          break;
+	      }
+	    });
 	  },
 	  _onChange: function _onChange() {
 	    this.setState({ post: PostStore.find(this.props.params.postId) });
@@ -35561,6 +35826,21 @@
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
 	    this.PostListener.remove();
+	    this.keyListener.remove();
+	  },
+	  prevPost: function prevPost() {
+	    if (this.state.activePostIndex > 0) {
+	      var posts = PostStore.all();
+	      var index = this.state.activePostIndex;
+	      this.setState({ activePostIndex: index - 1 });
+	      hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index - 1]).id);
+	    }
+	  },
+	  nextPost: function nextPost() {
+	    var posts = PostStore.all();
+	    var index = this.state.activePostIndex;
+	    this.setState({ activePostIndex: index + 1 });
+	    hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index + 1]).id);
 	  },
 	  render: function render() {
 	    return React.createElement(
@@ -35569,18 +35849,9 @@
 	      React.createElement(
 	        'div',
 	        { className: 'post-show-left' },
-	        React.createElement(PostDetail, { post: this.state.post })
+	        React.createElement(PostDetail, { post: this.state.post, prevPost: this.prevPost, nextPost: this.nextPost })
 	      ),
-	      React.createElement(
-	        'div',
-	        { className: 'post-show-right' },
-	        React.createElement('div', { className: 'post-show-post-index-header' }),
-	        React.createElement(
-	          'div',
-	          { className: 'post-show-right-scroll-container' },
-	          React.createElement(PostIndex, { className: 'post-show-post-index-container' })
-	        )
-	      )
+	      React.createElement(PostIndex, { className: 'post-show-post-index-container', postIndex: this.state.activePostIndex })
 	    );
 	  }
 	});
@@ -35588,18 +35859,18 @@
 	module.exports = PostShow;
 
 /***/ },
-/* 289 */
+/* 285 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var ImageDetail = __webpack_require__(290);
-	var CommentDetail = __webpack_require__(293);
-	var CommentCreate = __webpack_require__(299);
-	var PostActions = __webpack_require__(285);
-	var PostStore = __webpack_require__(282);
-	var TimeUtil = __webpack_require__(300);
+	var ImageDetail = __webpack_require__(286);
+	var CommentDetail = __webpack_require__(289);
+	var CommentCreate = __webpack_require__(291);
+	var PostActions = __webpack_require__(280);
+	var PostStore = __webpack_require__(277);
+	var TimeUtil = __webpack_require__(290);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
@@ -35607,10 +35878,10 @@
 	    return { headerClass: "post-header" };
 	  },
 	  stickyScroll: function stickyScroll(e) {
-	    if (window.pageYOffset >= 144) {
+	    if (window.pageYOffset > 69) {
 	      this.setState({ headerClass: "post-header-fixed" });
 	    }
-	    if (window.pageYOffset < 144) {
+	    if (window.pageYOffset < 69) {
 	      this.setState({ headerClass: "post-header" });
 	    }
 	  },
@@ -35700,12 +35971,12 @@
 	            { className: 'post-nav' },
 	            React.createElement(
 	              'div',
-	              { className: 'post-show-prev', onClick: this.nextPost },
+	              { className: 'post-show-prev', onClick: this.props.prevPost },
 	              "<"
 	            ),
 	            React.createElement(
 	              'div',
-	              { className: 'post-show-next', onClick: this.nextPost },
+	              { className: 'post-show-next', onClick: this.props.nextPost },
 	              "Next Post >"
 	            )
 	          )
@@ -35730,14 +36001,14 @@
 	module.exports = PostDetail;
 
 /***/ },
-/* 290 */
+/* 286 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var ImageDetailHeader = __webpack_require__(291);
-	var ImageDetailDescription = __webpack_require__(292);
+	var ImageDetailHeader = __webpack_require__(287);
+	var ImageDetailDescription = __webpack_require__(288);
 	
 	var ImageDetail = React.createClass({
 	  displayName: 'ImageDetail',
@@ -35760,7 +36031,7 @@
 	module.exports = ImageDetail;
 
 /***/ },
-/* 291 */
+/* 287 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35785,7 +36056,7 @@
 	module.exports = ImageDetailHeader;
 
 /***/ },
-/* 292 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35810,13 +36081,13 @@
 	module.exports = ImageDetailDescription;
 
 /***/ },
-/* 293 */
+/* 289 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var TimeUtil = __webpack_require__(300);
+	var TimeUtil = __webpack_require__(290);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
@@ -35859,548 +36130,51 @@
 	module.exports = CommentDetail;
 
 /***/ },
-/* 294 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	var React = __webpack_require__(1);
-	var Link = __webpack_require__(168).Link;
-	var SessionActions = __webpack_require__(277);
-	var SessionStore = __webpack_require__(254);
-	var ErrorStore = __webpack_require__(295);
-	
-	var Modal = __webpack_require__(230);
-	
-	var LoginForm = React.createClass({
-		displayName: 'LoginForm',
-	
-	
-		DEMO_USERNAME: "user1",
-		DEMO_PASSWORD: "password",
-	
-		demoLoginHandler: function demoLoginHandler(e) {
-			e.preventDefault();
-			this.setState({ username: "", password: "", formType: "login" });
-			var _username = this.DEMO_USERNAME.split("").slice();
-			this.fillDemoUsername(_username);
-		},
-	
-	
-		fillDemoUsername: function fillDemoUsername(_username) {
-			var self = this;
-			if (_username.length > 0) {
-				setTimeout(function () {
-					self.setState({
-						username: self.state.username + _username.shift()
-					});
-	
-					self.fillDemoUsername(_username);
-				}, 120);
-			} else {
-				var _password = this.DEMO_PASSWORD.split("").slice();
-				this.fillDemoPassword(_password);
-			}
-		},
-	
-		fillDemoPassword: function fillDemoPassword(_password) {
-			var self = this;
-			if (_password.length > 0) {
-				setTimeout(function () {
-					self.setState({
-						password: self.state.password + _password.shift()
-					});
-					self.fillDemoPassword(_password);
-				}, 120);
-			} else {
-				var e = { preventDefault: function preventDefault() {} };
-				this.handleDemoSubmit(e);
-			}
-		},
-	
-		handleDemoSubmit: function handleDemoSubmit(e) {
-			e.preventDefault();
-	
-			var formData = { username: this.state.username, password: this.state.password };
-	
-			SessionActions.login(formData);
-		},
-	
-	
-		contextTypes: {
-			router: React.PropTypes.object.isRequired
-		},
-	
-		getInitialState: function getInitialState() {
-			return { username: "", password: "", modalOpen: true };
-		},
-		componentDidMount: function componentDidMount() {
-			this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
-			this.sessionListener = SessionStore.addListener(this.redirectIfLoggedIn);
-		},
-		componentWillUnmount: function componentWillUnmount() {
-			this.errorListener.remove();
-			this.sessionListener.remove();
-		},
-		redirectIfLoggedIn: function redirectIfLoggedIn() {
-			if (SessionStore.isUserLoggedIn()) {
-				this.closeModal();
-				this.context.router.push("/");
-			}
-		},
-		handleSubmit: function handleSubmit(e) {
-			e.preventDefault();
-	
-			var formData = { username: this.state.username, password: this.state.password };
-	
-			if (this.props.location.pathname === "/login") {
-				SessionActions.login(formData);
-			} else {
-				SessionActions.signup(formData);
-			}
-		},
-		fieldErrors: function fieldErrors(field) {
-			var errors = ErrorStore.formErrors(this.formType());
-	
-			if (!errors[field]) {
-				return;
-			}
-	
-			var messages = errors[field].map(function (errorMsg, i) {
-				return React.createElement(
-					'li',
-					{ key: i },
-					errorMsg
-				);
-			});
-	
-			return React.createElement(
-				'ul',
-				null,
-				messages
-			);
-		},
-		formType: function formType() {
-			return this.props.location.pathname.slice(1);
-		},
-		update: function update(property) {
-			var _this = this;
-	
-			return function (e) {
-				return _this.setState(_defineProperty({}, property, e.target.value));
-			};
-		},
-	
-	
-		closeModal: function closeModal() {
-			this.setState({ modalOpen: false });
-			this.context.router.push("/");
-		},
-	
-		customStyle: function customStyle() {
-			return {
-				overlay: {
-					backgroundColor: 'rgba(0, 0, 0, 0.9)'
-				},
-				content: {
-					position: 'absolute',
-					border: 'none',
-					background: '#2B2B2B',
-					overflow: 'auto',
-					WebkitOverflowScrolling: 'touch',
-					borderRadius: '0px',
-					outline: 'none',
-					padding: '20px'
-				}
-			};
-		},
-	
-		render: function render() {
-			var navLink = void 0;
-			if (this.formType() === "login") {
-				navLink = React.createElement(
-					Link,
-					{ to: '/signup' },
-					'sign up instead'
-				);
-			} else {
-				navLink = React.createElement(
-					Link,
-					{ to: '/login' },
-					'log in instead'
-				);
-			}
-	
-			return React.createElement(
-				Modal,
-				{ className: 'login-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
-				React.createElement(
-					'button',
-					{ className: 'close-modal', onClick: this.closeModal },
-					'X'
-				),
-				React.createElement(
-					'div',
-					{ className: 'login-form-container' },
-					React.createElement(
-						'form',
-						{ onSubmit: this.handleSubmit, className: 'login-form-box' },
-						'Welcome!',
-						React.createElement('br', null),
-						'Please ',
-						this.formType(),
-						' or ',
-						navLink,
-						this.fieldErrors("base"),
-						React.createElement(
-							'div',
-							{ className: 'login-form' },
-							React.createElement('br', null),
-							this.fieldErrors("username"),
-							React.createElement('input', { type: 'text',
-								value: this.state.username,
-								onChange: this.update("username"),
-								className: 'login-input-username',
-								placeholder: 'Username' }),
-							React.createElement('br', null),
-							this.fieldErrors("password"),
-							React.createElement('input', { type: 'password',
-								value: this.state.password,
-								onChange: this.update("password"),
-								className: 'login-input-password',
-								placeholder: 'Password' }),
-							React.createElement('br', null),
-							React.createElement('input', { type: 'submit', value: 'Submit' })
-						),
-						React.createElement(
-							'div',
-							{ id: 'demo-login', className: 'modal-submit', onClick: this.demoLoginHandler },
-							'Demo Login'
-						)
-					)
-				)
-			);
-		}
-	});
-	
-	module.exports = LoginForm;
-
-/***/ },
-/* 295 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var Store = __webpack_require__(259).Store;
-	var dispatcher = __webpack_require__(255);
-	var ErrorConstants = __webpack_require__(280);
-	
-	var ErrorStore = new Store(dispatcher);
-	
-	var _errors = {};
-	var _form = "";
-	
-	function setErrors(payload) {
-	  _errors = payload.errors;
-	  _form = payload.form;
-	  ErrorStore.__emitChange();
-	}
-	
-	function clearErrors() {
-	  _errors = {};
-	  _form = "";
-	  ErrorStore.__emitChange();
-	}
-	
-	ErrorStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case ErrorConstants.SET_ERRORS:
-	      setErrors(payload);
-	      break;
-	    case ErrorConstants.CLEAR_ERRORS:
-	      clearErrors();
-	      break;
-	  }
-	};
-	
-	ErrorStore.formErrors = function (form) {
-	  if (form !== _form) {
-	    return {};
-	  }
-	
-	  // copies the _errors object into a new object
-	  var result = {};
-	  for (var field in _errors) {
-	    result[field] = Array.from(_errors[field]);
-	  }
-	
-	  return result;
-	};
-	
-	ErrorStore.form = function () {
-	  return _form;
-	};
-	
-	module.exports = ErrorStore;
-
-/***/ },
-/* 296 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	var React = __webpack_require__(1);
-	var ImageUploadForm = __webpack_require__(297);
-	var PostActions = __webpack_require__(285);
-	var SessionStore = __webpack_require__(254);
-	var ErrorStore = __webpack_require__(295);
-	
-	var Modal = __webpack_require__(230);
-	
-	var PostUploadForm = React.createClass({
-		displayName: 'PostUploadForm',
-	
-		contextTypes: {
-			router: React.PropTypes.object.isRequired
-		},
-	
-		getInitialState: function getInitialState() {
-			return { title: "",
-				images: [],
-				uploadTrigger: false,
-				modalOpen: true };
-		},
-		componentDidMount: function componentDidMount() {
-			this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
-			this.setState({ images: [{ title: undefined, image_url: null, description: undefined, ordinal: 0 }] });
-		},
-		componentWillUnmount: function componentWillUnmount() {
-			this.errorListener.remove();
-		},
-		handleSubmit: function handleSubmit(e) {
-			this.setState({ uploadTrigger: true });
-			console.log("submit");
-			e.preventDefault();
-			var post = {
-				author_id: SessionStore.currentUser().id,
-				title: this.state.title,
-				description: this.state.description,
-				images_attributes: this.state.images
-			};
-	
-			PostActions.createPost(post);
-			this.closeModal();
-		},
-		fieldErrors: function fieldErrors(field) {
-			var errors = ErrorStore.formErrors("post_upload");
-	
-			if (!errors[field]) {
-				return;
-			}
-	
-			var messages = errors[field].map(function (errorMsg, i) {
-				return React.createElement(
-					'li',
-					{ key: i },
-					errorMsg
-				);
-			});
-	
-			return React.createElement(
-				'ul',
-				null,
-				messages
-			);
-		},
-	
-	
-		closeModal: function closeModal() {
-			this.setState({ modalOpen: false });
-			this.context.router.push("/");
-		},
-	
-		update: function update(property) {
-			var _this = this;
-	
-			return function (e) {
-				return _this.setState(_defineProperty({}, property, e.target.value));
-			};
-		},
-		updateImage: function updateImage(index, property, value) {
-			var images = this.state.images;
-			images[index][property] = value;
-	
-			this.setState({ images: images });
-		},
-	
-	
-		addImageUploadForm: function addImageUploadForm() {
-			this.setState({ images: this.state.images.concat({ title: undefined, image_url: null, description: undefined, ordinal: this.state.images.length }) });
-		},
-	
-		customStyle: function customStyle() {
-			return {
-				overlay: {
-					backgroundColor: 'rgba(0, 0, 0, 0.9)'
-				},
-				content: {
-					position: 'absolute',
-					border: 'none',
-					background: '#2B2B2B',
-					overflow: 'auto',
-					WebkitOverflowScrolling: 'touch',
-					borderRadius: '0px',
-					outline: 'none',
-					padding: '20px'
-				}
-			};
-		},
-	
-		render: function render() {
-			var _this2 = this;
-	
-			return React.createElement(
-				Modal,
-				{ className: 'upload-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
-				React.createElement(
-					'button',
-					{ className: 'close-modal', onClick: this.closeModal },
-					'X'
-				),
-				React.createElement(
-					'div',
-					{ className: 'post-upload-form-container' },
-					React.createElement(
-						'form',
-						{ onSubmit: this.handleSubmit, className: 'post-upload-form-box' },
-						'Upload Images',
-						this.fieldErrors("base"),
-						React.createElement('input', { type: 'text', value: this.state.title, onChange: this.update("title"), placeholder: 'Post Title' }),
-						React.createElement(
-							'div',
-							{ className: 'post-upload-form' },
-							this.state.images.map(function (image) {
-								return React.createElement(ImageUploadForm, { key: image.ordinal,
-									title: image.title,
-									image_url: image.url,
-									description: image.description,
-									updateState: _this2.updateImage,
-									ordinal: image.ordinal });
-							}),
-							React.createElement('input', { type: 'button', className: 'add-image-button', onClick: this.addImageUploadForm, value: 'Add Image' }),
-							React.createElement('textarea', { value: this.state.description,
-								onChange: this.update("description"),
-								placeholder: 'Post Description(optional)' }),
-							React.createElement('input', { type: 'submit', value: 'Submit' })
-						)
-					)
-				)
-			);
-		}
-	});
-	
-	module.exports = PostUploadForm;
-
-/***/ },
-/* 297 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	var React = __webpack_require__(1);
-	var ImageUploadButton = __webpack_require__(298);
-	
-	var ImageUploadForm = React.createClass({
-	  displayName: 'ImageUploadForm',
-	
-	  getInitialState: function getInitialState() {
-	    return { image_url: this.props.image_url };
-	  },
-	
-	  handleUpload: function handleUpload(results) {
-	    this.props.updateState(this.props.ordinal, "image_url", results.url);
-	    this.setState({ image_url: results.url });
-	  },
-	
-	  update: function update(property) {
-	    var _this = this;
-	
-	    return function (e) {
-	      _this.props.updateState(_this.props.ordinal, property, e.target.value);
-	      _this.setState(_defineProperty({}, property, e.target.value));
-	    };
-	  },
-	
-	
-	  render: function render() {
-	    var imageOption = void 0;
-	
-	    if (this.state.image_url) {
-	      imageOption = React.createElement('img', { src: this.state.image_url });
-	    } else {
-	      imageOption = React.createElement(ImageUploadButton, { postImage: this.handleUpload });
-	    }
-	
-	    return React.createElement(
-	      'div',
-	      { className: 'image-upload-container' },
-	      React.createElement('input', { type: 'text', value: this.props.title, onChange: this.update("title"), placeholder: 'Caption(optional)' }),
-	      imageOption,
-	      React.createElement('textarea', { value: this.props.description, onChange: this.update("description"), placeholder: 'Description(optional)' })
-	    );
-	  }
-	});
-	
-	module.exports = ImageUploadForm;
-
-/***/ },
-/* 298 */
-/***/ function(module, exports, __webpack_require__) {
+/* 290 */
+/***/ function(module, exports) {
 
 	"use strict";
 	
-	var React = __webpack_require__(1);
+	var TimeUtil = {
+	    timeSince: function timeSince(time_since) {
+	        var seconds = Math.floor((new Date() - time_since) / 1000);
 	
-	var UploadImageButton = React.createClass({
-	  displayName: "UploadImageButton",
+	        var interval = Math.floor(seconds / 31536000);
 	
-	  upload: function upload(e) {
-	    var _this = this;
+	        if (interval > 1) {
+	            return interval + " years ago";
+	        }
+	        interval = Math.floor(seconds / 2592000);
+	        if (interval > 1) {
+	            return interval + " months ago";
+	        }
+	        interval = Math.floor(seconds / 86400);
+	        if (interval > 1) {
+	            return interval + " days ago";
+	        }
+	        interval = Math.floor(seconds / 3600);
+	        if (interval > 1) {
+	            return interval + " hours ago";
+	        }
+	        interval = Math.floor(seconds / 60);
+	        if (interval > 1) {
+	            return interval + " minutes ago";
+	        }
+	        return Math.floor(seconds) + " seconds ago";
+	    }
+	};
 	
-	    e.preventDefault();
-	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
-	      if (!error) {
-	        _this.props.postImage(results[0]);
-	      }
-	    });
-	  },
-	
-	  render: function render() {
-	    return React.createElement(
-	      "button",
-	      { className: "upload-button", onClick: this.upload },
-	      "Upload Image(s)"
-	    );
-	  }
-	});
-	
-	module.exports = UploadImageButton;
+	module.exports = TimeUtil;
 
 /***/ },
-/* 299 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
 	var SessionStore = __webpack_require__(254);
-	var PostActions = __webpack_require__(285);
+	var PostActions = __webpack_require__(280);
 	
 	var CommentCreate = React.createClass({
 	  displayName: 'CommentCreate',
@@ -36451,41 +36225,292 @@
 	module.exports = CommentCreate;
 
 /***/ },
-/* 300 */
+/* 292 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var SessionApiUtil = __webpack_require__(293);
+	var ErrorActions = __webpack_require__(294);
+	var dispatcher = __webpack_require__(255);
+	var SessionConstants = __webpack_require__(276);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	
+	var SessionActions = {
+	  signup: function signup(user) {
+	    SessionApiUtil.signup(user, this.receiveCurrentUser, ErrorActions.setErrors);
+	  },
+	
+	  login: function login(user) {
+	    SessionApiUtil.login(user, this.receiveCurrentUser, ErrorActions.setErrors);
+	  },
+	
+	  logout: function logout() {
+	    SessionApiUtil.logout(SessionActions.removeCurrentUser);
+	  },
+	  fetchCurrentUser: function fetchCurrentUser(complete) {
+	    SessionApiUtil.fetchCurrentUser(SessionActions.receiveCurrentUser, complete);
+	  },
+	  receiveCurrentUser: function receiveCurrentUser(currentUser) {
+	    dispatcher.dispatch({
+	      actionType: SessionConstants.LOGIN,
+	      currentUser: currentUser
+	    });
+	  },
+	  removeCurrentUser: function removeCurrentUser() {
+	    dispatcher.dispatch({
+	      actionType: SessionConstants.LOGOUT
+	    });
+	    hashHistory.push("/");
+	  }
+	};
+	
+	module.exports = SessionActions;
+
+/***/ },
+/* 293 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var SessionApiUtil = {
+		login: function login(user, success, _error) {
+			$.ajax({
+				url: '/api/session',
+				type: 'POST',
+				data: { user: user },
+				success: success,
+				error: function error(xhr) {
+					var errors = xhr.responseJSON;
+					_error("login", errors);
+				}
+			});
+		},
+		logout: function logout(success) {
+			$.ajax({
+				url: '/api/session',
+				method: 'DELETE',
+				success: success,
+				error: function error() {
+					console.log("Logout error in SessionApiUtil#logout");
+				}
+			});
+		},
+		signup: function signup(user, success, _error2) {
+			$.ajax({
+				url: '/api/user',
+				type: 'POST',
+				dataType: 'json',
+				data: { user: user },
+				success: success,
+				error: function error(xhr) {
+					var errors = xhr.responseJSON;
+					_error2("signup", errors);
+				}
+			});
+		},
+		fetchCurrentUser: function fetchCurrentUser(success, _complete) {
+			$.ajax({
+				url: '/api/session',
+				method: 'GET',
+				success: success,
+				error: function error(xhr) {
+					console.log("Error in SessionApiUtil#fetchCurrentUser");
+				},
+				complete: function complete() {
+					_complete();
+				}
+			});
+		}
+	};
+	
+	module.exports = SessionApiUtil;
+
+/***/ },
+/* 294 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var dispatcher = __webpack_require__(255);
+	var ErrorConstants = __webpack_require__(295);
+	
+	var ErrorActions = {
+	  setErrors: function setErrors(form, errors) {
+	    dispatcher.dispatch({
+	      actionType: ErrorConstants.SET_ERRORS,
+	      form: form,
+	      errors: errors
+	    });
+	  },
+	  clearErrors: function clearErrors() {
+	    dispatcher.dispatch({
+	      actionType: ErrorConstants.CLEAR_ERRORS
+	    });
+	  }
+	};
+	
+	module.exports = ErrorActions;
+
+/***/ },
+/* 295 */
 /***/ function(module, exports) {
 
 	"use strict";
 	
-	var TimeUtil = {
-	    timeSince: function timeSince(time_since) {
-	        var seconds = Math.floor((new Date() - time_since) / 1000);
-	
-	        var interval = Math.floor(seconds / 31536000);
-	
-	        if (interval > 1) {
-	            return interval + " years ago";
-	        }
-	        interval = Math.floor(seconds / 2592000);
-	        if (interval > 1) {
-	            return interval + " months ago";
-	        }
-	        interval = Math.floor(seconds / 86400);
-	        if (interval > 1) {
-	            return interval + " days ago";
-	        }
-	        interval = Math.floor(seconds / 3600);
-	        if (interval > 1) {
-	            return interval + " hours ago";
-	        }
-	        interval = Math.floor(seconds / 60);
-	        if (interval > 1) {
-	            return interval + " minutes ago";
-	        }
-	        return Math.floor(seconds) + " seconds ago";
-	    }
+	var ErrorConstants = {
+	  SET_ERRORS: "SET_ERRORS",
+	  CLEAR_ERRORS: "CLEAR_ERRORS"
 	};
 	
-	module.exports = TimeUtil;
+	module.exports = ErrorConstants;
+
+/***/ },
+/* 296 */,
+/* 297 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Store = __webpack_require__(259).Store;
+	var dispatcher = __webpack_require__(255);
+	var ErrorConstants = __webpack_require__(295);
+	
+	var ErrorStore = new Store(dispatcher);
+	
+	var _errors = {};
+	var _form = "";
+	
+	function setErrors(payload) {
+	  _errors = payload.errors;
+	  _form = payload.form;
+	  ErrorStore.__emitChange();
+	}
+	
+	function clearErrors() {
+	  _errors = {};
+	  _form = "";
+	  ErrorStore.__emitChange();
+	}
+	
+	ErrorStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case ErrorConstants.SET_ERRORS:
+	      setErrors(payload);
+	      break;
+	    case ErrorConstants.CLEAR_ERRORS:
+	      clearErrors();
+	      break;
+	  }
+	};
+	
+	ErrorStore.formErrors = function (form) {
+	  if (form !== _form) {
+	    return {};
+	  }
+	
+	  // copies the _errors object into a new object
+	  var result = {};
+	  for (var field in _errors) {
+	    result[field] = Array.from(_errors[field]);
+	  }
+	
+	  return result;
+	};
+	
+	ErrorStore.form = function () {
+	  return _form;
+	};
+	
+	module.exports = ErrorStore;
+
+/***/ },
+/* 298 */,
+/* 299 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var React = __webpack_require__(1);
+	var ImageUploadButton = __webpack_require__(300);
+	
+	var ImageUploadForm = React.createClass({
+	  displayName: 'ImageUploadForm',
+	
+	  getInitialState: function getInitialState() {
+	    return { image_url: this.props.image_url };
+	  },
+	
+	  handleUpload: function handleUpload(results) {
+	    this.props.updateState(this.props.ordinal, "image_url", results.url);
+	    this.setState({ image_url: results.url });
+	  },
+	
+	  update: function update(property) {
+	    var _this = this;
+	
+	    return function (e) {
+	      _this.props.updateState(_this.props.ordinal, property, e.target.value);
+	      _this.setState(_defineProperty({}, property, e.target.value));
+	    };
+	  },
+	
+	
+	  render: function render() {
+	    var imageOption = void 0;
+	
+	    if (this.state.image_url) {
+	      imageOption = React.createElement('img', { src: this.state.image_url });
+	    } else {
+	      imageOption = React.createElement(ImageUploadButton, { postImage: this.handleUpload });
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      { className: 'image-upload-container' },
+	      React.createElement('input', { type: 'text', value: this.props.title, onChange: this.update("title"), placeholder: 'Caption(optional)' }),
+	      imageOption,
+	      React.createElement('textarea', { value: this.props.description, onChange: this.update("description"), placeholder: 'Description(optional)' })
+	    );
+	  }
+	});
+	
+	module.exports = ImageUploadForm;
+
+/***/ },
+/* 300 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var React = __webpack_require__(1);
+	
+	var UploadImageButton = React.createClass({
+	  displayName: "UploadImageButton",
+	
+	  upload: function upload(e) {
+	    var _this = this;
+	
+	    e.preventDefault();
+	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
+	      if (!error) {
+	        _this.props.postImage(results[0]);
+	      }
+	    });
+	  },
+	
+	  render: function render() {
+	    return React.createElement(
+	      "button",
+	      { className: "upload-button", onClick: this.upload },
+	      "Upload Image(s)"
+	    );
+	  }
+	});
+	
+	module.exports = UploadImageButton;
 
 /***/ }
 /******/ ]);

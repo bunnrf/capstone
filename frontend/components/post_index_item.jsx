@@ -3,8 +3,7 @@ const hashHistory = require('react-router').hashHistory;
 
 const PostIndexItem = React.createClass({
   handleClick(){
-    const postId = this.props.post.id;
-    hashHistory.push("posts/" + postId);
+    hashHistory.push("posts/" + this.props.post.id);
   },
 
   render(){

@@ -12,10 +12,10 @@ const PostDetail = React.createClass({
   },
 
   stickyScroll(e) {
-    if( window.pageYOffset >= 144) {
+    if( window.pageYOffset > 69) {
       this.setState( { headerClass: "post-header-fixed" } );
     }
-    if( window.pageYOffset < 144) {
+    if( window.pageYOffset < 69) {
       this.setState( { headerClass: "post-header" } );
     }
   },
@@ -71,8 +71,8 @@ const PostDetail = React.createClass({
               {authorData}
             </div>
             <div className="post-nav">
-              <div className="post-show-prev" onClick={this.nextPost}>{ "<" }</div>
-              <div className="post-show-next" onClick={this.nextPost}>{ "Next Post >" }</div>
+              <div className="post-show-prev" onClick={this.props.prevPost}>{ "<" }</div>
+              <div className="post-show-next" onClick={this.props.nextPost}>{ "Next Post >" }</div>
             </div>
           </div>
           {imagesIndex}

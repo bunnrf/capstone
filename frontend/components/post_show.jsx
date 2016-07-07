@@ -3,44 +3,68 @@ const PostStore = require('../stores/post_store');
 const PostActions = require('../actions/post_actions');
 const PostIndex = require('./post_index');
 const PostDetail = require('./post_detail');
+const hashHistory = require('react-router').hashHistory;
 
 const PostShow = React.createClass({
-  getInitialState(){
-    return { post: PostStore.find(this.props.params.postId) };
+  getInitialState() {
+    const postId = this.props.params.postId;
+    return { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) };
   },
 
-  componentDidMount(){
-    this.PostListener = PostStore.addListener(this._onChange);
+  componentDidMount() {
     PostActions.fetchSinglePost(this.props.params.postId);
+    this.PostListener = PostStore.addListener(this._onChange);
+    this.keyListener = window.addEventListener("keydown", (event) => {
+      switch (event.keyCode) {
+        case 37:
+          event.preventDefault();
+          this.prevPost();
+          break;
+        case 39:
+          event.preventDefault();
+          this.nextPost();
+          break;
+      }
+    });
   },
 
-  _onChange(){
+  _onChange() {
     this.setState({ post: PostStore.find(this.props.params.postId) });
   },
 
-  componentWillReceiveProps(newProps){
+  componentWillReceiveProps(newProps) {
     let props = newProps || this.props;
     PostActions.fetchSinglePost(props.params.postId);
   },
 
-  componentWillUnmount(){
+  componentWillUnmount() {
     this.PostListener.remove();
+    this.keyListener.remove();
   },
 
-  render(){
+  prevPost() {
+    if (this.state.activePostIndex > 0) {
+      const posts = PostStore.all();
+      const index = this.state.activePostIndex;
+      this.setState( { activePostIndex: index - 1 } );
+      hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index - 1]).id);
+    }
+  },
+
+  nextPost() {
+    const posts = PostStore.all();
+    const index = this.state.activePostIndex;
+    this.setState( { activePostIndex: index + 1 } );
+    hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index + 1]).id);
+  },
+
+  render() {
     return(
       <div className="single-post-show">
         <div className="post-show-left">
-          <PostDetail post={ this.state.post } />
+          <PostDetail post={ this.state.post } prevPost={ this.prevPost } nextPost={ this.nextPost } />
         </div>
-        <div className="post-show-right">
-          <div className="post-show-post-index-header">
-            
-          </div>
-          <div className="post-show-right-scroll-container">
-            <PostIndex className="post-show-post-index-container" />
-          </div>
-        </div>
+        <PostIndex className="post-show-post-index-container" postIndex={ this.state.activePostIndex }/>
       </div>
     )
   }
