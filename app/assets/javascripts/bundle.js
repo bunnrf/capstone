@@ -28230,12 +28230,10 @@
 	  },
 	  handleSubmit: function handleSubmit(e) {
 	    this.setState({ uploadTrigger: true });
-	    console.log("submit");
 	    e.preventDefault();
 	    var post = {
 	      author_id: SessionStore.currentUser().id,
 	      title: this.state.title,
-	      description: this.state.description,
 	      images_attributes: this.state.images
 	    };
 	
@@ -28323,27 +28321,29 @@
 	          { className: 'main-nav' },
 	          React.createElement(
 	            'li',
-	            null,
+	            { className: 'logo-container' },
 	            React.createElement(
-	              'div',
-	              { className: '' },
+	              'a',
+	              { href: '/', className: 'logo' },
 	              'imagr'
 	            )
 	          ),
 	          React.createElement(
 	            'li',
-	            null,
+	            { className: 'menu-container' },
 	            React.createElement(
-	              'div',
+	              'a',
 	              { className: 'menu-icon' },
-	              'dd'
+	              React.createElement('div', null),
+	              React.createElement('div', null),
+	              React.createElement('div', null)
 	            )
 	          ),
 	          React.createElement(
 	            'li',
-	            null,
+	            { className: 'upload-container' },
 	            React.createElement(
-	              'a',
+	              'div',
 	              { className: 'upload-button', onClick: this.openModal },
 	              'upload images'
 	            )
@@ -28380,9 +28380,6 @@
 	                  ordinal: image.ordinal });
 	              }),
 	              React.createElement('input', { type: 'button', className: 'add-image-button', onClick: this.addImageUploadForm, value: 'Add Image' }),
-	              React.createElement('textarea', { value: this.state.description,
-	                onChange: this.update("description"),
-	                placeholder: 'Post Description(optional)' }),
 	              React.createElement('input', { type: 'submit', value: 'Submit' })
 	            )
 	          )
@@ -28483,7 +28480,6 @@
 	  redirectIfLoggedIn: function redirectIfLoggedIn() {
 	    if (SessionStore.isUserLoggedIn()) {
 	      this.closeModal();
-	      this.context.router.push("/");
 	    }
 	  },
 	  handleSubmit: function handleSubmit(e) {
@@ -35799,26 +35795,26 @@
 	    var postId = this.props.params.postId;
 	    return { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) };
 	  },
+	  handleArrows: function handleArrows(event) {
+	    switch (event.keyCode) {
+	      case 37:
+	        event.preventDefault();
+	        this.prevPost();
+	        break;
+	      case 39:
+	        event.preventDefault();
+	        this.nextPost();
+	        break;
+	    }
+	  },
 	  componentDidMount: function componentDidMount() {
-	    var _this = this;
-	
 	    PostActions.fetchSinglePost(this.props.params.postId);
 	    this.PostListener = PostStore.addListener(this._onChange);
-	    this.keyListener = window.addEventListener("keydown", function (event) {
-	      switch (event.keyCode) {
-	        case 37:
-	          event.preventDefault();
-	          _this.prevPost();
-	          break;
-	        case 39:
-	          event.preventDefault();
-	          _this.nextPost();
-	          break;
-	      }
-	    });
+	    window.addEventListener("keydown", this.handleArrows);
 	  },
 	  _onChange: function _onChange() {
-	    this.setState({ post: PostStore.find(this.props.params.postId) });
+	    var postId = this.props.params.postId;
+	    this.setState({ post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) });
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
 	    var props = newProps || this.props;
@@ -35826,7 +35822,7 @@
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
 	    this.PostListener.remove();
-	    this.keyListener.remove();
+	    window.removeEventListener("keydown", this.handleArrows);
 	  },
 	  prevPost: function prevPost() {
 	    if (this.state.activePostIndex > 0) {
@@ -35972,20 +35968,48 @@
 	            React.createElement(
 	              'div',
 	              { className: 'post-show-prev', onClick: this.props.prevPost },
-	              "<"
+	              React.createElement('span', { className: 'glyphicon glyphicon-menu-left' })
 	            ),
 	            React.createElement(
 	              'div',
 	              { className: 'post-show-next', onClick: this.props.nextPost },
-	              "Next Post >"
+	              'Next Post',
+	              React.createElement('span', { className: 'glyphicon glyphicon-menu-right', 'aria-hidden': 'true' })
 	            )
 	          )
 	        ),
 	        imagesIndex,
 	        React.createElement(
 	          'div',
-	          { className: 'post-description' },
-	          post.description
+	          { className: 'post-footer' },
+	          React.createElement(
+	            'div',
+	            { className: 'upvote-button' },
+	            React.createElement(
+	              'span',
+	              { className: 'upvote' },
+	              '➜'
+	            )
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'downvote-button' },
+	            React.createElement(
+	              'span',
+	              { className: 'downvote' },
+	              '➜'
+	            )
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'post-stats' },
+	            React.createElement(
+	              'span',
+	              { className: 'points' },
+	              post.points,
+	              ' points'
+	            )
+	          )
 	        )
 	      ),
 	      React.createElement(
@@ -36070,7 +36094,7 @@
 	      "div",
 	      { className: "image-detail-description" },
 	      React.createElement(
-	        "h2",
+	        "p",
 	        null,
 	        this.props.text
 	      )
@@ -36185,7 +36209,6 @@
 	    this.setState({ focused: true });
 	  },
 	  submit: function submit() {
-	    console.log(this.state.body);
 	    var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, commentable_id: this.props.postId, commentable_type: "Post" });
 	    PostActions.createComment(comment);
 	    this.setState({ body: undefined, focused: false });

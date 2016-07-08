@@ -1,4 +1,4 @@
-json.extract! post, :id, :title, :description, :points, :images, :author
+json.extract! post, :id, :title, :points, :images, :author
 
 json.comments do
   json.partial! 'api/comments/comment', collection: post.comments, as: :comment

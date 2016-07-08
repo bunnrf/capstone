@@ -11,25 +11,28 @@ const PostShow = React.createClass({
     return { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) };
   },
 
+  handleArrows(event) {
+    switch (event.keyCode) {
+      case 37:
+        event.preventDefault();
+        this.prevPost();
+        break;
+      case 39:
+        event.preventDefault();
+        this.nextPost();
+        break;
+    }
+  },
+
   componentDidMount() {
     PostActions.fetchSinglePost(this.props.params.postId);
     this.PostListener = PostStore.addListener(this._onChange);
-    this.keyListener = window.addEventListener("keydown", (event) => {
-      switch (event.keyCode) {
-        case 37:
-          event.preventDefault();
-          this.prevPost();
-          break;
-        case 39:
-          event.preventDefault();
-          this.nextPost();
-          break;
-      }
-    });
+    window.addEventListener("keydown", this.handleArrows);
   },
 
   _onChange() {
-    this.setState({ post: PostStore.find(this.props.params.postId) });
+    const postId = this.props.params.postId;
+    this.setState( { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) } );
   },
 
   componentWillReceiveProps(newProps) {
@@ -39,7 +42,7 @@ const PostShow = React.createClass({
 
   componentWillUnmount() {
     this.PostListener.remove();
-    this.keyListener.remove();
+    window.removeEventListener("keydown", this.handleArrows);
   },
 
   prevPost() {

@@ -12,7 +12,6 @@ const CommentCreate = React.createClass({
   },
 
   submit() {
-    console.log(this.state.body);
     const comment = Object.assign(
       {},
       { body: this.state.body, commenter_id: SessionStore.currentUser().id, commentable_id: this.props.postId, commentable_type: "Post" }

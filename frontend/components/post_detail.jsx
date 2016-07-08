@@ -71,13 +71,15 @@ const PostDetail = React.createClass({
               {authorData}
             </div>
             <div className="post-nav">
-              <div className="post-show-prev" onClick={this.props.prevPost}>{ "<" }</div>
-              <div className="post-show-next" onClick={this.props.nextPost}>{ "Next Post >" }</div>
+              <div className="post-show-prev" onClick={this.props.prevPost}><span className="glyphicon glyphicon-menu-left"></span></div>
+              <div className="post-show-next" onClick={this.props.nextPost}>Next Post<span className="glyphicon glyphicon-menu-right" aria-hidden="true"></span></div>
             </div>
           </div>
           {imagesIndex}
-          <div className="post-description">
-            {post.description}
+          <div className="post-footer">
+            <div className="upvote-button"><span className="upvote">➜</span></div>
+            <div className="downvote-button"><span className="downvote">➜</span></div>
+            <div className="post-stats"><span className="points">{post.points} points</span></div>
           </div>
         </div>
         <div className="post-comments-container">

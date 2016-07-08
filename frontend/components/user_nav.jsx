@@ -78,7 +78,6 @@ const UserNav = React.createClass({
   redirectIfLoggedIn() {
     if (SessionStore.isUserLoggedIn()) {
 			this.closeModal();
-      this.context.router.push("/");
     }
   },
 

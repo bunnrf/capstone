@@ -14,6 +14,12 @@
  *= require_self
 */
 
+@import "bootstrap-sprockets";
+@import "bootstrap/variables";
+@import "bootstrap/mixins";
+@import "bootstrap/normalize";
+@import "bootstrap/glyphicons";
+
 body {
   display: block;
   font-family: Arial, sans-serif;
@@ -29,8 +35,28 @@ a {
   text-decoration: none;
 }
 
-a :hover {
+a:hover {
   text-decoration: underline;
+}
+
+button, [type="submit"], [type="button"] {
+  background: #595959; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(#595959 0, #404040 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#595959 0, #404040 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#595959 0, #404040 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#595959 0, #404040 100%); /* Standard syntax */
+  border: 1px solid #262626;
+  border-top: 1px solid gray;
+  color: #ddddd1;
+  padding: 12px;
+}
+
+button:hover, [type="submit"]:hover, [type="button"]:hover {
+  background: #595959; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(#666 0, #595959 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#666 0, #595959 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#666 0, #595959 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#666 0, #595959 100%); /* Standard syntax */
 }
 
 #topbar {
@@ -56,11 +82,8 @@ a :hover {
 }
 
 .main-nav {
-  width: 25%;
   height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -84,9 +107,8 @@ a :hover {
   height: 100%;
 }
 
-.nav-container li :hover {
+.nav-container li:hover {
   height: inherit;
-  width: 100%;
   display: flex;
   align-items: center;
   background-color: #444442;
@@ -104,6 +126,64 @@ a :hover {
   color: #ddddd1;
   font-weight: 400;
   text-decoration: none;
+}
+
+.nav-container .logo-container {
+  width: 90px;
+}
+
+.nav-container .logo {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.nav-container .menu-container {
+  width: 40px;
+}
+
+.nav-container .menu-container .menu-icon {
+  display: flex;
+  flex-direction: column;
+  padding-top: 5px;
+}
+
+.nav-container .menu-container div {
+  width: 18px;
+  height: 2px;
+  background: #fff;
+  opacity: .9;
+  margin-bottom: 2px;
+}
+
+.nav-container .upload-container {
+  width: 180px;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-container .upload-container:hover {
+  background: none;
+}
+
+div .upload-button {
+  font-weight: 500;
+  width: 136px;
+  height: 30px;
+  border: 1px solid #444;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+div .upload-button:hover {
+  cursor: pointer;
+  background: #595959; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(#357bf2 0, #306ed9 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#357bf2 0, #306ed9 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#357bf2 0, #306ed9 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#357bf2 0, #306ed9 100%); /* Standard syntax */
 }
 
 .ReactModal__Overlay.ReactModal__Overlay--after-open {
@@ -146,6 +226,10 @@ textarea {
   font-size: 13.33333px;
   height: 80px;
   line-height: normal;
+}
+
+textarea:focus {
+  border-color: #C29F37;
 }
 
 .comment-create {
@@ -254,7 +338,7 @@ textarea {
   margin: 0 auto;
 }
 
-.post :hover {
+.post:hover {
   border-color: #C29F37;
   cursor: pointer;
 }
@@ -338,9 +422,82 @@ textarea {
 
 }
 
+.post-footer {
+  display: flex;
+  padding: 20px;
+  padding-top: 3px;
+}
+
+.upvote-button, .downvote-button {
+  width: 40px;
+  height: 38px;
+  margin-right: 3px;
+  cursor: pointer;
+  background: #595959; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(#595959 0, #404040 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#595959 0, #404040 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#595959 0, #404040 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#595959 0, #404040 100%); /* Standard syntax */
+  border-top: 1px solid gray;
+  border-bottom: 1px solid #262626;
+  border-radius: 2px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upvote-button:hover, .downvote-button:hover {
+  background: #595959; /* For browsers that do not support gradients */
+  background: -webkit-linear-gradient(#666 0, #595959 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#666 0, #595959 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#666 0, #595959 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#666 0, #595959 100%);
+}
+
+.upvote, .downvote {
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.upvoted {
+  color: #89c624;
+}
+
+.downvoted {
+  color: #e44;
+}
+
+.upvote {
+  -ms-transform: rotate(-90deg); /* IE 9 */
+  -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
+  transform: rotate(-90deg);
+}
+
+.downvote {
+  -ms-transform: rotate(90deg); /* IE 9 */
+  -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
+  transform: rotate(90deg);
+}
+
+.post-stats {
+  margin-left: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.points {
+
+}
+
 .post-nav {
   right: 0;
   display: flex;
+}
+
+.post-nav span {
+  font-size: 12px;
 }
 
 .post-nav div {
@@ -359,17 +516,29 @@ textarea {
 .post-show-next {
   width: 110px;
   background: #3274e5;
+  background: -webkit-linear-gradient(#3274e5 0, #2a61bf 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#3274e5 0, #2a61bf 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#3274e5 0, #2a61bf 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#3274e5 0, #2a61bf 100%);
   border: 1px solid #4d8eff;
   border-bottom: 1px solid #1f478c;
 }
 
-div .post-show-next :hover {
+.post-show-next span {
+  margin-left: 2px;
+}
+
+.post-show-next:hover {
   width: 110px;
-  background: #000;
+  background: #357bf2;
+  background: -webkit-linear-gradient(#357bf2 0, #306ed9 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#357bf2 0, #306ed9 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#357bf2 0, #306ed9 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#357bf2 0, #306ed9 100%);
   border: 1px solid #4d8eff;
   border-bottom: 1px solid #1f478c;
-}
 
+}
 
 .post-show-prev {
   width: 32px;
@@ -378,18 +547,29 @@ div .post-show-next :hover {
   background-color: rgba(100,100,100,.15);
 }
 
-.image-detail-container {
+.post-show-prev:hover {
+  border-color: #666;
+}
 
+.image-detail-container {
+  box-shadow: 0 4px 4px -2px rgba(0,0,0,.2),0 -4px 4px -2px rgba(0,0,0,.2);
+  margin-bottom: 15px;
 }
 
 .image-detail-header {
-  padding: 16px 20px;
-  background: #2E2E2E;
+
 }
 
 .image-detail-header h2 {
-  margin-bottom: 2px;
-  margin: -3px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px 20px;
+  color: #CCC;
+  background: #2E2E2E;
+  text-shadow: none;
+  letter-spacing: normal;
+  line-height: normal;
+  margin: 0;
 }
 
 .image-container {
@@ -401,6 +581,20 @@ div .post-show-next :hover {
   align-self: center;
   max-width: 100%;
   margin: 0 auto;
+}
+
+.image-detail-description {
+  background: #2E2E2E;
+  color: #CCC;
+  padding: 20px;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.image-detail-description p {
+  padding: 0;
+  margin: 0;
 }
 
 .post-comments-container {
@@ -467,7 +661,7 @@ div .post-show-next :hover {
   width: 311px;
   height: 500px;
   overflow-x: hidden;
-  overflow-y: scroll:
+  overflow-y: scroll;
 }
 
 .post-show-post-index-container {
@@ -491,7 +685,7 @@ div .post-show-next :hover {
   border: 0;
 }
 
-.post-show-post-index-container .post :hover {
+.post-show-post-index-container .post:hover {
 
 }
 

@@ -30,12 +30,10 @@ const Topbar = React.createClass({
 
 	handleSubmit(e) {
 		this.setState({ uploadTrigger: true });
-		console.log("submit");
 		e.preventDefault();
 		let post = {
 			author_id: SessionStore.currentUser().id,
 			title: this.state.title,
-		  description: this.state.description,
 			images_attributes: this.state.images
 		};
 
@@ -101,9 +99,9 @@ const Topbar = React.createClass({
       <div id="topbar">
         <div className="nav-container">
           <ul className="main-nav">
-            <li><div className="">imagr</div></li>
-            <li><div className="menu-icon">dd</div></li>
-            <li><a className="upload-button" onClick={this.openModal}>upload images</a></li>
+            <li className="logo-container"><a href="/" className="logo">imagr</a></li>
+            <li className="menu-container"><a className="menu-icon"><div></div><div></div><div></div></a></li>
+            <li className="upload-container"><div className="upload-button" onClick={this.openModal}>upload images</div></li>
           </ul>
           <UserNav />
         </div>
@@ -125,9 +123,6 @@ const Topbar = React.createClass({
   																		ordinal={image.ordinal} />
   							})}
   							<input type="button" className="add-image-button" onClick={this.addImageUploadForm} value="Add Image" />
-  							<textarea value={this.state.description}
-  										 onChange={this.update("description")}
-  									placeholder="Post Description(optional)"></textarea>
   							<input type="submit" value="Submit" />
   						</div>
   					</form>
