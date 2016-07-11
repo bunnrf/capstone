@@ -43,6 +43,15 @@ PostStore.__onDispatch = function(payload) {
     case PostConstants.POST_RECEIVED:
       resetSinglePost(payload.post);
       break;
+    case PostConstants.VOTE_RECEIVED:
+      // const id;
+      // id = (vote.votable_id === "Post" ? vote.voteable_id : vote.voteable.post_id)
+      // id = payload.vote.voteable_id;
+      resetSinglePost(payload.vote.votable_id);
+      break;
+    case PostConstants.VOTE_REMOVED:
+      resetSinglePost(payload.vote.votable_id);
+      break;
   }
 }
 

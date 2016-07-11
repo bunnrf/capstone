@@ -8,8 +8,10 @@ const PostIndexItem = React.createClass({
 
   render(){
     const post = this.props.post;
+    const className = (this.props.active ? "post-active" : "post");
+
     return(
-      <div key={ post.id } className="post" onClick={ this.handleClick }>
+      <div key={ post.id } className={className} onClick={ this.handleClick }>
         <img alt src={ post.thumb } />
       </div>
     );

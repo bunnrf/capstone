@@ -9,6 +9,30 @@ class User < ActiveRecord::Base
 
   has_many :posts
   has_many :comments, as: :commentable
+  has_many :votes
+  has_many :voted_posts, through: :votes, source: :votable, source_type: "Post"
+  has_many :voted_comments, through: :votes, source: :votable, source_type: "Comment"
+
+  #return votes with type comment, as opposed to the comments themselves
+  def post_votes
+    post_votes = {}
+    votes.select do |vote|
+      vote.votable_type == "Post"
+    end.each do |vote|
+      post_votes[vote.votable_id] = { vote_type: vote.vote_type }
+    end
+    post_votes
+  end
+
+  def comment_votes
+    post_votes = {}
+    votes.select do |vote|
+      vote.votable_type == "Comment"
+    end.each do |vote|
+      post_votes[vote.votable_id] = { vote_type: vote.vote_type }
+    end
+    post_votes
+  end
 
   def self.find_by_credentials(username, password)
     user = User.find_by(username: username)

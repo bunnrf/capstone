@@ -67,7 +67,7 @@ const PostShow = React.createClass({
         <div className="post-show-left">
           <PostDetail post={ this.state.post } prevPost={ this.prevPost } nextPost={ this.nextPost } />
         </div>
-        <PostIndex className="post-show-post-index-container" postIndex={ this.state.activePostIndex }/>
+        <PostIndex className="post-show-post-index-container" activePostIndex={ this.state.activePostIndex }/>
       </div>
     )
   }

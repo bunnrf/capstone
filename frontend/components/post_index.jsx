@@ -23,24 +23,26 @@ const PostIndex = React.createClass({
   },
 
   componentWillReceiveProps(newProps) {
-
+    this.setState( { activePostIndex: newProps.activePostIndex } );
   },
 
   render() {
     // debugger
     const posts = this.state.posts;
     const keys = Object.keys(posts);
+    const activeKey = keys[this.state.activePostIndex];
 
     if (this.props.className) {
         return(
           <div className="post-show-right">
             <div className="post-show-post-index-header">
-              header
+              <h2>Most Viral Images</h2>
+              <h3>sorted by popularity</h3>
             </div>
             <div className="post-show-right-scroll-container">
               <div className={this.props.className}>
                 {keys.map((key) => {
-                  return <PostIndexItem key={ key } post={ posts[key] } />;
+                  return <PostIndexItem key={ key } post={ posts[key] } active={ key === activeKey ? true : false } />;
                 })}
               </div>
             </div>

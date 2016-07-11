@@ -7,8 +7,12 @@ const CommentCreate = React.createClass({
     return { focused: false };
   },
 
-  revealSubmit() {
+  focus() {
     this.setState( { focused: true } );
+  },
+
+  blur() {
+    this.setState( { focused: false } );
   },
 
   submit() {
@@ -28,19 +32,18 @@ const CommentCreate = React.createClass({
     if (this.state.focused) {
       return (
         <div className="comment-create-focused">
-          <textarea placeholder="Submit a comment" onChange={ this.updateBody() } value={ this.state.body } />
+          <textarea placeholder="Submit a comment" onChange={ this.updateBody() } value={ this.state.body } onBlur={this.blur} />
           <button onClick={ this.submit } >Submit</button>
         </div>
       );
     } else {
       return (
         <div className="comment-create">
-          <textarea placeholder="Submit a comment" onFocus={this.revealSubmit} />
+          <textarea placeholder="Submit a comment" onFocus={this.focus} />
         </div>
       );
     }
   }
-
 });
 
 module.exports = CommentCreate;

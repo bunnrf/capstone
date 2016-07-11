@@ -57,11 +57,11 @@
 	var Modal = __webpack_require__(230);
 	
 	var App = __webpack_require__(251);
-	var PostStore = __webpack_require__(277);
+	var PostStore = __webpack_require__(287);
 	var SessionStore = __webpack_require__(254);
-	var PostIndex = __webpack_require__(279);
-	var PostShow = __webpack_require__(284);
-	var SessionActions = __webpack_require__(292);
+	var PostIndex = __webpack_require__(288);
+	var PostShow = __webpack_require__(291);
+	var SessionActions = __webpack_require__(277);
 	
 	var appRouter = React.createElement(
 	  Router,
@@ -28201,10 +28201,10 @@
 	
 	var React = __webpack_require__(1);
 	var UserNav = __webpack_require__(253);
-	var ImageUploadForm = __webpack_require__(299);
-	var PostActions = __webpack_require__(280);
+	var ImageUploadForm = __webpack_require__(282);
+	var PostActions = __webpack_require__(284);
 	var SessionStore = __webpack_require__(254);
-	var ErrorStore = __webpack_require__(297);
+	var ErrorStore = __webpack_require__(281);
 	
 	var Modal = __webpack_require__(230);
 	
@@ -28402,8 +28402,8 @@
 	var React = __webpack_require__(1);
 	var Link = __webpack_require__(168).Link;
 	var SessionStore = __webpack_require__(254);
-	var SessionActions = __webpack_require__(292);
-	var ErrorStore = __webpack_require__(297);
+	var SessionActions = __webpack_require__(277);
+	var ErrorStore = __webpack_require__(281);
 	
 	var Modal = __webpack_require__(230);
 	
@@ -35500,66 +35500,101 @@
 
 	'use strict';
 	
-	var Store = __webpack_require__(259).Store;
-	var PostConstants = __webpack_require__(278);
+	var SessionApiUtil = __webpack_require__(278);
+	var ErrorActions = __webpack_require__(279);
 	var dispatcher = __webpack_require__(255);
+	var SessionConstants = __webpack_require__(276);
+	var hashHistory = __webpack_require__(168).hashHistory;
 	
-	var _posts = {};
+	var SessionActions = {
+	  signup: function signup(user) {
+	    SessionApiUtil.signup(user, this.receiveCurrentUser, ErrorActions.setErrors);
+	  },
 	
-	var PostStore = new Store(dispatcher);
+	  login: function login(user) {
+	    SessionApiUtil.login(user, this.receiveCurrentUser, ErrorActions.setErrors);
+	  },
 	
-	PostStore.all = function () {
-	  return Object.assign({}, _posts);
-	};
-	
-	PostStore.find = function (postId) {
-	  return Object.assign({}, _posts[postId]);
-	};
-	
-	PostStore.indexOf = function (postId) {
-	  return Object.keys(_posts).indexOf(postId);
-	};
-	
-	PostStore.add = function (post) {};
-	
-	function resetAllPosts(posts) {
-	  _posts = posts;
-	  PostStore.__emitChange();
-	}
-	
-	// keep the post thumb for display in index
-	function resetSinglePost(post) {
-	  var thumb = _posts[post.id].thumb;
-	  _posts[post.id] = post;
-	  _posts[post.id]['thumb'] = thumb;
-	  PostStore.__emitChange();
-	}
-	
-	PostStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case PostConstants.POSTS_RECEIVED:
-	      resetAllPosts(payload.posts);
-	      break;
-	    case PostConstants.POST_RECEIVED:
-	      resetSinglePost(payload.post);
-	      break;
+	  logout: function logout() {
+	    SessionApiUtil.logout(SessionActions.removeCurrentUser);
+	  },
+	  fetchCurrentUser: function fetchCurrentUser(complete) {
+	    SessionApiUtil.fetchCurrentUser(SessionActions.receiveCurrentUser, complete);
+	  },
+	  receiveCurrentUser: function receiveCurrentUser(currentUser) {
+	    dispatcher.dispatch({
+	      actionType: SessionConstants.LOGIN,
+	      currentUser: currentUser
+	    });
+	  },
+	  removeCurrentUser: function removeCurrentUser() {
+	    dispatcher.dispatch({
+	      actionType: SessionConstants.LOGOUT
+	    });
+	    hashHistory.push("/");
 	  }
 	};
 	
-	module.exports = PostStore;
+	module.exports = SessionActions;
 
 /***/ },
 /* 278 */
 /***/ function(module, exports) {
 
-	"use strict";
+	'use strict';
 	
-	var PostConstants = {
-	  POSTS_RECEIVED: "POSTS_RECEIVED",
-	  POST_RECEIVED: "POST_RECEIVED"
+	var SessionApiUtil = {
+		login: function login(user, success, _error) {
+			$.ajax({
+				url: '/api/session',
+				type: 'POST',
+				data: { user: user },
+				success: success,
+				error: function error(xhr) {
+					var errors = xhr.responseJSON;
+					_error("login", errors);
+				}
+			});
+		},
+		logout: function logout(success) {
+			$.ajax({
+				url: '/api/session',
+				method: 'DELETE',
+				success: success,
+				error: function error() {
+					console.log("Logout error in SessionApiUtil#logout");
+				}
+			});
+		},
+		signup: function signup(user, success, _error2) {
+			$.ajax({
+				url: '/api/user',
+				type: 'POST',
+				dataType: 'json',
+				data: { user: user },
+				success: success,
+				error: function error(xhr) {
+					var errors = xhr.responseJSON;
+					_error2("signup", errors);
+				}
+			});
+		},
+		fetchCurrentUser: function fetchCurrentUser(success, _complete) {
+			$.ajax({
+				url: '/api/session',
+				method: 'GET',
+				success: success,
+				error: function error(xhr) {
+					console.log("Error in SessionApiUtil#fetchCurrentUser");
+				},
+				complete: function complete() {
+					_complete();
+				}
+			});
+		}
 	};
 	
-	module.exports = PostConstants;
+	module.exports = SessionApiUtil;
 
 /***/ },
 /* 279 */
@@ -35567,81 +35602,192 @@
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var PostStore = __webpack_require__(277);
-	var PostActions = __webpack_require__(280);
-	var PostIndexItem = __webpack_require__(282);
-	var SentenceSorting = __webpack_require__(283);
+	var dispatcher = __webpack_require__(255);
+	var ErrorConstants = __webpack_require__(280);
 	
-	var PostIndex = React.createClass({
-	  displayName: 'PostIndex',
-	  getInitialState: function getInitialState() {
-	    return { posts: PostStore.all(), activePostIndex: this.props.activePostIndex };
+	var ErrorActions = {
+	  setErrors: function setErrors(form, errors) {
+	    dispatcher.dispatch({
+	      actionType: ErrorConstants.SET_ERRORS,
+	      form: form,
+	      errors: errors
+	    });
 	  },
-	  _onChange: function _onChange() {
-	    this.setState({ posts: PostStore.all() });
-	  },
-	  componentDidMount: function componentDidMount() {
-	    this.postsListener = PostStore.addListener(this._onChange);
-	    PostActions.fetchAllPosts();
-	  },
-	  componentWillUnmount: function componentWillUnmount() {
-	    this.postsListener.remove();
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {},
-	  render: function render() {
-	    // debugger
-	    var posts = this.state.posts;
-	    var keys = Object.keys(posts);
-	
-	    if (this.props.className) {
-	      return React.createElement(
-	        'div',
-	        { className: 'post-show-right' },
-	        React.createElement(
-	          'div',
-	          { className: 'post-show-post-index-header' },
-	          'header'
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'post-show-right-scroll-container' },
-	          React.createElement(
-	            'div',
-	            { className: this.props.className },
-	            keys.map(function (key) {
-	              return React.createElement(PostIndexItem, { key: key, post: posts[key] });
-	            })
-	          )
-	        )
-	      );
-	    } else {
-	      return React.createElement(
-	        'div',
-	        { className: 'post-index-content' },
-	        React.createElement(SentenceSorting, null),
-	        React.createElement(
-	          'div',
-	          { className: "post-index-container" },
-	          keys.map(function (key) {
-	            return React.createElement(PostIndexItem, { key: key, post: posts[key] });
-	          })
-	        )
-	      );
-	    }
+	  clearErrors: function clearErrors() {
+	    dispatcher.dispatch({
+	      actionType: ErrorConstants.CLEAR_ERRORS
+	    });
 	  }
-	});
+	};
 	
-	module.exports = PostIndex;
+	module.exports = ErrorActions;
 
 /***/ },
 /* 280 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var ErrorConstants = {
+	  SET_ERRORS: "SET_ERRORS",
+	  CLEAR_ERRORS: "CLEAR_ERRORS"
+	};
+	
+	module.exports = ErrorConstants;
+
+/***/ },
+/* 281 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var PostConstants = __webpack_require__(278);
-	var PostApiUtil = __webpack_require__(281);
+	var Store = __webpack_require__(259).Store;
+	var dispatcher = __webpack_require__(255);
+	var ErrorConstants = __webpack_require__(280);
+	
+	var ErrorStore = new Store(dispatcher);
+	
+	var _errors = {};
+	var _form = "";
+	
+	function setErrors(payload) {
+	  _errors = payload.errors;
+	  _form = payload.form;
+	  ErrorStore.__emitChange();
+	}
+	
+	function clearErrors() {
+	  _errors = {};
+	  _form = "";
+	  ErrorStore.__emitChange();
+	}
+	
+	ErrorStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case ErrorConstants.SET_ERRORS:
+	      setErrors(payload);
+	      break;
+	    case ErrorConstants.CLEAR_ERRORS:
+	      clearErrors();
+	      break;
+	  }
+	};
+	
+	ErrorStore.formErrors = function (form) {
+	  if (form !== _form) {
+	    return {};
+	  }
+	
+	  // copies the _errors object into a new object
+	  var result = {};
+	  for (var field in _errors) {
+	    result[field] = Array.from(_errors[field]);
+	  }
+	
+	  return result;
+	};
+	
+	ErrorStore.form = function () {
+	  return _form;
+	};
+	
+	module.exports = ErrorStore;
+
+/***/ },
+/* 282 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var React = __webpack_require__(1);
+	var ImageUploadButton = __webpack_require__(283);
+	
+	var ImageUploadForm = React.createClass({
+	  displayName: 'ImageUploadForm',
+	
+	  getInitialState: function getInitialState() {
+	    return { image_url: this.props.image_url };
+	  },
+	
+	  handleUpload: function handleUpload(results) {
+	    this.props.updateState(this.props.ordinal, "image_url", results.url);
+	    this.setState({ image_url: results.url });
+	  },
+	
+	  update: function update(property) {
+	    var _this = this;
+	
+	    return function (e) {
+	      _this.props.updateState(_this.props.ordinal, property, e.target.value);
+	      _this.setState(_defineProperty({}, property, e.target.value));
+	    };
+	  },
+	
+	
+	  render: function render() {
+	    var imageOption = void 0;
+	
+	    if (this.state.image_url) {
+	      imageOption = React.createElement('img', { src: this.state.image_url });
+	    } else {
+	      imageOption = React.createElement(ImageUploadButton, { postImage: this.handleUpload });
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      { className: 'image-upload-container' },
+	      React.createElement('input', { type: 'text', value: this.props.title, onChange: this.update("title"), placeholder: 'Caption(optional)' }),
+	      imageOption,
+	      React.createElement('textarea', { value: this.props.description, onChange: this.update("description"), placeholder: 'Description(optional)' })
+	    );
+	  }
+	});
+	
+	module.exports = ImageUploadForm;
+
+/***/ },
+/* 283 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var React = __webpack_require__(1);
+	
+	var UploadImageButton = React.createClass({
+	  displayName: "UploadImageButton",
+	
+	  upload: function upload(e) {
+	    var _this = this;
+	
+	    e.preventDefault();
+	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
+	      if (!error) {
+	        _this.props.postImage(results[0]);
+	      }
+	    });
+	  },
+	
+	  render: function render() {
+	    return React.createElement(
+	      "button",
+	      { className: "upload-button", onClick: this.upload },
+	      "Upload Image(s)"
+	    );
+	  }
+	});
+	
+	module.exports = UploadImageButton;
+
+/***/ },
+/* 284 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var PostConstants = __webpack_require__(285);
+	var PostApiUtil = __webpack_require__(286);
 	var dispatcher = __webpack_require__(255);
 	
 	var PostActions = {
@@ -35680,7 +35826,20 @@
 	module.exports = PostActions;
 
 /***/ },
-/* 281 */
+/* 285 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var PostConstants = {
+	  POSTS_RECEIVED: "POSTS_RECEIVED",
+	  POST_RECEIVED: "POST_RECEIVED"
+	};
+	
+	module.exports = PostConstants;
+
+/***/ },
+/* 286 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35730,7 +35889,155 @@
 	module.exports = PostApiUtil;
 
 /***/ },
-/* 282 */
+/* 287 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Store = __webpack_require__(259).Store;
+	var PostConstants = __webpack_require__(285);
+	var dispatcher = __webpack_require__(255);
+	
+	var _posts = {};
+	
+	var PostStore = new Store(dispatcher);
+	
+	PostStore.all = function () {
+	  return Object.assign({}, _posts);
+	};
+	
+	PostStore.find = function (postId) {
+	  return Object.assign({}, _posts[postId]);
+	};
+	
+	PostStore.indexOf = function (postId) {
+	  return Object.keys(_posts).indexOf(postId);
+	};
+	
+	PostStore.add = function (post) {};
+	
+	function resetAllPosts(posts) {
+	  _posts = posts;
+	  PostStore.__emitChange();
+	}
+	
+	// keep the post thumb for display in index
+	function resetSinglePost(post) {
+	  var thumb = _posts[post.id].thumb;
+	  _posts[post.id] = post;
+	  _posts[post.id]['thumb'] = thumb;
+	  PostStore.__emitChange();
+	}
+	
+	PostStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case PostConstants.POSTS_RECEIVED:
+	      resetAllPosts(payload.posts);
+	      break;
+	    case PostConstants.POST_RECEIVED:
+	      resetSinglePost(payload.post);
+	      break;
+	    case PostConstants.VOTE_RECEIVED:
+	      // const id;
+	      // id = (vote.votable_id === "Post" ? vote.voteable_id : vote.voteable.post_id)
+	      // id = payload.vote.voteable_id;
+	      resetSinglePost(payload.vote.votable_id);
+	      break;
+	    case PostConstants.VOTE_REMOVED:
+	      resetSinglePost(payload.vote.votable_id);
+	      break;
+	  }
+	};
+	
+	module.exports = PostStore;
+
+/***/ },
+/* 288 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var PostStore = __webpack_require__(287);
+	var PostActions = __webpack_require__(284);
+	var PostIndexItem = __webpack_require__(289);
+	var SentenceSorting = __webpack_require__(290);
+	
+	var PostIndex = React.createClass({
+	  displayName: 'PostIndex',
+	  getInitialState: function getInitialState() {
+	    return { posts: PostStore.all(), activePostIndex: this.props.activePostIndex };
+	  },
+	  _onChange: function _onChange() {
+	    this.setState({ posts: PostStore.all() });
+	  },
+	  componentDidMount: function componentDidMount() {
+	    this.postsListener = PostStore.addListener(this._onChange);
+	    PostActions.fetchAllPosts();
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    this.postsListener.remove();
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+	    this.setState({ activePostIndex: newProps.activePostIndex });
+	  },
+	  render: function render() {
+	    // debugger
+	    var posts = this.state.posts;
+	    var keys = Object.keys(posts);
+	    var activeKey = keys[this.state.activePostIndex];
+	
+	    if (this.props.className) {
+	      return React.createElement(
+	        'div',
+	        { className: 'post-show-right' },
+	        React.createElement(
+	          'div',
+	          { className: 'post-show-post-index-header' },
+	          React.createElement(
+	            'h2',
+	            null,
+	            'Most Viral Images'
+	          ),
+	          React.createElement(
+	            'h3',
+	            null,
+	            'sorted by popularity'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'post-show-right-scroll-container' },
+	          React.createElement(
+	            'div',
+	            { className: this.props.className },
+	            keys.map(function (key) {
+	              return React.createElement(PostIndexItem, { key: key, post: posts[key], active: key === activeKey ? true : false });
+	            })
+	          )
+	        )
+	      );
+	    } else {
+	      return React.createElement(
+	        'div',
+	        { className: 'post-index-content' },
+	        React.createElement(SentenceSorting, null),
+	        React.createElement(
+	          'div',
+	          { className: "post-index-container" },
+	          keys.map(function (key) {
+	            return React.createElement(PostIndexItem, { key: key, post: posts[key] });
+	          })
+	        )
+	      );
+	    }
+	  }
+	});
+	
+	module.exports = PostIndex;
+
+/***/ },
+/* 289 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35745,9 +36052,11 @@
 	  },
 	  render: function render() {
 	    var post = this.props.post;
+	    var className = this.props.active ? "post-active" : "post";
+	
 	    return React.createElement(
 	      'div',
-	      { key: post.id, className: 'post', onClick: this.handleClick },
+	      { key: post.id, className: className, onClick: this.handleClick },
 	      React.createElement('img', { alt: true, src: post.thumb })
 	    );
 	  }
@@ -35756,7 +36065,7 @@
 	module.exports = PostIndexItem;
 
 /***/ },
-/* 283 */
+/* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -35777,16 +36086,16 @@
 	module.exports = SentenceSorting;
 
 /***/ },
-/* 284 */
+/* 291 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var PostStore = __webpack_require__(277);
-	var PostActions = __webpack_require__(280);
-	var PostIndex = __webpack_require__(279);
-	var PostDetail = __webpack_require__(285);
+	var PostStore = __webpack_require__(287);
+	var PostActions = __webpack_require__(284);
+	var PostIndex = __webpack_require__(288);
+	var PostDetail = __webpack_require__(292);
 	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var PostShow = React.createClass({
@@ -35847,7 +36156,7 @@
 	        { className: 'post-show-left' },
 	        React.createElement(PostDetail, { post: this.state.post, prevPost: this.prevPost, nextPost: this.nextPost })
 	      ),
-	      React.createElement(PostIndex, { className: 'post-show-post-index-container', postIndex: this.state.activePostIndex })
+	      React.createElement(PostIndex, { className: 'post-show-post-index-container', activePostIndex: this.state.activePostIndex })
 	    );
 	  }
 	});
@@ -35855,37 +36164,82 @@
 	module.exports = PostShow;
 
 /***/ },
-/* 285 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var ImageDetail = __webpack_require__(286);
-	var CommentDetail = __webpack_require__(289);
-	var CommentCreate = __webpack_require__(291);
-	var PostActions = __webpack_require__(280);
-	var PostStore = __webpack_require__(277);
-	var TimeUtil = __webpack_require__(290);
+	var ImageDetail = __webpack_require__(293);
+	var CommentDetail = __webpack_require__(296);
+	var CommentCreate = __webpack_require__(297);
+	var PostActions = __webpack_require__(284);
+	var VoteActions = __webpack_require__(298);
+	var PostStore = __webpack_require__(287);
+	var SessionStore = __webpack_require__(254);
+	var TimeUtil = __webpack_require__(301);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
 	  getInitialState: function getInitialState() {
-	    return { headerClass: "post-header" };
+	    var currentUser = SessionStore.currentUser();
+	    var voteStatus = void 0;
+	
+	    if (currentUser.post_votes && currentUser.post_votes[this.props.post.id]) {
+	      voteStatus = currentUser.post_votes[this.props.post.id]["vote_status"];
+	    }
+	
+	    return { currentUser: currentUser, voteStatus: voteStatus };
 	  },
 	  stickyScroll: function stickyScroll(e) {
-	    if (window.pageYOffset > 69) {
-	      this.setState({ headerClass: "post-header-fixed" });
+	    if (window.pageYOffset > 69 && this.state.headerFixed === false) {
+	      this.setState({ headerFixed: true });
 	    }
-	    if (window.pageYOffset < 69) {
-	      this.setState({ headerClass: "post-header" });
+	    if (window.pageYOffset < 69 && this.state.headerFixed === true) {
+	      this.setState({ headerFixed: false });
 	    }
 	  },
 	  componentDidMount: function componentDidMount() {
+	    this.userListener = SessionStore.addListener(this._userChanged);
 	    this.windowListener = window.addEventListener('scroll', this.stickyScroll, false);
 	  },
+	  _userChanged: function _userChanged() {
+	    var currentUser = SessionStore.currentUser();
+	    var voteStatus = void 0;
+	
+	    if (currentUser.post_votes && currentUser.post_votes[this.props.post.id]) {
+	      voteStatus = currentUser.post_votes[this.props.post.id]["vote_status"];
+	    }
+	
+	    this.setState({ currentUser: currentUser, voteStatus: voteStatus });
+	  },
 	  componentWillUnmount: function componentWillUnmount() {
-	    this.windowListener.remove();
+	    this.userListener.remove();
+	    window.removeEventListener('scroll', this.stickyScroll, false);
+	  },
+	  isUpvoted: function isUpvoted() {
+	    this.state.currentUser;
+	  },
+	  isDownvoted: function isDownvoted() {
+	    this.state.userVotes;
+	  },
+	  toggleUpvote: function toggleUpvote() {
+	    if (this.isDownvoted()) {
+	      VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.post.id, votable_type: "Post" });
+	    } else if (this.isUpvoted()) {
+	      VoteActions.destroyVote({ votable_id: this.props.post.id, votable_type: "Post" });
+	    } else {
+	      VoteActions.createVote({ vote_type: "upvote", votable_id: this.props.post.id, votable_type: "Post" });
+	    }
+	  },
+	  toggleDownvote: function toggleDownvote() {
+	    if (this.isUpvoted()) {
+	      VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.post.id, votable_type: "Post" });
+	    } else if (this.isDownvoted()) {
+	      VoteActions.destroyVote({ votable_id: this.props.post.id, votable_type: "Post" });
+	    } else {
+	      VoteActions.createVote({ vote_type: "downvote", votable_id: this.props.post.id, votable_type: "Post" });
+	    }
 	  },
 	  render: function render() {
 	    var post = this.props.post;
@@ -35893,6 +36247,24 @@
 	    var commentsIndex = [];
 	    var style = { paddingTop: 0 };
 	    var authorData = void 0;
+	    var post_votes = void 0;
+	    var comment_votes = void 0;
+	    var headerClass = "post-header";
+	    var upvoteClass = "upvote";
+	    var downvoteClass = "downvote";
+	
+	    console.log(this.state.currentUser);
+	
+	    if (this.state.currentUser) {
+	      post_votes = this.state.currentUser.post_votes;
+	      comment_votes = this.state.currentUser.comment_votes;
+	
+	      if (this.isUpvoted()) {
+	        upvoteClass = "upvote upvoted";
+	      } else if (this.isDownvoted()) {
+	        downvoteClass = "downvote downvoted";
+	      }
+	    }
 	
 	    if (post.images) {
 	      imagesIndex = post.images.map(function (image) {
@@ -35901,7 +36273,11 @@
 	    }
 	    if (post.comments) {
 	      commentsIndex = post.comments.map(function (comment) {
-	        return React.createElement(CommentDetail, { key: comment.id, comment: comment });
+	        var voteStatus = undefined;
+	        if (comment_votes && comment_votes[comment.id]) {
+	          voteStatus = comment_votes[comment.id]["vote_type"];
+	        }
+	        return React.createElement(CommentDetail, { key: comment.id, comment: comment, voteStatus: voteStatus });
 	      });
 	    }
 	    if (post.author) {
@@ -35934,9 +36310,10 @@
 	      );
 	    }
 	
-	    if (this.state.headerClass === "post-header-fixed") {
+	    if (this.state.headerFixed === true) {
 	      var headerHeight = $(".post-header-fixed").eq(0).height() || $(".post-header").eq(0).height();
 	      style = { paddingTop: headerHeight + 20 + 'px' };
+	      headerClass = "post-header-fixed";
 	    }
 	
 	    return React.createElement(
@@ -35947,7 +36324,7 @@
 	        { className: 'post-container', style: style },
 	        React.createElement(
 	          'div',
-	          { className: this.state.headerClass },
+	          { className: headerClass },
 	          React.createElement(
 	            'div',
 	            { className: 'post-header-content-container' },
@@ -35984,19 +36361,19 @@
 	          { className: 'post-footer' },
 	          React.createElement(
 	            'div',
-	            { className: 'upvote-button' },
+	            { className: 'upvote-button', onClick: this.toggleUpvote },
 	            React.createElement(
 	              'span',
-	              { className: 'upvote' },
+	              { className: upvoteClass },
 	              '➜'
 	            )
 	          ),
 	          React.createElement(
 	            'div',
-	            { className: 'downvote-button' },
+	            { className: 'downvote-button', onClick: this.toggleDownvote },
 	            React.createElement(
 	              'span',
-	              { className: 'downvote' },
+	              { className: downvoteClass },
 	              '➜'
 	            )
 	          ),
@@ -36025,14 +36402,14 @@
 	module.exports = PostDetail;
 
 /***/ },
-/* 286 */
+/* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var ImageDetailHeader = __webpack_require__(287);
-	var ImageDetailDescription = __webpack_require__(288);
+	var ImageDetailHeader = __webpack_require__(294);
+	var ImageDetailDescription = __webpack_require__(295);
 	
 	var ImageDetail = React.createClass({
 	  displayName: 'ImageDetail',
@@ -36055,7 +36432,7 @@
 	module.exports = ImageDetail;
 
 /***/ },
-/* 287 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -36080,7 +36457,7 @@
 	module.exports = ImageDetailHeader;
 
 /***/ },
-/* 288 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -36105,21 +36482,74 @@
 	module.exports = ImageDetailDescription;
 
 /***/ },
-/* 289 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var TimeUtil = __webpack_require__(290);
+	var TimeUtil = __webpack_require__(301);
+	var VoteActions = __webpack_require__(298);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
+	  getInitialState: function getInitialState() {
+	    return { voteStatus: this.props.voteStatus };
+	  },
+	  toggleUpvote: function toggleUpvote() {
+	    if (this.state.voteStatus === "downvote") {
+	      VoteActions.updateVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	    } else if (this.state.voteStatus === "upvote") {
+	      VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	    } else {
+	      VoteActions.createVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	    }
+	  },
+	  toggleDownvote: function toggleDownvote() {
+	    if (this.state.voteStatus === "upvote") {
+	      VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	    } else if (this.state.voteStatus === "downvote") {
+	      VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	    } else {
+	      VoteActions.createVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	    }
+	  },
 	  render: function render() {
 	    var comment = this.props.comment;
+	    var upvoteClass = "upvote";
+	    var downvoteClass = "downvote";
+	
+	    if (this.state.voteStatus === "upvote") {
+	      upvoteClass = "upvote upvoted";
+	    } else if (this.state.voteStatus === "downvote") {
+	      downvoteClass = "downvote downvoted";
+	    }
+	
 	    return React.createElement(
 	      'div',
 	      { className: 'comment-container' },
+	      React.createElement(
+	        'div',
+	        { className: 'votes-container' },
+	        React.createElement(
+	          'div',
+	          { className: 'upvote-button', onClick: this.toggleUpvote },
+	          React.createElement(
+	            'span',
+	            { className: upvoteClass },
+	            '➜'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'downvote-button', onClick: this.toggleDownvote },
+	          React.createElement(
+	            'span',
+	            { className: downvoteClass },
+	            '➜'
+	          )
+	        )
+	      ),
 	      React.createElement(
 	        'div',
 	        { className: 'comment-text-container' },
@@ -36154,7 +36584,161 @@
 	module.exports = CommentDetail;
 
 /***/ },
-/* 290 */
+/* 297 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var SessionStore = __webpack_require__(254);
+	var PostActions = __webpack_require__(284);
+	
+	var CommentCreate = React.createClass({
+	  displayName: 'CommentCreate',
+	  getInitialState: function getInitialState() {
+	    return { focused: false };
+	  },
+	  focus: function focus() {
+	    this.setState({ focused: true });
+	  },
+	  blur: function blur() {
+	    this.setState({ focused: false });
+	  },
+	  submit: function submit() {
+	    var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, commentable_id: this.props.postId, commentable_type: "Post" });
+	    PostActions.createComment(comment);
+	    this.setState({ body: undefined, focused: false });
+	  },
+	  updateBody: function updateBody() {
+	    var _this = this;
+	
+	    return function (e) {
+	      return _this.setState({ body: e.target.value });
+	    };
+	  },
+	
+	
+	  render: function render() {
+	    if (this.state.focused) {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create-focused' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body, onBlur: this.blur }),
+	        React.createElement(
+	          'button',
+	          { onClick: this.submit },
+	          'Submit'
+	        )
+	      );
+	    } else {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.focus })
+	      );
+	    }
+	  }
+	});
+	
+	module.exports = CommentCreate;
+
+/***/ },
+/* 298 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var VoteConstants = __webpack_require__(299);
+	var VoteApiUtil = __webpack_require__(300);
+	var dispatcher = __webpack_require__(255);
+	
+	var VoteActions = {
+	  createVote: function createVote(vote) {
+	    VoteApiUtil.createVote(vote, this.receiveVote);
+	  },
+	  updateVote: function updateVote(vote) {
+	    VoteApiUtil.updateVote(vote, this.receiveVote);
+	  },
+	  destroyVote: function destroyVote(vote) {
+	    VoteApiUtil.destroyVote(vote, this.removeVote);
+	  },
+	
+	
+	  receiveVote: function receiveVote(vote) {
+	    dispatcher.dispatch({
+	      actionType: VoteConstants.VOTE_RECEIVED,
+	      vote: vote
+	    });
+	  },
+	
+	  removeVote: function removeVote(vote) {
+	    dispatcher.dispatch({
+	      actionType: VoteConstants.VOTE_REMOVED,
+	      vote: vote
+	    });
+	  }
+	};
+	
+	module.exports = VoteActions;
+
+/***/ },
+/* 299 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var VoteConstants = {
+	  VOTE_RECEIVED: "VOTE_RECEIVED",
+	  VOTE_REMOVED: "VOTE_REMOVED"
+	};
+	
+	module.exports = VoteConstants;
+
+/***/ },
+/* 300 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var VoteApiUtil = {
+	  createVote: function createVote(vote, callback) {
+	    $.ajax({
+	      url: "api/votes",
+	      method: "POST",
+	      data: { vote: vote },
+	      success: function success(resp) {
+	        callback(resp);
+	      }
+	    });
+	  },
+	
+	  updateVote: function updateVote(vote, callback) {
+	    $.ajax({
+	      url: "api/votes",
+	      method: "PATCH",
+	      data: { vote: vote },
+	      success: function success(resp) {
+	        callback(resp);
+	      }
+	    });
+	  },
+	
+	  destroyVote: function destroyVote(vote, callback) {
+	    $.ajax({
+	      url: "api/votes",
+	      method: "DELETE",
+	      data: { vote: vote },
+	      success: function success(resp) {
+	        callback(resp);
+	      }
+	    });
+	  }
+	};
+	
+	module.exports = VoteApiUtil;
+
+/***/ },
+/* 301 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -36189,351 +36773,6 @@
 	};
 	
 	module.exports = TimeUtil;
-
-/***/ },
-/* 291 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var React = __webpack_require__(1);
-	var SessionStore = __webpack_require__(254);
-	var PostActions = __webpack_require__(280);
-	
-	var CommentCreate = React.createClass({
-	  displayName: 'CommentCreate',
-	  getInitialState: function getInitialState() {
-	    return { focused: false };
-	  },
-	  revealSubmit: function revealSubmit() {
-	    this.setState({ focused: true });
-	  },
-	  submit: function submit() {
-	    var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, commentable_id: this.props.postId, commentable_type: "Post" });
-	    PostActions.createComment(comment);
-	    this.setState({ body: undefined, focused: false });
-	  },
-	  updateBody: function updateBody() {
-	    var _this = this;
-	
-	    return function (e) {
-	      return _this.setState({ body: e.target.value });
-	    };
-	  },
-	
-	
-	  render: function render() {
-	    if (this.state.focused) {
-	      return React.createElement(
-	        'div',
-	        { className: 'comment-create-focused' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
-	        React.createElement(
-	          'button',
-	          { onClick: this.submit },
-	          'Submit'
-	        )
-	      );
-	    } else {
-	      return React.createElement(
-	        'div',
-	        { className: 'comment-create' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.revealSubmit })
-	      );
-	    }
-	  }
-	
-	});
-	
-	module.exports = CommentCreate;
-
-/***/ },
-/* 292 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var SessionApiUtil = __webpack_require__(293);
-	var ErrorActions = __webpack_require__(294);
-	var dispatcher = __webpack_require__(255);
-	var SessionConstants = __webpack_require__(276);
-	var hashHistory = __webpack_require__(168).hashHistory;
-	
-	var SessionActions = {
-	  signup: function signup(user) {
-	    SessionApiUtil.signup(user, this.receiveCurrentUser, ErrorActions.setErrors);
-	  },
-	
-	  login: function login(user) {
-	    SessionApiUtil.login(user, this.receiveCurrentUser, ErrorActions.setErrors);
-	  },
-	
-	  logout: function logout() {
-	    SessionApiUtil.logout(SessionActions.removeCurrentUser);
-	  },
-	  fetchCurrentUser: function fetchCurrentUser(complete) {
-	    SessionApiUtil.fetchCurrentUser(SessionActions.receiveCurrentUser, complete);
-	  },
-	  receiveCurrentUser: function receiveCurrentUser(currentUser) {
-	    dispatcher.dispatch({
-	      actionType: SessionConstants.LOGIN,
-	      currentUser: currentUser
-	    });
-	  },
-	  removeCurrentUser: function removeCurrentUser() {
-	    dispatcher.dispatch({
-	      actionType: SessionConstants.LOGOUT
-	    });
-	    hashHistory.push("/");
-	  }
-	};
-	
-	module.exports = SessionActions;
-
-/***/ },
-/* 293 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var SessionApiUtil = {
-		login: function login(user, success, _error) {
-			$.ajax({
-				url: '/api/session',
-				type: 'POST',
-				data: { user: user },
-				success: success,
-				error: function error(xhr) {
-					var errors = xhr.responseJSON;
-					_error("login", errors);
-				}
-			});
-		},
-		logout: function logout(success) {
-			$.ajax({
-				url: '/api/session',
-				method: 'DELETE',
-				success: success,
-				error: function error() {
-					console.log("Logout error in SessionApiUtil#logout");
-				}
-			});
-		},
-		signup: function signup(user, success, _error2) {
-			$.ajax({
-				url: '/api/user',
-				type: 'POST',
-				dataType: 'json',
-				data: { user: user },
-				success: success,
-				error: function error(xhr) {
-					var errors = xhr.responseJSON;
-					_error2("signup", errors);
-				}
-			});
-		},
-		fetchCurrentUser: function fetchCurrentUser(success, _complete) {
-			$.ajax({
-				url: '/api/session',
-				method: 'GET',
-				success: success,
-				error: function error(xhr) {
-					console.log("Error in SessionApiUtil#fetchCurrentUser");
-				},
-				complete: function complete() {
-					_complete();
-				}
-			});
-		}
-	};
-	
-	module.exports = SessionApiUtil;
-
-/***/ },
-/* 294 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var dispatcher = __webpack_require__(255);
-	var ErrorConstants = __webpack_require__(295);
-	
-	var ErrorActions = {
-	  setErrors: function setErrors(form, errors) {
-	    dispatcher.dispatch({
-	      actionType: ErrorConstants.SET_ERRORS,
-	      form: form,
-	      errors: errors
-	    });
-	  },
-	  clearErrors: function clearErrors() {
-	    dispatcher.dispatch({
-	      actionType: ErrorConstants.CLEAR_ERRORS
-	    });
-	  }
-	};
-	
-	module.exports = ErrorActions;
-
-/***/ },
-/* 295 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var ErrorConstants = {
-	  SET_ERRORS: "SET_ERRORS",
-	  CLEAR_ERRORS: "CLEAR_ERRORS"
-	};
-	
-	module.exports = ErrorConstants;
-
-/***/ },
-/* 296 */,
-/* 297 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var Store = __webpack_require__(259).Store;
-	var dispatcher = __webpack_require__(255);
-	var ErrorConstants = __webpack_require__(295);
-	
-	var ErrorStore = new Store(dispatcher);
-	
-	var _errors = {};
-	var _form = "";
-	
-	function setErrors(payload) {
-	  _errors = payload.errors;
-	  _form = payload.form;
-	  ErrorStore.__emitChange();
-	}
-	
-	function clearErrors() {
-	  _errors = {};
-	  _form = "";
-	  ErrorStore.__emitChange();
-	}
-	
-	ErrorStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case ErrorConstants.SET_ERRORS:
-	      setErrors(payload);
-	      break;
-	    case ErrorConstants.CLEAR_ERRORS:
-	      clearErrors();
-	      break;
-	  }
-	};
-	
-	ErrorStore.formErrors = function (form) {
-	  if (form !== _form) {
-	    return {};
-	  }
-	
-	  // copies the _errors object into a new object
-	  var result = {};
-	  for (var field in _errors) {
-	    result[field] = Array.from(_errors[field]);
-	  }
-	
-	  return result;
-	};
-	
-	ErrorStore.form = function () {
-	  return _form;
-	};
-	
-	module.exports = ErrorStore;
-
-/***/ },
-/* 298 */,
-/* 299 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	var React = __webpack_require__(1);
-	var ImageUploadButton = __webpack_require__(300);
-	
-	var ImageUploadForm = React.createClass({
-	  displayName: 'ImageUploadForm',
-	
-	  getInitialState: function getInitialState() {
-	    return { image_url: this.props.image_url };
-	  },
-	
-	  handleUpload: function handleUpload(results) {
-	    this.props.updateState(this.props.ordinal, "image_url", results.url);
-	    this.setState({ image_url: results.url });
-	  },
-	
-	  update: function update(property) {
-	    var _this = this;
-	
-	    return function (e) {
-	      _this.props.updateState(_this.props.ordinal, property, e.target.value);
-	      _this.setState(_defineProperty({}, property, e.target.value));
-	    };
-	  },
-	
-	
-	  render: function render() {
-	    var imageOption = void 0;
-	
-	    if (this.state.image_url) {
-	      imageOption = React.createElement('img', { src: this.state.image_url });
-	    } else {
-	      imageOption = React.createElement(ImageUploadButton, { postImage: this.handleUpload });
-	    }
-	
-	    return React.createElement(
-	      'div',
-	      { className: 'image-upload-container' },
-	      React.createElement('input', { type: 'text', value: this.props.title, onChange: this.update("title"), placeholder: 'Caption(optional)' }),
-	      imageOption,
-	      React.createElement('textarea', { value: this.props.description, onChange: this.update("description"), placeholder: 'Description(optional)' })
-	    );
-	  }
-	});
-	
-	module.exports = ImageUploadForm;
-
-/***/ },
-/* 300 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var React = __webpack_require__(1);
-	
-	var UploadImageButton = React.createClass({
-	  displayName: "UploadImageButton",
-	
-	  upload: function upload(e) {
-	    var _this = this;
-	
-	    e.preventDefault();
-	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
-	      if (!error) {
-	        _this.props.postImage(results[0]);
-	      }
-	    });
-	  },
-	
-	  render: function render() {
-	    return React.createElement(
-	      "button",
-	      { className: "upload-button", onClick: this.upload },
-	      "Upload Image(s)"
-	    );
-	  }
-	});
-	
-	module.exports = UploadImageButton;
 
 /***/ }
 /******/ ]);

@@ -70,6 +70,7 @@ Rails.application.routes.draw do
         post "upvote"
       end
     end
+    resources :votes, only: [:create, :update, :destroy]
     resource :users, only: [:create]
     resource :session, only: [:create, :destroy, :show]
   end
