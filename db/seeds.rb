@@ -36,10 +36,10 @@ images = Image.create([ { title: "post1 image1", description: "image1 descriptio
                         { title: "post10 image1", description: "image1 description", image_url: "http://i.imgur.com/h9M99vS.jpg", ordinal: 0, post_id: 10 },
                         { image_url: "http://i.imgur.com/h9M99vS.jpg", ordinal: 1, post_id: 10 }])
 
-comments = Comment.create([ { body: "post1 comment1", commenter_id: 2, commentable_id: 1, commentable_type: "Post" },
-                            { body: "post1 comment2", commenter_id: 1, commentable_id: 1, commentable_type: "Post" },
-                            { body: "post1 comment3", commenter_id: 3, commentable_id: 1, commentable_type: "Post" },
-                            { body: "post1 comment4", commenter_id: 2, commentable_id: 1, commentable_type: "Post" },
-                            { body: "post1 comment5", commenter_id: 1, commentable_id: 1, commentable_type: "Post" },
-                            { body: "post1 comment6", commenter_id: 2, commentable_id: 1, commentable_type: "Post" },
-                            { body: "comment1 comment1", commenter_id: 1, commentable_id: 1, commentable_type: "Comment" }])
+comments = Comment.create([ { body: "post1 comment1", commenter_id: 2, post_id: 1 },
+                            { body: "post1 comment2", commenter_id: 1, post_id: 1 },
+                            { body: "post1 comment3", commenter_id: 3, post_id: 1 },
+                            { body: "post1 comment4", commenter_id: 2, post_id: 1 },
+                            { body: "post1 comment5", commenter_id: 1, post_id: 1 },
+                            { body: "post1 comment6", commenter_id: 2, post_id: 1 },
+                            { body: "comment1 comment1", commenter_id: 1, post_id: 1, parent_comment_id: 1 }])

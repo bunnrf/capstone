@@ -28677,6 +28677,7 @@
 	var dispatcher = __webpack_require__(255);
 	var Store = __webpack_require__(259).Store;
 	var SessionConstants = __webpack_require__(276);
+	var VoteConstants = __webpack_require__(299);
 	
 	var SessionStore = new Store(dispatcher);
 	
@@ -28703,6 +28704,12 @@
 	      _logout();
 	      SessionStore.__emitChange();
 	      break;
+	    case VoteConstants.VOTE_RECEIVED:
+	      SessionStore.__emitChange();
+	      break;
+	    case VoteConstants.VOTE_REMOVED:
+	      SessionStore.__emitChange();
+	      break;
 	  }
 	};
 	
@@ -28716,6 +28723,22 @@
 	
 	SessionStore.isUserLoggedIn = function () {
 	  return !!_currentUser.id;
+	};
+	
+	SessionStore._addVote = function (vote) {
+	  if (vote.votable_type === "Post") {
+	    _currentUser.post_votes[vote.votable_id] = { vote_type: vote.vote_type };
+	  } else {
+	    _currentUser.comment_votes[vote.votable_id] = { vote_type: vote.vote_type };
+	  }
+	};
+	
+	SessionStore._removeVote = function (vote) {
+	  if (vote.votable_type === "Post") {
+	    _currentUser.post_votes[vote.votable_id] = "";
+	  } else {
+	    _currentUser.comment_votes[vote.votable_id] = "";
+	  }
 	};
 	
 	module.exports = SessionStore;
@@ -35896,6 +35919,7 @@
 	
 	var Store = __webpack_require__(259).Store;
 	var PostConstants = __webpack_require__(285);
+	var VoteConstants = __webpack_require__(299);
 	var dispatcher = __webpack_require__(255);
 	
 	var _posts = {};
@@ -35937,14 +35961,11 @@
 	    case PostConstants.POST_RECEIVED:
 	      resetSinglePost(payload.post);
 	      break;
-	    case PostConstants.VOTE_RECEIVED:
-	      // const id;
-	      // id = (vote.votable_id === "Post" ? vote.voteable_id : vote.voteable.post_id)
-	      // id = payload.vote.voteable_id;
-	      resetSinglePost(payload.vote.votable_id);
+	    case VoteConstants.VOTE_RECEIVED:
+	      resetSinglePost(payload.post);
 	      break;
-	    case PostConstants.VOTE_REMOVED:
-	      resetSinglePost(payload.vote.votable_id);
+	    case VoteConstants.VOTE_REMOVED:
+	      resetSinglePost(payload.post);
 	      break;
 	  }
 	};
@@ -36186,7 +36207,7 @@
 	    var voteStatus = void 0;
 	
 	    if (currentUser.post_votes && currentUser.post_votes[this.props.post.id]) {
-	      voteStatus = currentUser.post_votes[this.props.post.id]["vote_status"];
+	      voteStatus = currentUser.post_votes[this.props.post.id]["vote_type"];
 	    }
 	
 	    return { currentUser: currentUser, voteStatus: voteStatus };
@@ -36208,24 +36229,40 @@
 	    var voteStatus = void 0;
 	
 	    if (currentUser.post_votes && currentUser.post_votes[this.props.post.id]) {
-	      voteStatus = currentUser.post_votes[this.props.post.id]["vote_status"];
+	      voteStatus = currentUser.post_votes[this.props.post.id]["vote_type"];
 	    }
 	
 	    this.setState({ currentUser: currentUser, voteStatus: voteStatus });
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+	    var currentUser = this.state.currentUser;
+	    var voteStatus = void 0;
+	
+	    if (currentUser.post_votes && currentUser.post_votes[newProps.post.id]) {
+	      voteStatus = currentUser.post_votes[newProps.post.id]["vote_type"];
+	    }
+	
+	    this.setState({ voteStatus: voteStatus });
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
 	    this.userListener.remove();
 	    window.removeEventListener('scroll', this.stickyScroll, false);
 	  },
 	  isUpvoted: function isUpvoted() {
-	    this.state.currentUser;
+	    if (this.state.voteStatus) {
+	      return this.state.voteStatus === "upvote";
+	    }
+	    return false;
 	  },
 	  isDownvoted: function isDownvoted() {
-	    this.state.userVotes;
+	    if (this.state.voteStatus) {
+	      return this.state.voteStatus === "downvote";
+	    }
+	    return false;
 	  },
 	  toggleUpvote: function toggleUpvote() {
 	    if (this.isDownvoted()) {
-	      VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.post.id, votable_type: "Post" });
+	      VoteActions.updateVote({ vote_type: "upvote", votable_id: this.props.post.id, votable_type: "Post" });
 	    } else if (this.isUpvoted()) {
 	      VoteActions.destroyVote({ votable_id: this.props.post.id, votable_type: "Post" });
 	    } else {
@@ -36253,8 +36290,6 @@
 	    var upvoteClass = "upvote";
 	    var downvoteClass = "downvote";
 	
-	    console.log(this.state.currentUser);
-	
 	    if (this.state.currentUser) {
 	      post_votes = this.state.currentUser.post_votes;
 	      comment_votes = this.state.currentUser.comment_votes;
@@ -36271,13 +36306,13 @@
 	        return React.createElement(ImageDetail, { key: image.id, image: image });
 	      });
 	    }
-	    if (post.comments) {
-	      commentsIndex = post.comments.map(function (comment) {
+	    if (post.comments_by_parent) {
+	      commentsIndex = post.comments_by_parent[""].map(function (topLevelComment) {
 	        var voteStatus = undefined;
-	        if (comment_votes && comment_votes[comment.id]) {
-	          voteStatus = comment_votes[comment.id]["vote_type"];
+	        if (comment_votes && comment_votes[topLevelComment.id]) {
+	          voteStatus = comment_votes[topLevelComment.id]["vote_type"];
 	        }
-	        return React.createElement(CommentDetail, { key: comment.id, comment: comment, voteStatus: voteStatus });
+	        return React.createElement(CommentDetail, { key: topLevelComment.id, comment: topLevelComment, voteStatus: voteStatus, commentsByParent: post.comments_by_parent });
 	      });
 	    }
 	    if (post.author) {
@@ -36650,31 +36685,35 @@
 	
 	var VoteConstants = __webpack_require__(299);
 	var VoteApiUtil = __webpack_require__(300);
+	var SessionStore = __webpack_require__(254);
 	var dispatcher = __webpack_require__(255);
 	
 	var VoteActions = {
 	  createVote: function createVote(vote) {
+	    SessionStore._addVote(vote);
 	    VoteApiUtil.createVote(vote, this.receiveVote);
 	  },
 	  updateVote: function updateVote(vote) {
+	    SessionStore._addVote(vote);
 	    VoteApiUtil.updateVote(vote, this.receiveVote);
 	  },
 	  destroyVote: function destroyVote(vote) {
+	    SessionStore._removeVote(vote);
 	    VoteApiUtil.destroyVote(vote, this.removeVote);
 	  },
 	
 	
-	  receiveVote: function receiveVote(vote) {
+	  receiveVote: function receiveVote(post) {
 	    dispatcher.dispatch({
 	      actionType: VoteConstants.VOTE_RECEIVED,
-	      vote: vote
+	      post: post
 	    });
 	  },
 	
-	  removeVote: function removeVote(vote) {
+	  removeVote: function removeVote(post) {
 	    dispatcher.dispatch({
 	      actionType: VoteConstants.VOTE_REMOVED,
-	      vote: vote
+	      post: post
 	    });
 	  }
 	};
@@ -36714,7 +36753,7 @@
 	
 	  updateVote: function updateVote(vote, callback) {
 	    $.ajax({
-	      url: "api/votes",
+	      url: "api/votes/" + vote.votable_id,
 	      method: "PATCH",
 	      data: { vote: vote },
 	      success: function success(resp) {
@@ -36725,7 +36764,7 @@
 	
 	  destroyVote: function destroyVote(vote, callback) {
 	    $.ajax({
-	      url: "api/votes",
+	      url: "api/votes/" + vote.votable_id,
 	      method: "DELETE",
 	      data: { vote: vote },
 	      success: function success(resp) {

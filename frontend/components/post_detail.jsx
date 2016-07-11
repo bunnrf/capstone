@@ -14,7 +14,7 @@ const PostDetail = React.createClass({
     let voteStatus;
 
     if (currentUser.post_votes && currentUser.post_votes[this.props.post.id]) {
-      voteStatus = currentUser.post_votes[this.props.post.id]["vote_status"];
+      voteStatus = currentUser.post_votes[this.props.post.id]["vote_type"];
     }
 
     return { currentUser: currentUser, voteStatus: voteStatus };
@@ -39,10 +39,21 @@ const PostDetail = React.createClass({
     let voteStatus;
 
     if (currentUser.post_votes && currentUser.post_votes[this.props.post.id]) {
-      voteStatus = currentUser.post_votes[this.props.post.id]["vote_status"];
+      voteStatus = currentUser.post_votes[this.props.post.id]["vote_type"];
     }
 
     this.setState( { currentUser: currentUser, voteStatus: voteStatus } );
+  },
+
+  componentWillReceiveProps(newProps) {
+    let currentUser = this.state.currentUser;
+    let voteStatus;
+
+    if (currentUser.post_votes && currentUser.post_votes[newProps.post.id]) {
+      voteStatus = currentUser.post_votes[newProps.post.id]["vote_type"];
+    }
+
+    this.setState( { voteStatus: voteStatus } );
   },
 
   componentWillUnmount() {
@@ -51,16 +62,22 @@ const PostDetail = React.createClass({
   },
 
   isUpvoted() {
-    this.state.currentUser
+    if (this.state.voteStatus) {
+      return this.state.voteStatus === "upvote";
+    }
+    return false;
   },
 
   isDownvoted() {
-    this.state.userVotes
+    if (this.state.voteStatus) {
+      return this.state.voteStatus === "downvote";
+    }
+    return false;
   },
 
   toggleUpvote() {
     if (this.isDownvoted()) {
-      VoteActions.updateVote( {  vote_type: "downvote", votable_id: this.props.post.id, votable_type: "Post" } );
+      VoteActions.updateVote( {  vote_type: "upvote", votable_id: this.props.post.id, votable_type: "Post" } );
     } else if (this.isUpvoted()) {
       VoteActions.destroyVote( { votable_id: this.props.post.id, votable_type: "Post" } );
     } else {
@@ -90,8 +107,6 @@ const PostDetail = React.createClass({
     let upvoteClass = "upvote";
     let downvoteClass = "downvote";
 
-    console.log(this.state.currentUser);
-
     if (this.state.currentUser) {
       post_votes = this.state.currentUser.post_votes;
       comment_votes = this.state.currentUser.comment_votes;
@@ -108,13 +123,13 @@ const PostDetail = React.createClass({
         return <ImageDetail key={ image.id } image={ image } />
       });
     }
-    if (post.comments){
-      commentsIndex = post.comments.map((comment) => {
+    if (post.comments_by_parent){
+      commentsIndex = post.comments_by_parent[""].map((topLevelComment) => {
         let voteStatus = undefined;
-        if (comment_votes && comment_votes[comment.id]) {
-          voteStatus = comment_votes[comment.id]["vote_type"]
+        if (comment_votes && comment_votes[topLevelComment.id]) {
+          voteStatus = comment_votes[topLevelComment.id]["vote_type"]
         }
-        return <CommentDetail key={ comment.id } comment={ comment } voteStatus={ voteStatus }/>
+        return <CommentDetail key={ topLevelComment.id } comment={ topLevelComment } voteStatus={ voteStatus } commentsByParent={ post.comments_by_parent } />
       });
     }
     if (post.author) {

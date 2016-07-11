@@ -8,7 +8,7 @@ class User < ActiveRecord::Base
   after_initialize :ensure_session_token
 
   has_many :posts
-  has_many :comments, as: :commentable
+  has_many :comments, inverse_of: :commenter
   has_many :votes
   has_many :voted_posts, through: :votes, source: :votable, source_type: "Post"
   has_many :voted_comments, through: :votes, source: :votable, source_type: "Comment"

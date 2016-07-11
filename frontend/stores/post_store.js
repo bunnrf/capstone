@@ -1,5 +1,6 @@
 const Store = require('flux/utils').Store;
 const PostConstants = require('../constants/post_constants');
+const VoteConstants = require('../constants/vote_constants');
 const dispatcher = require('../dispatcher/dispatcher');
 
 let _posts = {};
@@ -43,14 +44,11 @@ PostStore.__onDispatch = function(payload) {
     case PostConstants.POST_RECEIVED:
       resetSinglePost(payload.post);
       break;
-    case PostConstants.VOTE_RECEIVED:
-      // const id;
-      // id = (vote.votable_id === "Post" ? vote.voteable_id : vote.voteable.post_id)
-      // id = payload.vote.voteable_id;
-      resetSinglePost(payload.vote.votable_id);
+    case VoteConstants.VOTE_RECEIVED:
+      resetSinglePost(payload.post);
       break;
-    case PostConstants.VOTE_REMOVED:
-      resetSinglePost(payload.vote.votable_id);
+    case VoteConstants.VOTE_REMOVED:
+      resetSinglePost(payload.post);
       break;
   }
 }
