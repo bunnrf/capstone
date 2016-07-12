@@ -5,7 +5,7 @@ class Api::CommentsController < ApplicationController
     comment = Comment.new(comment_params)
 
     if comment.save
-      @post = comment.commentable
+      @post = comment.post
       render '/api/posts/show'
     else
       render json: comment, status: :unprocessable_entity
@@ -14,6 +14,6 @@ class Api::CommentsController < ApplicationController
 
   private
   def comment_params
-    params.require(:comment).permit(:body, :user_id, :commenter_id, :commentable_id, :commentable_type)
+    params.require(:comment).permit(:body, :commenter_id, :post_id, :parent_comment_id)
   end
 end

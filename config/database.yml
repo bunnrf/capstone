@@ -78,8 +78,3 @@ test:
 #   production:
 #     url: <%= ENV['DATABASE_URL'] %>
 #
-production:
-  <<: *default
-  database: ImgurClone_production
-  username: ImgurClone
-  password: <%= ENV['IMGURCLONE_DATABASE_PASSWORD'] %>

@@ -36570,6 +36570,12 @@
 	    var downvoteClass = "downvote";
 	    var points = comment.points + (comment.points === 1 ? " point" : " points");
 	
+	    var commentsByParent = this.props.commentsByParent;
+	    var replies = void 0;
+	    if (commentsByParent[comment.id].length > 0) {
+	      replies = " : " + commentsByParent[comment.id].length + (commentsByParent[comment.id].length === 1 ? " reply " : " replies ");
+	    }
+	
 	    if (this.state.voteStatus === "upvote") {
 	      upvoteClass = "upvote upvoted";
 	    } else if (this.state.voteStatus === "downvote") {
@@ -36619,7 +36625,7 @@
 	            points,
 	            ' : ',
 	            TimeUtil.timeSince(comment.time_since),
-	            ' '
+	            replies
 	          )
 	        ),
 	        React.createElement(

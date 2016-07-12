@@ -51,6 +51,12 @@ const CommentDetail = React.createClass({
     let downvoteClass = "downvote";
     let points = comment.points + (comment.points === 1 ? " point" : " points");
 
+    let commentsByParent = this.props.commentsByParent;
+    let replies;
+    if (commentsByParent[comment.id].length > 0) {
+      replies = " : " + commentsByParent[comment.id].length + (commentsByParent[comment.id].length === 1 ? " reply " : " replies ");
+    }
+
     if (this.state.voteStatus === "upvote") {
       upvoteClass = "upvote upvoted";
     } else if (this.state.voteStatus === "downvote") {
@@ -66,7 +72,7 @@ const CommentDetail = React.createClass({
         <div className="comment-text-container">
           <div className="details">
             <a href={ "users/" + comment.commenter.id }>{ comment.commenter.username }</a>
-            <span> { points } : { TimeUtil.timeSince(comment.time_since) } </span>
+            <span> { points } : { TimeUtil.timeSince(comment.time_since) }{ replies }</span>
           </div>
           <div className="body">
             { comment.body }
