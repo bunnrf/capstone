@@ -23,10 +23,6 @@ Imagr is a web application inspired by Imgur that will be built using Ruby on Ra
   - [ ] Smooth, bug-free navigation
   - [ ] Adequate seed data to demonstrate the site's features
   - [ ] Adequate CSS styling
-- [ ] Editing of posts and comments
-  - [ ] Smooth, bug-free navigation
-  - [ ] Adequate seed data to demonstrate the site's features
-  - [ ] Adequate CSS styling
 
 ## Design Docs
 * [View Wireframes][views]
