@@ -36531,19 +36531,34 @@
 	  getInitialState: function getInitialState() {
 	    return { voteStatus: this.props.voteStatus };
 	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+	    this.setState({ voteStatus: this.props.voteStatus });
+	  },
+	  isUpvoted: function isUpvoted() {
+	    if (this.state.voteStatus) {
+	      return this.state.voteStatus === "upvote";
+	    }
+	    return false;
+	  },
+	  isDownvoted: function isDownvoted() {
+	    if (this.state.voteStatus) {
+	      return this.state.voteStatus === "downvote";
+	    }
+	    return false;
+	  },
 	  toggleUpvote: function toggleUpvote() {
-	    if (this.state.voteStatus === "downvote") {
+	    if (this.isDownvoted()) {
 	      VoteActions.updateVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	    } else if (this.state.voteStatus === "upvote") {
+	    } else if (this.isUpvoted()) {
 	      VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
 	    } else {
 	      VoteActions.createVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
 	    }
 	  },
 	  toggleDownvote: function toggleDownvote() {
-	    if (this.state.voteStatus === "upvote") {
+	    if (this.isUpvoted()) {
 	      VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	    } else if (this.state.voteStatus === "downvote") {
+	    } else if (this.isDownvoted()) {
 	      VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
 	    } else {
 	      VoteActions.createVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
@@ -36553,6 +36568,7 @@
 	    var comment = this.props.comment;
 	    var upvoteClass = "upvote";
 	    var downvoteClass = "downvote";
+	    var points = comment.points + (comment.points === 1 ? " point" : " points");
 	
 	    if (this.state.voteStatus === "upvote") {
 	      upvoteClass = "upvote upvoted";
@@ -36600,8 +36616,8 @@
 	            'span',
 	            null,
 	            ' ',
-	            comment.points,
-	            ' points : ',
+	            points,
+	            ' : ',
 	            TimeUtil.timeSince(comment.time_since),
 	            ' '
 	          )
@@ -36636,11 +36652,8 @@
 	  focus: function focus() {
 	    this.setState({ focused: true });
 	  },
-	  blur: function blur() {
-	    this.setState({ focused: false });
-	  },
 	  submit: function submit() {
-	    var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, commentable_id: this.props.postId, commentable_type: "Post" });
+	    var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId });
 	    PostActions.createComment(comment);
 	    this.setState({ body: undefined, focused: false });
 	  },
@@ -36658,7 +36671,7 @@
 	      return React.createElement(
 	        'div',
 	        { className: 'comment-create-focused' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body, onBlur: this.blur }),
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
 	        React.createElement(
 	          'button',
 	          { onClick: this.submit },

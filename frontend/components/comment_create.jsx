@@ -11,14 +11,10 @@ const CommentCreate = React.createClass({
     this.setState( { focused: true } );
   },
 
-  blur() {
-    this.setState( { focused: false } );
-  },
-
   submit() {
     const comment = Object.assign(
       {},
-      { body: this.state.body, commenter_id: SessionStore.currentUser().id, commentable_id: this.props.postId, commentable_type: "Post" }
+      { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId }
     );
     PostActions.createComment(comment);
     this.setState( { body: undefined, focused: false } );
@@ -32,7 +28,7 @@ const CommentCreate = React.createClass({
     if (this.state.focused) {
       return (
         <div className="comment-create-focused">
-          <textarea placeholder="Submit a comment" onChange={ this.updateBody() } value={ this.state.body } onBlur={this.blur} />
+          <textarea placeholder="Submit a comment" onChange={ this.updateBody() } value={ this.state.body } />
           <button onClick={ this.submit } >Submit</button>
         </div>
       );
