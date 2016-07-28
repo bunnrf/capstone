@@ -54,7 +54,12 @@ const Topbar = React.createClass({
   },
 
   openModal() {
-    this.setState( { modalOpen: true } );
+    if (SessionStore.isUserLoggedIn()) {
+      this.setState( { modalOpen: true } );
+    } else {
+      // this is awful
+      $(".signin-link")[0].click();
+    }
   },
 
 	closeModal: function(){

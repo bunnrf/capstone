@@ -12,12 +12,16 @@ const CommentCreate = React.createClass({
   },
 
   submit() {
-    const comment = Object.assign(
-      {},
-      { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId }
-    );
-    PostActions.createComment(comment);
-    this.setState( { body: undefined, focused: false } );
+    if (SessionStore.isUserLoggedIn()) {
+      const comment = Object.assign(
+        {},
+        { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId }
+      );
+      PostActions.createComment(comment);
+      this.setState( { body: undefined, focused: false } );
+    } else {
+      $(".signin-link")[0].click();
+    }
   },
 
   updateBody() {

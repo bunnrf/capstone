@@ -157,8 +157,8 @@ const UserNav = React.createClass({
     } else {
       return (
         <ul className="user-nav">
-          <li className="signin-link"><a onClick={this.openLogin} className="navigation-link">sign in</a></li>
-          <li className="signup-link"><a onClick={this.openSignup} className="navigation-link">sign up</a></li>
+          <li className="signin-button"><a onClick={this.openLogin} className="signin-link">sign in</a></li>
+          <li className="signup-button"><a onClick={this.openSignup} className="signup-link">sign up</a></li>
           <Modal className="login-modal" isOpen={this.state.modalOpen} onRequestClose={this.closeModal} style={this.customStyle()}>
     				<button className="close-modal" onClick={this.closeModal}>X</button>
     				<div className="login-form-container">

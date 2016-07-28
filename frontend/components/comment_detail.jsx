@@ -1,4 +1,5 @@
 const React = require('react');
+const SessionStore = require('../stores/session_store');
 const TimeUtil = require('../util/time_util');
 const VoteActions = require('../actions/vote_actions');
 
@@ -26,22 +27,30 @@ const CommentDetail = React.createClass({
   },
 
   toggleUpvote() {
-    if (this.isDownvoted()) {
-      VoteActions.updateVote( {  vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
-    } else if (this.isUpvoted()) {
-      VoteActions.destroyVote( { votable_id: this.props.comment.id, votable_type: "Comment" } );
+    if (SessionStore.isUserLoggedIn()) {
+      if (this.isDownvoted()) {
+        VoteActions.updateVote( {  vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
+      } else if (this.isUpvoted()) {
+        VoteActions.destroyVote( { votable_id: this.props.comment.id, votable_type: "Comment" } );
+      } else {
+        VoteActions.createVote( {  vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
+      }
     } else {
-      VoteActions.createVote( {  vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
+      $(".signin-link")[0].click();
     }
   },
 
   toggleDownvote() {
-    if (this.isUpvoted()) {
-      VoteActions.updateVote( {  vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
-    } else if (this.isDownvoted()) {
-      VoteActions.destroyVote( { votable_id: this.props.comment.id, votable_type: "Comment" } );
+    if (SessionStore.isUserLoggedIn()) {      
+      if (this.isUpvoted()) {
+        VoteActions.updateVote( {  vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
+      } else if (this.isDownvoted()) {
+        VoteActions.destroyVote( { votable_id: this.props.comment.id, votable_type: "Comment" } );
+      } else {
+        VoteActions.createVote( {  vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
+      }
     } else {
-      VoteActions.createVote( {  vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
+      $(".signin-link")[0].click();
     }
   },
 

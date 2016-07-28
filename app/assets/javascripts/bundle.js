@@ -28262,7 +28262,12 @@
 	    );
 	  },
 	  openModal: function openModal() {
-	    this.setState({ modalOpen: true });
+	    if (SessionStore.isUserLoggedIn()) {
+	      this.setState({ modalOpen: true });
+	    } else {
+	      // this is awful
+	      $(".signin-link")[0].click();
+	    }
 	  },
 	
 	
@@ -28596,19 +28601,19 @@
 	        { className: 'user-nav' },
 	        React.createElement(
 	          'li',
-	          { className: 'signin-link' },
+	          { className: 'signin-button' },
 	          React.createElement(
 	            'a',
-	            { onClick: this.openLogin, className: 'navigation-link' },
+	            { onClick: this.openLogin, className: 'signin-link' },
 	            'sign in'
 	          )
 	        ),
 	        React.createElement(
 	          'li',
-	          { className: 'signup-link' },
+	          { className: 'signup-button' },
 	          React.createElement(
 	            'a',
-	            { onClick: this.openSignup, className: 'navigation-link' },
+	            { onClick: this.openSignup, className: 'signup-link' },
 	            'sign up'
 	          )
 	        ),
@@ -36474,7 +36479,7 @@
 	var ImageDetailDescription = __webpack_require__(296);
 	
 	var Player = function Player(props) {
-	  var videourl = props.videourl.replace('.gifv', '.mp4');
+	  var videourl = props.videourl.replace('.gifv', '.mp4').replace('.gif', '.mp4');
 	  return React.createElement('video', { src: videourl, loop: true, autoPlay: true });
 	};
 	
@@ -36558,6 +36563,7 @@
 	'use strict';
 	
 	var React = __webpack_require__(1);
+	var SessionStore = __webpack_require__(254);
 	var TimeUtil = __webpack_require__(298);
 	var VoteActions = __webpack_require__(299);
 	
@@ -36582,21 +36588,29 @@
 	    return false;
 	  },
 	  toggleUpvote: function toggleUpvote() {
-	    if (this.isDownvoted()) {
-	      VoteActions.updateVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	    } else if (this.isUpvoted()) {
-	      VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	    if (SessionStore.isUserLoggedIn()) {
+	      if (this.isDownvoted()) {
+	        VoteActions.updateVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else if (this.isUpvoted()) {
+	        VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else {
+	        VoteActions.createVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      }
 	    } else {
-	      VoteActions.createVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      $(".signin-link")[0].click();
 	    }
 	  },
 	  toggleDownvote: function toggleDownvote() {
-	    if (this.isUpvoted()) {
-	      VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	    } else if (this.isDownvoted()) {
-	      VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	    if (SessionStore.isUserLoggedIn()) {
+	      if (this.isUpvoted()) {
+	        VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else if (this.isDownvoted()) {
+	        VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else {
+	        VoteActions.createVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      }
 	    } else {
-	      VoteActions.createVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      $(".signin-link")[0].click();
 	    }
 	  },
 	  render: function render() {
@@ -36823,9 +36837,13 @@
 	    this.setState({ focused: true });
 	  },
 	  submit: function submit() {
-	    var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId });
-	    PostActions.createComment(comment);
-	    this.setState({ body: undefined, focused: false });
+	    if (SessionStore.isUserLoggedIn()) {
+	      var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId });
+	      PostActions.createComment(comment);
+	      this.setState({ body: undefined, focused: false });
+	    } else {
+	      $(".signin-link")[0].click();
+	    }
 	  },
 	  updateBody: function updateBody() {
 	    var _this = this;

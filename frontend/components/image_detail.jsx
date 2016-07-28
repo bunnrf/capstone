@@ -3,7 +3,7 @@ const ImageDetailHeader = require('./image_detail_header');
 const ImageDetailDescription = require('./image_detail_description');
 
 const Player = props => {
-   let videourl = props.videourl.replace('.gifv', '.mp4');
+   let videourl = props.videourl.replace('.gifv', '.mp4').replace('.gif', '.mp4');
    return <video src={ videourl } loop autoPlay />;
 };
 
