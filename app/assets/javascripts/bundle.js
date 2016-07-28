@@ -28444,6 +28444,8 @@
 	  },
 	
 	  fillDemoPassword: function fillDemoPassword(_password) {
+	    var _this = this;
+	
 	    var self = this;
 	    if (_password.length > 0) {
 	      setTimeout(function () {
@@ -28453,8 +28455,12 @@
 	        self.fillDemoPassword(_password);
 	      }, 120);
 	    } else {
-	      var e = { preventDefault: function preventDefault() {} };
-	      this.handleDemoSubmit(e);
+	      (function () {
+	        var e = { preventDefault: function preventDefault() {} };
+	        setTimeout(function () {
+	          _this.handleDemoSubmit(e);
+	        }, 500);
+	      })();
 	    }
 	  },
 	
@@ -28520,10 +28526,10 @@
 	    );
 	  },
 	  update: function update(property) {
-	    var _this = this;
+	    var _this2 = this;
 	
 	    return function (e) {
-	      return _this.setState(_defineProperty({}, property, e.target.value));
+	      return _this2.setState(_defineProperty({}, property, e.target.value));
 	    };
 	  },
 	
@@ -28570,7 +28576,7 @@
 	      navLink = React.createElement(
 	        'a',
 	        { onClick: this.openLogin },
-	        'log in instead'
+	        'login instead'
 	      );
 	    }
 	
@@ -28637,31 +28643,34 @@
 	              this.state.mode,
 	              ' or ',
 	              navLink,
+	              React.createElement('br', null),
 	              this.fieldErrors("base"),
+	              React.createElement(
+	                'span',
+	                null,
+	                'imagr'
+	              ),
 	              React.createElement(
 	                'div',
 	                { className: 'login-form' },
-	                React.createElement('br', null),
 	                this.fieldErrors("username"),
 	                React.createElement('input', { type: 'text',
 	                  value: this.state.username,
 	                  onChange: this.update("username"),
 	                  className: 'login-input-username',
 	                  placeholder: 'Username' }),
-	                React.createElement('br', null),
 	                this.fieldErrors("password"),
 	                React.createElement('input', { type: 'password',
 	                  value: this.state.password,
 	                  onChange: this.update("password"),
 	                  className: 'login-input-password',
 	                  placeholder: 'Password' }),
-	                React.createElement('br', null),
-	                React.createElement('input', { type: 'submit', value: 'Submit' })
-	              ),
-	              React.createElement(
-	                'div',
-	                { id: 'demo-login', className: 'modal-submit', onClick: this.demoLoginHandler },
-	                'Demo Login'
+	                React.createElement(
+	                  'div',
+	                  { className: 'login-submit-container' },
+	                  React.createElement('input', { id: 'demo-login', type: 'demo-submit', formAction: 'none', className: 'modal-submit', value: 'Demo Login', onClick: this.demoLoginHandler, readOnly: true }),
+	                  React.createElement('input', { type: 'submit', value: 'Submit' })
+	                )
 	              )
 	            )
 	          )
@@ -36209,15 +36218,15 @@
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var Linkify = __webpack_require__(302);
-	var ImageDetail = __webpack_require__(294);
-	var CommentDetail = __webpack_require__(297);
-	var CommentCreate = __webpack_require__(301);
+	var Linkify = __webpack_require__(294);
+	var ImageDetail = __webpack_require__(302);
+	var CommentDetail = __webpack_require__(305);
+	var CommentCreate = __webpack_require__(309);
 	var PostActions = __webpack_require__(285);
-	var VoteActions = __webpack_require__(299);
+	var VoteActions = __webpack_require__(307);
 	var PostStore = __webpack_require__(288);
 	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(298);
+	var TimeUtil = __webpack_require__(306);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
@@ -36343,7 +36352,12 @@
 	        if (comment_votes && comment_votes[topLevelComment.id]) {
 	          voteStatus = comment_votes[topLevelComment.id]["vote_type"];
 	        }
-	        return React.createElement(CommentDetail, { key: topLevelComment.id, comment: topLevelComment, voteStatus: voteStatus, commentsByParent: post.comments_by_parent });
+	        return React.createElement(CommentDetail, { key: topLevelComment.id, comment: topLevelComment, voteStatus: voteStatus, commentsByParent: post.comments_by_parent, commentVotes: comment_votes });
+	      }).sort(function (a, b) {
+	        if (a.props.comment.points > b.props.comment.points) {
+	          return 0;
+	        }
+	        return 1;
 	      });
 	    }
 	    if (post.author) {
@@ -36474,416 +36488,6 @@
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var ImageDetailHeader = __webpack_require__(295);
-	var ImageDetailDescription = __webpack_require__(296);
-	
-	var Player = function Player(props) {
-	  var videourl = props.videourl.replace('.gifv', '.mp4').replace('.gif', '.mp4');
-	  return React.createElement('video', { src: videourl, loop: true, autoPlay: true });
-	};
-	
-	var ImageDetail = React.createClass({
-	  displayName: 'ImageDetail',
-	  render: function render() {
-	    var image = this.props.image;
-	    var display = image.image_url.endsWith('.gifv') || image.image_url.endsWith('.gif') ? React.createElement(Player, { videourl: image.image_url }) : React.createElement('img', { alt: true, src: image.image_url });
-	
-	    return React.createElement(
-	      'div',
-	      { className: 'image-detail-container' },
-	      image.title ? React.createElement(ImageDetailHeader, { text: image.title }) : null,
-	      React.createElement(
-	        'div',
-	        { className: 'image-container' },
-	        display
-	      ),
-	      image.description ? React.createElement(ImageDetailDescription, { text: image.description }) : null
-	    );
-	  }
-	});
-	
-	module.exports = ImageDetail;
-
-/***/ },
-/* 295 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var React = __webpack_require__(1);
-	
-	var ImageDetailHeader = React.createClass({
-	  displayName: "ImageDetailHeader",
-	  render: function render() {
-	    return React.createElement(
-	      "div",
-	      { className: "image-detail-header" },
-	      React.createElement(
-	        "h2",
-	        null,
-	        this.props.text
-	      )
-	    );
-	  }
-	});
-	
-	module.exports = ImageDetailHeader;
-
-/***/ },
-/* 296 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var React = __webpack_require__(1);
-	var Linkify = __webpack_require__(302);
-	
-	var ImageDetailDescription = React.createClass({
-	  displayName: 'ImageDetailDescription',
-	  render: function render() {
-	    return React.createElement(
-	      'div',
-	      { className: 'image-detail-description' },
-	      React.createElement(
-	        Linkify,
-	        null,
-	        this.props.text
-	      )
-	    );
-	  }
-	});
-	
-	module.exports = ImageDetailDescription;
-
-/***/ },
-/* 297 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var React = __webpack_require__(1);
-	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(298);
-	var VoteActions = __webpack_require__(299);
-	
-	var CommentDetail = React.createClass({
-	  displayName: 'CommentDetail',
-	  getInitialState: function getInitialState() {
-	    return { voteStatus: this.props.voteStatus };
-	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
-	    this.setState({ voteStatus: this.props.voteStatus });
-	  },
-	  isUpvoted: function isUpvoted() {
-	    if (this.state.voteStatus) {
-	      return this.state.voteStatus === "upvote";
-	    }
-	    return false;
-	  },
-	  isDownvoted: function isDownvoted() {
-	    if (this.state.voteStatus) {
-	      return this.state.voteStatus === "downvote";
-	    }
-	    return false;
-	  },
-	  toggleUpvote: function toggleUpvote() {
-	    if (SessionStore.isUserLoggedIn()) {
-	      if (this.isDownvoted()) {
-	        VoteActions.updateVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	      } else if (this.isUpvoted()) {
-	        VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
-	      } else {
-	        VoteActions.createVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	      }
-	    } else {
-	      $(".signin-link")[0].click();
-	    }
-	  },
-	  toggleDownvote: function toggleDownvote() {
-	    if (SessionStore.isUserLoggedIn()) {
-	      if (this.isUpvoted()) {
-	        VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	      } else if (this.isDownvoted()) {
-	        VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
-	      } else {
-	        VoteActions.createVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
-	      }
-	    } else {
-	      $(".signin-link")[0].click();
-	    }
-	  },
-	  render: function render() {
-	    var comment = this.props.comment;
-	    var upvoteClass = "upvote";
-	    var downvoteClass = "downvote";
-	    var pointsText = comment.points + (comment.points === 1 ? " point" : " points");
-	
-	    var commentsByParent = this.props.commentsByParent;
-	    var repliesText = void 0;
-	    if (commentsByParent[comment.id]) {
-	      repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
-	    }
-	
-	    if (this.state.voteStatus === "upvote") {
-	      upvoteClass = "upvote upvoted";
-	    } else if (this.state.voteStatus === "downvote") {
-	      downvoteClass = "downvote downvoted";
-	    }
-	
-	    return React.createElement(
-	      'div',
-	      { className: 'comment-container' },
-	      React.createElement(
-	        'div',
-	        { className: 'votes-container' },
-	        React.createElement(
-	          'div',
-	          { className: 'upvote-button', onClick: this.toggleUpvote },
-	          React.createElement(
-	            'span',
-	            { className: upvoteClass },
-	            '➜'
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'downvote-button', onClick: this.toggleDownvote },
-	          React.createElement(
-	            'span',
-	            { className: downvoteClass },
-	            '➜'
-	          )
-	        )
-	      ),
-	      React.createElement(
-	        'div',
-	        { className: 'comment-text-container' },
-	        React.createElement(
-	          'div',
-	          { className: 'details' },
-	          React.createElement(
-	            'a',
-	            { href: "users/" + comment.commenter.id },
-	            comment.commenter.username
-	          ),
-	          React.createElement(
-	            'span',
-	            null,
-	            ' ',
-	            pointsText,
-	            ' : ',
-	            TimeUtil.timeSince(comment.time_since),
-	            repliesText,
-	            ' ',
-	            React.createElement(
-	              'a',
-	              { onClick: this.reply },
-	              'reply'
-	            )
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'body' },
-	          comment.body
-	        )
-	      )
-	    );
-	  }
-	});
-	
-	module.exports = CommentDetail;
-
-/***/ },
-/* 298 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var TimeUtil = {
-	    timeSince: function timeSince(time_since) {
-	        var seconds = Math.floor((new Date() - time_since) / 1000);
-	
-	        var interval = Math.floor(seconds / 31536000);
-	
-	        if (interval > 1) {
-	            return interval + " years ago";
-	        }
-	        interval = Math.floor(seconds / 2592000);
-	        if (interval > 1) {
-	            return interval + " months ago";
-	        }
-	        interval = Math.floor(seconds / 86400);
-	        if (interval > 1) {
-	            return interval + " days ago";
-	        }
-	        interval = Math.floor(seconds / 3600);
-	        if (interval > 1) {
-	            return interval + " hours ago";
-	        }
-	        interval = Math.floor(seconds / 60);
-	        if (interval > 1) {
-	            return interval + " minutes ago";
-	        }
-	        return Math.floor(seconds) + " seconds ago";
-	    }
-	};
-	
-	module.exports = TimeUtil;
-
-/***/ },
-/* 299 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var VoteConstants = __webpack_require__(277);
-	var VoteApiUtil = __webpack_require__(300);
-	var SessionStore = __webpack_require__(254);
-	var dispatcher = __webpack_require__(255);
-	
-	var VoteActions = {
-	  createVote: function createVote(vote) {
-	    SessionStore._addVote(vote);
-	    VoteApiUtil.createVote(vote, this.receiveVote);
-	  },
-	  updateVote: function updateVote(vote) {
-	    SessionStore._addVote(vote);
-	    VoteApiUtil.updateVote(vote, this.receiveVote);
-	  },
-	  destroyVote: function destroyVote(vote) {
-	    SessionStore._removeVote(vote);
-	    VoteApiUtil.destroyVote(vote, this.removeVote);
-	  },
-	
-	
-	  receiveVote: function receiveVote(post) {
-	    dispatcher.dispatch({
-	      actionType: VoteConstants.VOTE_RECEIVED,
-	      post: post
-	    });
-	  },
-	
-	  removeVote: function removeVote(post) {
-	    dispatcher.dispatch({
-	      actionType: VoteConstants.VOTE_REMOVED,
-	      post: post
-	    });
-	  }
-	};
-	
-	module.exports = VoteActions;
-
-/***/ },
-/* 300 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var VoteApiUtil = {
-	  createVote: function createVote(vote, callback) {
-	    $.ajax({
-	      url: "api/votes",
-	      method: "POST",
-	      data: { vote: vote },
-	      success: function success(resp) {
-	        callback(resp);
-	      }
-	    });
-	  },
-	
-	  updateVote: function updateVote(vote, callback) {
-	    $.ajax({
-	      url: "api/votes/" + vote.votable_id,
-	      method: "PATCH",
-	      data: { vote: vote },
-	      success: function success(resp) {
-	        callback(resp);
-	      }
-	    });
-	  },
-	
-	  destroyVote: function destroyVote(vote, callback) {
-	    $.ajax({
-	      url: "api/votes/" + vote.votable_id,
-	      method: "DELETE",
-	      data: { vote: vote },
-	      success: function success(resp) {
-	        callback(resp);
-	      }
-	    });
-	  }
-	};
-	
-	module.exports = VoteApiUtil;
-
-/***/ },
-/* 301 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var React = __webpack_require__(1);
-	var SessionStore = __webpack_require__(254);
-	var PostActions = __webpack_require__(285);
-	
-	var CommentCreate = React.createClass({
-	  displayName: 'CommentCreate',
-	  getInitialState: function getInitialState() {
-	    return { focused: false };
-	  },
-	  focus: function focus() {
-	    this.setState({ focused: true });
-	  },
-	  submit: function submit() {
-	    if (SessionStore.isUserLoggedIn()) {
-	      var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId });
-	      PostActions.createComment(comment);
-	      this.setState({ body: undefined, focused: false });
-	    } else {
-	      $(".signin-link")[0].click();
-	    }
-	  },
-	  updateBody: function updateBody() {
-	    var _this = this;
-	
-	    return function (e) {
-	      return _this.setState({ body: e.target.value });
-	    };
-	  },
-	
-	
-	  render: function render() {
-	    if (this.state.focused) {
-	      return React.createElement(
-	        'div',
-	        { className: 'comment-create-focused' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
-	        React.createElement(
-	          'button',
-	          { onClick: this.submit },
-	          'Submit'
-	        )
-	      );
-	    } else {
-	      return React.createElement(
-	        'div',
-	        { className: 'comment-create' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.focus })
-	      );
-	    }
-	  }
-	});
-	
-	module.exports = CommentCreate;
-
-/***/ },
-/* 302 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
 	Object.defineProperty(exports, '__esModule', {
 	  value: true
 	});
@@ -36900,11 +36504,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _linkifyIt = __webpack_require__(303);
+	var _linkifyIt = __webpack_require__(295);
 	
 	var _linkifyIt2 = _interopRequireDefault(_linkifyIt);
 	
-	var _tlds = __webpack_require__(309);
+	var _tlds = __webpack_require__(301);
 	
 	var _tlds2 = _interopRequireDefault(_tlds);
 	
@@ -37050,7 +36654,7 @@
 
 
 /***/ },
-/* 303 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37205,7 +36809,7 @@
 	function compile(self) {
 	
 	  // Load & clone RE patterns.
-	  var re = self.re = assign({}, __webpack_require__(304));
+	  var re = self.re = assign({}, __webpack_require__(296));
 	
 	  // Define dynamic patterns
 	  var tlds = self.__tlds__.slice();
@@ -37682,16 +37286,16 @@
 
 
 /***/ },
-/* 304 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	// Use direct extract instead of `regenerate` to reduse browserified size
-	var src_Any = exports.src_Any = __webpack_require__(305).source;
-	var src_Cc  = exports.src_Cc = __webpack_require__(306).source;
-	var src_Z   = exports.src_Z  = __webpack_require__(307).source;
-	var src_P   = exports.src_P  = __webpack_require__(308).source;
+	var src_Any = exports.src_Any = __webpack_require__(297).source;
+	var src_Cc  = exports.src_Cc = __webpack_require__(298).source;
+	var src_Z   = exports.src_Z  = __webpack_require__(299).source;
+	var src_P   = exports.src_P  = __webpack_require__(300).source;
 	
 	// \p{\Z\P\Cc\CF} (white spaces + control + format + punctuation)
 	var src_ZPCc = exports.src_ZPCc = [ src_Z, src_P, src_Cc ].join('|');
@@ -37850,31 +37454,31 @@
 
 
 /***/ },
-/* 305 */
+/* 297 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /***/ },
-/* 306 */
+/* 298 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\x1F\x7F-\x9F]/
 
 /***/ },
-/* 307 */
+/* 299 */
 /***/ function(module, exports) {
 
 	module.exports=/[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/
 
 /***/ },
-/* 308 */
+/* 300 */
 /***/ function(module, exports) {
 
 	module.exports=/[!-#%-\*,-/:;\?@\[-\]_\{\}\xA1\xA7\xAB\xB6\xB7\xBB\xBF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E42\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]|\uD800[\uDD00-\uDD02\uDF9F\uDFD0]|\uD801\uDD6F|\uD802[\uDC57\uDD1F\uDD3F\uDE50-\uDE58\uDE7F\uDEF0-\uDEF6\uDF39-\uDF3F\uDF99-\uDF9C]|\uD804[\uDC47-\uDC4D\uDCBB\uDCBC\uDCBE-\uDCC1\uDD40-\uDD43\uDD74\uDD75\uDDC5-\uDDC9\uDDCD\uDDDB\uDDDD-\uDDDF\uDE38-\uDE3D\uDEA9]|\uD805[\uDCC6\uDDC1-\uDDD7\uDE41-\uDE43\uDF3C-\uDF3E]|\uD809[\uDC70-\uDC74]|\uD81A[\uDE6E\uDE6F\uDEF5\uDF37-\uDF3B\uDF44]|\uD82F\uDC9F|\uD836[\uDE87-\uDE8B]/
 
 /***/ },
-/* 309 */
+/* 301 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -39303,6 +38907,440 @@
 	  "zw"
 	];
 
+
+/***/ },
+/* 302 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var ImageDetailHeader = __webpack_require__(303);
+	var ImageDetailDescription = __webpack_require__(304);
+	
+	var Player = function Player(props) {
+	  var videourl = props.videourl.replace('.gifv', '.mp4').replace('.gif', '.mp4');
+	  return React.createElement('video', { src: videourl, loop: true, autoPlay: true });
+	};
+	
+	var ImageDetail = React.createClass({
+	  displayName: 'ImageDetail',
+	  render: function render() {
+	    var image = this.props.image;
+	    var display = image.image_url.endsWith('.gifv') || image.image_url.endsWith('.gif') ? React.createElement(Player, { videourl: image.image_url }) : React.createElement('img', { alt: true, src: image.image_url });
+	
+	    return React.createElement(
+	      'div',
+	      { className: 'image-detail-container' },
+	      image.title ? React.createElement(ImageDetailHeader, { text: image.title }) : null,
+	      React.createElement(
+	        'div',
+	        { className: 'image-container' },
+	        display
+	      ),
+	      image.description ? React.createElement(ImageDetailDescription, { text: image.description }) : null
+	    );
+	  }
+	});
+	
+	module.exports = ImageDetail;
+
+/***/ },
+/* 303 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	var React = __webpack_require__(1);
+	
+	var ImageDetailHeader = React.createClass({
+	  displayName: "ImageDetailHeader",
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      { className: "image-detail-header" },
+	      React.createElement(
+	        "h2",
+	        null,
+	        this.props.text
+	      )
+	    );
+	  }
+	});
+	
+	module.exports = ImageDetailHeader;
+
+/***/ },
+/* 304 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var Linkify = __webpack_require__(294);
+	
+	var ImageDetailDescription = React.createClass({
+	  displayName: 'ImageDetailDescription',
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      { className: 'image-detail-description' },
+	      React.createElement(
+	        Linkify,
+	        null,
+	        this.props.text
+	      )
+	    );
+	  }
+	});
+	
+	module.exports = ImageDetailDescription;
+
+/***/ },
+/* 305 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var SessionStore = __webpack_require__(254);
+	var TimeUtil = __webpack_require__(306);
+	var VoteActions = __webpack_require__(307);
+	
+	var CommentDetail = React.createClass({
+	  displayName: 'CommentDetail',
+	  getInitialState: function getInitialState() {
+	    return { voteStatus: this.props.voteStatus, displayChildren: false };
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+	    this.setState({ voteStatus: this.props.voteStatus });
+	  },
+	  isUpvoted: function isUpvoted() {
+	    if (this.state.voteStatus) {
+	      return this.state.voteStatus === "upvote";
+	    }
+	    return false;
+	  },
+	  isDownvoted: function isDownvoted() {
+	    if (this.state.voteStatus) {
+	      return this.state.voteStatus === "downvote";
+	    }
+	    return false;
+	  },
+	  toggleUpvote: function toggleUpvote() {
+	    if (SessionStore.isUserLoggedIn()) {
+	      if (this.isDownvoted()) {
+	        VoteActions.updateVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else if (this.isUpvoted()) {
+	        VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else {
+	        VoteActions.createVote({ vote_type: "upvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      }
+	    } else {
+	      $(".signin-link")[0].click();
+	    }
+	  },
+	  toggleDownvote: function toggleDownvote() {
+	    if (SessionStore.isUserLoggedIn()) {
+	      if (this.isUpvoted()) {
+	        VoteActions.updateVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else if (this.isDownvoted()) {
+	        VoteActions.destroyVote({ votable_id: this.props.comment.id, votable_type: "Comment" });
+	      } else {
+	        VoteActions.createVote({ vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" });
+	      }
+	    } else {
+	      $(".signin-link")[0].click();
+	    }
+	  },
+	  toggleChildren: function toggleChildren() {
+	    this.setState({ displayChildren: !this.state.displayChildren });
+	  },
+	  render: function render() {
+	    var comment = this.props.comment;
+	    var comment_votes = this.props.commentVotes;
+	    var upvoteClass = "upvote";
+	    var downvoteClass = "downvote";
+	    var pointsText = comment.points + (comment.points === 1 ? " point" : " points");
+	
+	    var children = void 0;
+	    var commentsByParent = this.props.commentsByParent;
+	    var repliesText = void 0;
+	
+	    if (commentsByParent[comment.id]) {
+	      repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
+	      if (this.state.displayChildren) {
+	        children = commentsByParent[comment.id].map(function (childComment) {
+	          var voteStatus = undefined;
+	          if (comment_votes && comment_votes[childComment.id]) {
+	            voteStatus = comment_votes[childComment.id]["vote_type"];
+	          }
+	          return React.createElement(CommentDetail, { key: childComment.id, comment: childComment, voteStatus: voteStatus, commentsByParent: commentsByParent, commentVotes: comment_votes });
+	        });
+	      }
+	    }
+	
+	    if (this.state.voteStatus === "upvote") {
+	      upvoteClass = "upvote upvoted";
+	    } else if (this.state.voteStatus === "downvote") {
+	      downvoteClass = "downvote downvoted";
+	    }
+	
+	    return React.createElement(
+	      'div',
+	      { className: 'comment-container' },
+	      React.createElement(
+	        'div',
+	        { className: 'comment-detail-container' },
+	        React.createElement(
+	          'div',
+	          { className: 'votes-container' },
+	          React.createElement(
+	            'div',
+	            { className: 'upvote-button', onClick: this.toggleUpvote },
+	            React.createElement(
+	              'span',
+	              { className: upvoteClass },
+	              '➜'
+	            )
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'downvote-button', onClick: this.toggleDownvote },
+	            React.createElement(
+	              'span',
+	              { className: downvoteClass },
+	              '➜'
+	            )
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'comment-text-container', onClick: this.toggleChildren },
+	          React.createElement(
+	            'div',
+	            { className: 'details' },
+	            React.createElement(
+	              'a',
+	              { href: "users/" + comment.commenter.id },
+	              comment.commenter.username
+	            ),
+	            React.createElement(
+	              'span',
+	              null,
+	              ' ',
+	              pointsText,
+	              ' : ',
+	              TimeUtil.timeSince(comment.time_since),
+	              repliesText,
+	              ' ',
+	              React.createElement(
+	                'a',
+	                { onClick: this.reply },
+	                'reply'
+	              )
+	            )
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'body' },
+	            comment.body
+	          )
+	        )
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: 'comment-children' },
+	        children
+	      )
+	    );
+	  }
+	});
+	
+	module.exports = CommentDetail;
+
+/***/ },
+/* 306 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var TimeUtil = {
+	    timeSince: function timeSince(time_since) {
+	        var seconds = Math.floor((new Date() - time_since) / 1000);
+	
+	        var interval = Math.floor(seconds / 31536000);
+	
+	        if (interval > 1) {
+	            return interval + " years ago";
+	        }
+	        interval = Math.floor(seconds / 2592000);
+	        if (interval > 1) {
+	            return interval + " months ago";
+	        }
+	        interval = Math.floor(seconds / 86400);
+	        if (interval > 1) {
+	            return interval + " days ago";
+	        }
+	        interval = Math.floor(seconds / 3600);
+	        if (interval > 1) {
+	            return interval + " hours ago";
+	        }
+	        interval = Math.floor(seconds / 60);
+	        if (interval > 1) {
+	            return interval + " minutes ago";
+	        }
+	        return Math.floor(seconds) + " seconds ago";
+	    }
+	};
+	
+	module.exports = TimeUtil;
+
+/***/ },
+/* 307 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var VoteConstants = __webpack_require__(277);
+	var VoteApiUtil = __webpack_require__(308);
+	var SessionStore = __webpack_require__(254);
+	var dispatcher = __webpack_require__(255);
+	
+	var VoteActions = {
+	  createVote: function createVote(vote) {
+	    SessionStore._addVote(vote);
+	    VoteApiUtil.createVote(vote, this.receiveVote);
+	  },
+	  updateVote: function updateVote(vote) {
+	    SessionStore._addVote(vote);
+	    VoteApiUtil.updateVote(vote, this.receiveVote);
+	  },
+	  destroyVote: function destroyVote(vote) {
+	    SessionStore._removeVote(vote);
+	    VoteApiUtil.destroyVote(vote, this.removeVote);
+	  },
+	
+	
+	  receiveVote: function receiveVote(post) {
+	    dispatcher.dispatch({
+	      actionType: VoteConstants.VOTE_RECEIVED,
+	      post: post
+	    });
+	  },
+	
+	  removeVote: function removeVote(post) {
+	    dispatcher.dispatch({
+	      actionType: VoteConstants.VOTE_REMOVED,
+	      post: post
+	    });
+	  }
+	};
+	
+	module.exports = VoteActions;
+
+/***/ },
+/* 308 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var VoteApiUtil = {
+	  createVote: function createVote(vote, callback) {
+	    $.ajax({
+	      url: "api/votes",
+	      method: "POST",
+	      data: { vote: vote },
+	      success: function success(resp) {
+	        callback(resp);
+	      }
+	    });
+	  },
+	
+	  updateVote: function updateVote(vote, callback) {
+	    $.ajax({
+	      url: "api/votes/" + vote.votable_id,
+	      method: "PATCH",
+	      data: { vote: vote },
+	      success: function success(resp) {
+	        callback(resp);
+	      }
+	    });
+	  },
+	
+	  destroyVote: function destroyVote(vote, callback) {
+	    $.ajax({
+	      url: "api/votes/" + vote.votable_id,
+	      method: "DELETE",
+	      data: { vote: vote },
+	      success: function success(resp) {
+	        callback(resp);
+	      }
+	    });
+	  }
+	};
+	
+	module.exports = VoteApiUtil;
+
+/***/ },
+/* 309 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	var SessionStore = __webpack_require__(254);
+	var PostActions = __webpack_require__(285);
+	
+	var CommentCreate = React.createClass({
+	  displayName: 'CommentCreate',
+	  getInitialState: function getInitialState() {
+	    return { focused: false };
+	  },
+	  focus: function focus() {
+	    this.setState({ focused: true });
+	  },
+	  submit: function submit() {
+	    if (SessionStore.isUserLoggedIn()) {
+	      var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId });
+	      PostActions.createComment(comment);
+	      this.setState({ body: undefined, focused: false });
+	    } else {
+	      $(".signin-link")[0].click();
+	    }
+	  },
+	  updateBody: function updateBody() {
+	    var _this = this;
+	
+	    return function (e) {
+	      return _this.setState({ body: e.target.value });
+	    };
+	  },
+	
+	
+	  render: function render() {
+	    if (this.state.focused) {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create-focused' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
+	        React.createElement(
+	          'button',
+	          { onClick: this.submit },
+	          'Submit'
+	        )
+	      );
+	    } else {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.focus })
+	      );
+	    }
+	  }
+	});
+	
+	module.exports = CommentCreate;
 
 /***/ }
 /******/ ]);

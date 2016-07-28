@@ -13,10 +13,10 @@ const UserNav = React.createClass({
 
 	demoLoginHandler(e) {
 		e.preventDefault();
-		this.setState({ username: "", password: "", mode: "login"});
+		this.setState({ username: "", password: "", mode: "login" });
 		let _username = this.DEMO_USERNAME.split("").slice();
 		this.fillDemoUsername(_username);
-	},
+	 },
 
 	fillDemoUsername: function(_username) {
 		const self = this;
@@ -24,15 +24,15 @@ const UserNav = React.createClass({
 		 		setTimeout(function() {
 			 		self.setState({
 				 		username: self.state.username + _username.shift()
-			 		});
+			 		 });
 
 			 		self.fillDemoUsername(_username);
-		 		}, 120);
-			} else {
+		 		 }, 120);
+			 } else {
 		 		const _password = this.DEMO_PASSWORD.split("").slice();
 		 		this.fillDemoPassword(_password);
-			}
- 	},
+			 }
+ 	 },
 
 	fillDemoPassword: function(_password) {
 	 	const self = this;
@@ -40,14 +40,16 @@ const UserNav = React.createClass({
 		 	setTimeout(function() {
 			 	self.setState({
 				 	password: self.state.password + _password.shift()
-			 	});
+			 	 });
 			 	self.fillDemoPassword(_password);
-		 	}, 120);
-	 	} else {
-		 	const e = { preventDefault: function() {} };
-		 	this.handleDemoSubmit(e);
-	 	}
-	},
+		 	 }, 120);
+	 	 } else {
+		 	const e = { preventDefault: function() { } };
+		 	setTimeout(() => {
+				this.handleDemoSubmit(e);
+			}, 500);
+	 	 }
+	 },
 
 	handleDemoSubmit(e) {
 	 	e.preventDefault();
@@ -55,11 +57,11 @@ const UserNav = React.createClass({
 	 	const formData = {	username: this.state.username, password: this.state.password };
 
 	 	SessionActions.login(formData);
-	},
+	 },
 
 	contextTypes: {
 		router: React.PropTypes.object.isRequired
-	},
+	 },
 
   getInitialState() {
     return { username: "", password: "", mode: this.props.mode,modalOpen: false };
@@ -91,7 +93,7 @@ const UserNav = React.createClass({
     } else {
       SessionActions.signup(formData);
     }
-	},
+	 },
 
   fieldErrors(field) {
     const errors = ErrorStore.formErrors(this.state.mode);
@@ -106,7 +108,7 @@ const UserNav = React.createClass({
   },
 
   update(property) {
-    return (e) => this.setState({[property]: e.target.value});
+    return (e) => this.setState({[property]: e.target.value });
   },
 
   openLogin: function() {
@@ -135,69 +137,65 @@ const UserNav = React.createClass({
 		    borderRadius               : '0px',
 		    outline                    : 'none',
 		    padding                    : '20px'
-  		}
-		}
-	},
+  		 }
+		 }
+	 },
 
   render (){
     let navLink;
     if (this.state.mode === "login") {
-      navLink = <a onClick={this.openSignup}>sign up instead</a>;
+      navLink = <a onClick={ this.openSignup }>sign up instead</a>;
     } else {
-      navLink = <a onClick={this.openLogin}>log in instead</a>;
+      navLink = <a onClick={ this.openLogin }>login instead</a>;
     }
 
     if (SessionStore.isUserLoggedIn()){
       return (
       		<ul className="user-nav">
-      			<li className="header-name">Hi, {SessionStore.currentUser().username}!</li>
+      			<li className="header-name">Hi, { SessionStore.currentUser().username }!</li>
       			<li><a className="logout-button" onClick={ SessionActions.logout }>logout</a></li>
       		</ul>
       	);
     } else {
       return (
         <ul className="user-nav">
-          <li className="signin-button"><a onClick={this.openLogin} className="signin-link">sign in</a></li>
-          <li className="signup-button"><a onClick={this.openSignup} className="signup-link">sign up</a></li>
-          <Modal className="login-modal" isOpen={this.state.modalOpen} onRequestClose={this.closeModal} style={this.customStyle()}>
-    				<button className="close-modal" onClick={this.closeModal}>X</button>
+          <li className="signin-button"><a onClick={ this.openLogin } className="signin-link">sign in</a></li>
+          <li className="signup-button"><a onClick={ this.openSignup } className="signup-link">sign up</a></li>
+          <Modal className="login-modal" isOpen={ this.state.modalOpen } onRequestClose={ this.closeModal } style={ this.customStyle() }>
+    				<button className="close-modal" onClick={ this.closeModal }>X</button>
     				<div className="login-form-container">
-    					<form onSubmit={this.handleSubmit} className="login-form-box">
+    					<form onSubmit={ this.handleSubmit } className="login-form-box">
     		        Welcome!
     						<br/>
     						Please { this.state.mode } or { navLink }
-
+								<br/>
     		        { this.fieldErrors("base") }
+								<span>imagr</span>
     						<div className="login-form">
-    			        <br />
     		          { this.fieldErrors("username") }
     							<input type="text"
-    		            value={this.state.username}
-    		            onChange={this.update("username")}
+    		            value={ this.state.username }
+    		            onChange={ this.update("username") }
     								className="login-input-username"
     								placeholder="Username" />
-
-    			        <br />
     		          { this.fieldErrors("password") }
     		          <input type="password"
-    		            value={this.state.password}
-    		            onChange={this.update("password")}
+    		            value={ this.state.password }
+    		            onChange={ this.update("password") }
     								className="login-input-password"
     								placeholder="Password" />
-
-    			        <br />
-    							<input type="submit" value="Submit" />
+									<div className="login-submit-container">
+										<input id="demo-login" type="demo-submit" formAction="none" className="modal-submit" value="Demo Login"	onClick={ this.demoLoginHandler } readOnly />
+										<input type="submit" value="Submit" />
+									</div>
     						</div>
-    						<div id="demo-login" className="modal-submit"	onClick={this.demoLoginHandler}>
-    							Demo Login
-    					  </div>
     					</form>
     				</div>
     			</Modal>
-        </ul>
+				</ul>
       );
     }
   }
-});
+ });
 
 module.exports = UserNav;

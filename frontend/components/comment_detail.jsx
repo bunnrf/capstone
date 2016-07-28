@@ -5,7 +5,7 @@ const VoteActions = require('../actions/vote_actions');
 
 const CommentDetail = React.createClass({
   getInitialState() {
-    return { voteStatus: this.props.voteStatus };
+    return { voteStatus: this.props.voteStatus, displayChildren: false };
   },
 
   componentWillReceiveProps(newProps) {
@@ -41,7 +41,7 @@ const CommentDetail = React.createClass({
   },
 
   toggleDownvote() {
-    if (SessionStore.isUserLoggedIn()) {      
+    if (SessionStore.isUserLoggedIn()) {
       if (this.isUpvoted()) {
         VoteActions.updateVote( {  vote_type: "downvote", votable_id: this.props.comment.id, votable_type: "Comment" } );
       } else if (this.isDownvoted()) {
@@ -54,16 +54,32 @@ const CommentDetail = React.createClass({
     }
   },
 
+  toggleChildren() {
+    this.setState( { displayChildren: !this.state.displayChildren } )
+  },
+
   render(){
     let comment = this.props.comment;
+    let comment_votes = this.props.commentVotes;
     let upvoteClass = "upvote";
     let downvoteClass = "downvote";
     let pointsText = comment.points + (comment.points === 1 ? " point" : " points");
 
+    let children;
     let commentsByParent = this.props.commentsByParent;
     let repliesText;
+
     if (commentsByParent[comment.id]) {
       repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
+      if (this.state.displayChildren) {
+        children = commentsByParent[comment.id].map((childComment) => {
+          let voteStatus = undefined;
+          if (comment_votes && comment_votes[childComment.id]) {
+            voteStatus = comment_votes[childComment.id]["vote_type"]
+          }
+          return <CommentDetail key={ childComment.id } comment={ childComment } voteStatus={ voteStatus } commentsByParent={ commentsByParent } commentVotes={ comment_votes } />
+        });
+      }
     }
 
     if (this.state.voteStatus === "upvote") {
@@ -74,18 +90,23 @@ const CommentDetail = React.createClass({
 
     return(
       <div className="comment-container">
-        <div className="votes-container">
-          <div className="upvote-button" onClick={ this.toggleUpvote }><span className={ upvoteClass }>➜</span></div>
-          <div className="downvote-button" onClick={ this.toggleDownvote }><span className={ downvoteClass }>➜</span></div>
+        <div className="comment-detail-container">
+          <div className="votes-container">
+            <div className="upvote-button" onClick={ this.toggleUpvote }><span className={ upvoteClass }>➜</span></div>
+            <div className="downvote-button" onClick={ this.toggleDownvote }><span className={ downvoteClass }>➜</span></div>
+          </div>
+          <div className="comment-text-container" onClick={ this.toggleChildren }>
+            <div className="details">
+              <a href={ "users/" + comment.commenter.id }>{ comment.commenter.username }</a>
+              <span> { pointsText } : { TimeUtil.timeSince(comment.time_since) }{ repliesText } <a onClick={this.reply}>reply</a></span>
+            </div>
+            <div className="body">
+              { comment.body }
+            </div>
+          </div>
         </div>
-        <div className="comment-text-container">
-          <div className="details">
-            <a href={ "users/" + comment.commenter.id }>{ comment.commenter.username }</a>
-            <span> { pointsText } : { TimeUtil.timeSince(comment.time_since) }{ repliesText } <a onClick={this.reply}>reply</a></span>
-          </div>
-          <div className="body">
-            { comment.body }
-          </div>
+        <div className="comment-children">
+          { children }
         </div>
       </div>
     )

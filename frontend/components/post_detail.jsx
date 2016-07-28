@@ -136,7 +136,12 @@ const PostDetail = React.createClass({
         if (comment_votes && comment_votes[topLevelComment.id]) {
           voteStatus = comment_votes[topLevelComment.id]["vote_type"]
         }
-        return <CommentDetail key={ topLevelComment.id } comment={ topLevelComment } voteStatus={ voteStatus } commentsByParent={ post.comments_by_parent } />
+        return <CommentDetail key={ topLevelComment.id } comment={ topLevelComment } voteStatus={ voteStatus } commentsByParent={ post.comments_by_parent } commentVotes={ comment_votes }/>
+      }).sort((a, b) => {
+        if (a.props.comment.points > b.props.comment.points) {
+          return 0;
+        }
+        return 1;
       });
     }
     if (post.author) {

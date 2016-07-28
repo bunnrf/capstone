@@ -6,6 +6,10 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
+
+# NOTE: seeds upto line 300 are hand-picked
+# NOTE: after that, faker is used to ramdomly seed
+
 users = User.create([ { username: "demo", password: "password" }, { username: "michaelCera", password: "password" }, { username: "sarah", password: "password" }, { username: "mistersavage", password: "password" }])
 
 posts = Post.create([ { title: "List of sites that help you study harder, get more work done, and become an all-around more awesome person", description: "**BONUS - A bunch of other educational websites and productivity tools:
@@ -53,7 +57,7 @@ Allexperts: http://www.allexperts.com/browse.cgi?catLvl=3&catID=1059
 Google groups: https://groups.google.com/forum/?fromgroups#!forum/microsoft.public.excel
 PC world: http://www.pcworld.com/article/229504/five_excel_nightmares_and_how_to_fix_them.html
 PC world: http://www.pcworld.com/article/220782/use_microsoft_excel_for_everything.html", author_id: 1 },
-                      { title: "some cool pics", description: "aefeaefaefe", author_id: 2 },
+                      { title: "some cool pics", author_id: 2 },
                       { title: "Some Strange Fruit from Around the World", description: "Source: http://wunderpix.com/strangest-fruits-in-the-world/", author_id: 1 },
                       { title: "We got new neighbors. They have dogs.", author_id: 2 },
                       { title: "Don't drink and drive", author_id: 3 },
@@ -174,7 +178,6 @@ http://www.foodnetwork.com/recipes/food-network-kitchens/slow-cooker-pulled-pork
 
 
                         { image_url: "https://i.imgur.com/voIIzxw.jpg", ordinal: 0, post_id: 7 },
-                        { image_url: "http://i.imgur.com/QlRsuVz.jpg", ordinal: 1, post_id: 7 },
                         { image_url: "https://i.imgur.com/eZoZkfx.jpg", ordinal: 2, post_id: 7 },
                         { image_url: "https://i.imgur.com/ApIR0YL.jpg", ordinal: 3, post_id: 7 },
 
@@ -297,12 +300,46 @@ http://www.kleinbottle.com/baby_klein.htm", image_url: "http://i.imgur.com/WiQSp
 
 # { image_url: "http://i.imgur.com/h9M99vS.jpg", ordinal: 0, post_id: 13 },
 
+RANDOM_USER_COUNT = 100
+RANDOM_COMMENT_COUNT = 100
+RANDOM_VOTES_COUNT = 1000
 
+def truncate(text, options = {}, &block)
+  if text
+    length  = options.fetch(:length, 30)
 
-comments = Comment.create([ { body: "post1 comment1", commenter_id: 2, post_id: 1 },
-                            { body: "post1 comment2", commenter_id: 1, post_id: 1 },
-                            { body: "post1 comment3", commenter_id: 3, post_id: 1 },
-                            { body: "post1 comment4", commenter_id: 2, post_id: 1 },
-                            { body: "post1 comment5", commenter_id: 1, post_id: 1 },
-                            { body: "post1 comment6", commenter_id: 2, post_id: 1 },
-                            { body: "comment1 comment1", commenter_id: 1, post_id: 1, parent_comment_id: 1 }])
+    content = text.truncate(length, options)
+    content = options[:escape] == false ? content.html_safe : ERB::Util.html_escape(content)
+    content << capture(&block) if block_given? && text.length > length
+    content
+  end
+end
+
+random_users_arr = Array.new(RANDOM_USER_COUNT) { { username: Faker::Internet.user_name, password: "password" } }
+random_users = User.create(random_users_arr)
+
+random_comments_arr = Array.new(100) { { body: truncate(Faker::StarWars.quote, length: 255), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
+random_comments = Comment.create(random_comments_arr)
+
+# randomly assign some comments as nested
+(RANDOM_COMMENT_COUNT / 20).times do
+  parent_comment = random_comments.sample
+  random_comment = random_comments.sample
+  random_comment[:post_id] = parent_comment.post_id
+  random_comment[:parent_comment_id] = parent_comment.id unless random_comment.id == parent_comment.id
+  random_comment.save
+end
+
+random_votes_arr = Array.new(RANDOM_VOTES_COUNT) do
+  vote_type = (rand(10) > 8) ? "downvote" : "upvote"
+  user_id = random_users.sample.id
+
+  votable = (rand(10) > 4) ? random_comments.sample : Post.all.sample
+
+  votable_id = votable.id
+  votable_type = votable.class.name
+
+  { vote_type: vote_type, user_id: user_id, votable_id: votable_id, votable_type: votable_type }
+end
+
+random_votes = Vote.create(random_votes_arr)
