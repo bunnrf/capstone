@@ -1,4 +1,5 @@
 const React = require('react');
+const Linkify = require('react-linkify');
 const ImageDetail = require('./image_detail');
 const CommentDetail = require('./comment_detail');
 const CommentCreate = require('./comment_create');
@@ -17,7 +18,7 @@ const PostDetail = React.createClass({
       voteStatus = currentUser.post_votes[this.props.post.id]["vote_type"];
     }
 
-    return { currentUser: currentUser, voteStatus: voteStatus };
+    return { currentUser: currentUser, voteStatus: voteStatus, headerFixed: false };
   },
 
   stickyScroll(e) {
@@ -98,6 +99,7 @@ const PostDetail = React.createClass({
   render(){
     let post = this.props.post;
     let imagesIndex = [];
+    let description;
     let commentsIndex = [];
     let style = { paddingTop: 0 };
     let authorData;
@@ -123,6 +125,11 @@ const PostDetail = React.createClass({
         return <ImageDetail key={ image.id } image={ image } />
       });
     }
+    if (post.description) {
+      description = <div className="image-detail-description">
+        <Linkify>{post.description}</Linkify>
+      </div>
+    }
     if (post.comments_by_parent){
       commentsIndex = post.comments_by_parent[""].map((topLevelComment) => {
         let voteStatus = undefined;
@@ -137,7 +144,7 @@ const PostDetail = React.createClass({
         <span>by </span><a href={"users/" + post.author.id}>{post.author.username}</a><span> · {TimeUtil.timeSince(post.time_since)} </span>
       </div>
     } else {
-      <div className="post-header-details">
+      authorData = <div className="post-header-details">
         author unrecognized
       </div>
     }
@@ -164,6 +171,7 @@ const PostDetail = React.createClass({
             </div>
           </div>
           {imagesIndex}
+          {description}
           <div className="post-footer">
             <div className="upvote-button" onClick={ this.toggleUpvote }><span className={upvoteClass}>➜</span></div>
             <div className="downvote-button" onClick={ this.toggleDownvote }><span className={downvoteClass}>➜</span></div>

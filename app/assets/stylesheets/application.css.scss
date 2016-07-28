@@ -336,6 +336,7 @@ textarea:focus {
   position: relative;
   overflow: hidden;
   margin: 0 auto;
+  margin-bottom: 7px;
 }
 
 .post:hover {
@@ -557,7 +558,7 @@ textarea:focus {
 }
 
 .image-detail-header h2 {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   padding: 16px 20px;
   color: #CCC;
@@ -573,7 +574,7 @@ textarea:focus {
   background-color: #181817;
 }
 
-.image-container img {
+.image-container img, .image-container video {
   align-self: center;
   max-width: 100%;
   margin: 0 auto;

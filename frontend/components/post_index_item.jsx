@@ -12,7 +12,7 @@ const PostIndexItem = React.createClass({
 
     return(
       <div key={ post.id } className={className} onClick={ this.handleClick }>
-        <img alt src={ post.thumb } />
+        <img alt src={ post.thumb } autoPlay="false" />
       </div>
     );
   }

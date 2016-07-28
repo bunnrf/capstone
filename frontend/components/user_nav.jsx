@@ -8,7 +8,7 @@ const Modal = require('react-modal');
 
 const UserNav = React.createClass({
 
-	DEMO_USERNAME: "user1",
+	DEMO_USERNAME: "demo",
 	DEMO_PASSWORD: "password",
 
 	demoLoginHandler(e) {

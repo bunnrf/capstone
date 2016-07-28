@@ -1,4 +1,4 @@
-json.extract! post, :id, :title, :points, :images, :author
+json.extract! post, :id, :title, :description, :points, :images, :author
 
 json.comments_by_parent do
   post.comments_by_parent.each_key do |parent_comment_id|

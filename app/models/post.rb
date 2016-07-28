@@ -8,6 +8,11 @@ class Post < ActiveRecord::Base
   has_many :voters, through: :votes, source: :voter
   accepts_nested_attributes_for :images
 
+  def thumb
+    url = self.images.first.image_url
+    url.sub(".gifv", ".jpg").sub(".gif", ".jpg")
+  end
+
   def points
     points = 0
     self.votes.each do |vote|

@@ -1,10 +1,11 @@
 const React = require('react');
+const Linkify = require('react-linkify');
 
 const ImageDetailDescription = React.createClass({
   render(){
     return(
       <div className="image-detail-description">
-        <p>{this.props.text}</p>
+        <Linkify>{this.props.text}</Linkify>
       </div>
     )
   }
