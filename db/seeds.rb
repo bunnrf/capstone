@@ -301,8 +301,8 @@ http://www.kleinbottle.com/baby_klein.htm", image_url: "http://i.imgur.com/WiQSp
 # { image_url: "http://i.imgur.com/h9M99vS.jpg", ordinal: 0, post_id: 13 },
 
 RANDOM_USER_COUNT = 100
-RANDOM_COMMENT_COUNT = 100
-RANDOM_VOTES_COUNT = 1000
+RANDOM_COMMENT_COUNT = 500
+RANDOM_VOTES_COUNT = 10000
 
 def truncate(text, options = {}, &block)
   if text
@@ -318,7 +318,7 @@ end
 random_users_arr = Array.new(RANDOM_USER_COUNT) { { username: Faker::Internet.user_name, password: "password" } }
 random_users = User.create(random_users_arr)
 
-random_comments_arr = Array.new(100) { { body: truncate(Faker::StarWars.quote, length: 255), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
+random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { { body: truncate(Faker::StarWars.quote, length: 255), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
 random_comments = Comment.create(random_comments_arr)
 
 # randomly assign some comments as nested

@@ -72,7 +72,9 @@ const CommentDetail = React.createClass({
     if (commentsByParent[comment.id]) {
       repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
       if (this.state.displayChildren) {
-        children = commentsByParent[comment.id].map((childComment) => {
+        children = commentsByParent[comment.id].sort((a, b) => {
+          return b.points - a.points;
+        }).map((childComment) => {
           let voteStatus = undefined;
           if (comment_votes && comment_votes[childComment.id]) {
             voteStatus = comment_votes[childComment.id]["vote_type"]

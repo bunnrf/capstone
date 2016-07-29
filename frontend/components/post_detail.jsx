@@ -131,22 +131,19 @@ const PostDetail = React.createClass({
       </div>
     }
     if (post.comments_by_parent){
-      commentsIndex = post.comments_by_parent[""].map((topLevelComment) => {
+      commentsIndex = post.comments_by_parent[""].sort((a, b) => {
+        return b.points - a.points;
+      }).map((topLevelComment) => {
         let voteStatus = undefined;
         if (comment_votes && comment_votes[topLevelComment.id]) {
           voteStatus = comment_votes[topLevelComment.id]["vote_type"]
         }
         return <CommentDetail key={ topLevelComment.id } comment={ topLevelComment } voteStatus={ voteStatus } commentsByParent={ post.comments_by_parent } commentVotes={ comment_votes }/>
-      }).sort((a, b) => {
-        if (a.props.comment.points > b.props.comment.points) {
-          return 0;
-        }
-        return 1;
       });
     }
     if (post.author) {
       authorData = <div className="post-header-details">
-        <span>by </span><a href={"users/" + post.author.id}>{post.author.username}</a><span> · {TimeUtil.timeSince(post.time_since)} </span>
+        <span>by </span><a href={"users/" + post.author.id}>{ post.author.username }</a><span> · { TimeUtil.timeSince(post.time_since) } </span>
       </div>
     } else {
       authorData = <div className="post-header-details">

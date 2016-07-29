@@ -36347,17 +36347,14 @@
 	      );
 	    }
 	    if (post.comments_by_parent) {
-	      commentsIndex = post.comments_by_parent[""].map(function (topLevelComment) {
+	      commentsIndex = post.comments_by_parent[""].sort(function (a, b) {
+	        return b.points - a.points;
+	      }).map(function (topLevelComment) {
 	        var voteStatus = undefined;
 	        if (comment_votes && comment_votes[topLevelComment.id]) {
 	          voteStatus = comment_votes[topLevelComment.id]["vote_type"];
 	        }
 	        return React.createElement(CommentDetail, { key: topLevelComment.id, comment: topLevelComment, voteStatus: voteStatus, commentsByParent: post.comments_by_parent, commentVotes: comment_votes });
-	      }).sort(function (a, b) {
-	        if (a.props.comment.points > b.props.comment.points) {
-	          return 0;
-	        }
-	        return 1;
 	      });
 	    }
 	    if (post.author) {
@@ -39070,7 +39067,9 @@
 	    if (commentsByParent[comment.id]) {
 	      repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
 	      if (this.state.displayChildren) {
-	        children = commentsByParent[comment.id].map(function (childComment) {
+	        children = commentsByParent[comment.id].sort(function (a, b) {
+	          return b.points - a.points;
+	        }).map(function (childComment) {
 	          var voteStatus = undefined;
 	          if (comment_votes && comment_votes[childComment.id]) {
 	            voteStatus = comment_votes[childComment.id]["vote_type"];

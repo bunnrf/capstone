@@ -101,8 +101,11 @@ button:hover, [type="submit"]:hover, [type="button"]:hover, [type="demo-submit"]
   list-style: none;
 }
 
-.nav-container li {
+.user-nav li {
   min-width: 30%;
+}
+
+.nav-container li {
   display: flex;
   align-items: center;
   height: 100%;
