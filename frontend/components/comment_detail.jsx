@@ -1,11 +1,12 @@
 const React = require('react');
+const CommentCreate = require('./comment_create');
 const SessionStore = require('../stores/session_store');
 const TimeUtil = require('../util/time_util');
 const VoteActions = require('../actions/vote_actions');
 
 const CommentDetail = React.createClass({
   getInitialState() {
-    return { voteStatus: this.props.voteStatus, displayChildren: false };
+    return { voteStatus: this.props.voteStatus, displayChildren: false, displayReply: false };
   },
 
   componentWillReceiveProps(newProps) {
@@ -54,8 +55,14 @@ const CommentDetail = React.createClass({
     }
   },
 
-  toggleChildren() {
-    this.setState( { displayChildren: !this.state.displayChildren } )
+  toggleReply() {
+    this.setState( { displayReply: !this.state.displayReply, displayChildren: this.state.displayChildren && !this.state.displayReply } );
+  },
+
+  toggleChildren(e) {
+    if (e.target.id !== "reply") {
+      this.setState( { displayChildren: !this.state.displayChildren } );
+    }
   },
 
   render(){
@@ -67,11 +74,14 @@ const CommentDetail = React.createClass({
 
     let children;
     let commentsByParent = this.props.commentsByParent;
+    let commentCreate;
     let repliesText;
+    let expandOption;
 
     if (commentsByParent[comment.id]) {
       repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
       if (this.state.displayChildren) {
+        expandOption = <span className="comment-expand-option">-</span>;
         children = commentsByParent[comment.id].sort((a, b) => {
           return b.points - a.points;
         }).map((childComment) => {
@@ -81,7 +91,15 @@ const CommentDetail = React.createClass({
           }
           return <CommentDetail key={ childComment.id } comment={ childComment } voteStatus={ voteStatus } commentsByParent={ commentsByParent } commentVotes={ comment_votes } />
         });
+      } else {
+        expandOption = <span className="comment-expand-option">+</span>;
       }
+    }
+
+    if (this.state.displayReply) {
+      commentCreate = <div className="comment-comment-create">
+          <CommentCreate postId={ this.props.postId } parentCommentId={ comment.id } />
+      </div>
     }
 
     if (this.state.voteStatus === "upvote") {
@@ -93,6 +111,7 @@ const CommentDetail = React.createClass({
     return(
       <div className="comment-container">
         <div className="comment-detail-container">
+          { expandOption }
           <div className="votes-container">
             <div className="upvote-button" onClick={ this.toggleUpvote }><span className={ upvoteClass }>➜</span></div>
             <div className="downvote-button" onClick={ this.toggleDownvote }><span className={ downvoteClass }>➜</span></div>
@@ -100,13 +119,14 @@ const CommentDetail = React.createClass({
           <div className="comment-text-container" onClick={ this.toggleChildren }>
             <div className="details">
               <a href={ "users/" + comment.commenter.id }>{ comment.commenter.username }</a>
-              <span> { pointsText } : { TimeUtil.timeSince(comment.time_since) }{ repliesText } <a onClick={this.reply}>reply</a></span>
+              <span> { pointsText } : { TimeUtil.timeSince(comment.time_since) }{ repliesText } <a id="reply" onClick={ this.toggleReply }>reply</a></span>
             </div>
             <div className="body">
               { comment.body }
             </div>
           </div>
         </div>
+        { commentCreate }
         <div className="comment-children">
           { children }
         </div>

@@ -318,7 +318,7 @@ end
 random_users_arr = Array.new(RANDOM_USER_COUNT) { { username: Faker::Internet.user_name, password: "password" } }
 random_users = User.create(random_users_arr)
 
-random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { { body: truncate(Faker::StarWars.quote, length: 255), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
+random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { { body: truncate(Faker::StarWars.quote.html_safe, length: 255), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
 random_comments = Comment.create(random_comments_arr)
 
 # randomly assign some comments as nested

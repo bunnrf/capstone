@@ -15,7 +15,7 @@ const CommentCreate = React.createClass({
     if (SessionStore.isUserLoggedIn()) {
       const comment = Object.assign(
         {},
-        { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId }
+        { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId, parent_comment_id: this.props.parentCommentId }
       );
       PostActions.createComment(comment);
       this.setState( { body: undefined, focused: false } );
@@ -39,7 +39,7 @@ const CommentCreate = React.createClass({
     } else {
       return (
         <div className="comment-create">
-          <textarea placeholder="Submit a comment" onFocus={this.focus} />
+          <textarea placeholder="Submit a comment" onFocus={ this.focus } />
         </div>
       );
     }

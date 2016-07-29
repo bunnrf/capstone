@@ -661,6 +661,13 @@ input:focus {
 .comment-container {
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.comment-expand-option {
+  position: absolute;
+  left: -12px;
+  top: 20px;
 }
 
 .comment-detail-container {

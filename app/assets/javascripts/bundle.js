@@ -36221,12 +36221,12 @@
 	var Linkify = __webpack_require__(294);
 	var ImageDetail = __webpack_require__(302);
 	var CommentDetail = __webpack_require__(305);
-	var CommentCreate = __webpack_require__(309);
+	var CommentCreate = __webpack_require__(306);
 	var PostActions = __webpack_require__(285);
 	var VoteActions = __webpack_require__(307);
 	var PostStore = __webpack_require__(288);
 	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(306);
+	var TimeUtil = __webpack_require__(309);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
@@ -36354,7 +36354,7 @@
 	        if (comment_votes && comment_votes[topLevelComment.id]) {
 	          voteStatus = comment_votes[topLevelComment.id]["vote_type"];
 	        }
-	        return React.createElement(CommentDetail, { key: topLevelComment.id, comment: topLevelComment, voteStatus: voteStatus, commentsByParent: post.comments_by_parent, commentVotes: comment_votes });
+	        return React.createElement(CommentDetail, { key: topLevelComment.id, postId: post.id, comment: topLevelComment, voteStatus: voteStatus, commentsByParent: post.comments_by_parent, commentVotes: comment_votes });
 	      });
 	    }
 	    if (post.author) {
@@ -39000,14 +39000,15 @@
 	'use strict';
 	
 	var React = __webpack_require__(1);
+	var CommentCreate = __webpack_require__(306);
 	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(306);
+	var TimeUtil = __webpack_require__(309);
 	var VoteActions = __webpack_require__(307);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
 	  getInitialState: function getInitialState() {
-	    return { voteStatus: this.props.voteStatus, displayChildren: false };
+	    return { voteStatus: this.props.voteStatus, displayChildren: false, displayReply: false };
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
 	    this.setState({ voteStatus: this.props.voteStatus });
@@ -39050,8 +39051,13 @@
 	      $(".signin-link")[0].click();
 	    }
 	  },
-	  toggleChildren: function toggleChildren() {
-	    this.setState({ displayChildren: !this.state.displayChildren });
+	  toggleReply: function toggleReply() {
+	    this.setState({ displayReply: !this.state.displayReply, displayChildren: this.state.displayChildren && !this.state.displayReply });
+	  },
+	  toggleChildren: function toggleChildren(e) {
+	    if (e.target.id !== "reply") {
+	      this.setState({ displayChildren: !this.state.displayChildren });
+	    }
 	  },
 	  render: function render() {
 	    var comment = this.props.comment;
@@ -39062,11 +39068,18 @@
 	
 	    var children = void 0;
 	    var commentsByParent = this.props.commentsByParent;
+	    var commentCreate = void 0;
 	    var repliesText = void 0;
+	    var expandOption = void 0;
 	
 	    if (commentsByParent[comment.id]) {
 	      repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
 	      if (this.state.displayChildren) {
+	        expandOption = React.createElement(
+	          'span',
+	          { className: 'comment-expand-option' },
+	          '-'
+	        );
 	        children = commentsByParent[comment.id].sort(function (a, b) {
 	          return b.points - a.points;
 	        }).map(function (childComment) {
@@ -39076,7 +39089,21 @@
 	          }
 	          return React.createElement(CommentDetail, { key: childComment.id, comment: childComment, voteStatus: voteStatus, commentsByParent: commentsByParent, commentVotes: comment_votes });
 	        });
+	      } else {
+	        expandOption = React.createElement(
+	          'span',
+	          { className: 'comment-expand-option' },
+	          '+'
+	        );
 	      }
+	    }
+	
+	    if (this.state.displayReply) {
+	      commentCreate = React.createElement(
+	        'div',
+	        { className: 'comment-comment-create' },
+	        React.createElement(CommentCreate, { postId: this.props.postId, parentCommentId: comment.id })
+	      );
 	    }
 	
 	    if (this.state.voteStatus === "upvote") {
@@ -39091,6 +39118,7 @@
 	      React.createElement(
 	        'div',
 	        { className: 'comment-detail-container' },
+	        expandOption,
 	        React.createElement(
 	          'div',
 	          { className: 'votes-container' },
@@ -39135,7 +39163,7 @@
 	              ' ',
 	              React.createElement(
 	                'a',
-	                { onClick: this.reply },
+	                { id: 'reply', onClick: this.toggleReply },
 	                'reply'
 	              )
 	            )
@@ -39147,6 +39175,7 @@
 	          )
 	        )
 	      ),
+	      commentCreate,
 	      React.createElement(
 	        'div',
 	        { className: 'comment-children' },
@@ -39160,40 +39189,63 @@
 
 /***/ },
 /* 306 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
-	var TimeUtil = {
-	    timeSince: function timeSince(time_since) {
-	        var seconds = Math.floor((new Date() - time_since) / 1000);
+	var React = __webpack_require__(1);
+	var SessionStore = __webpack_require__(254);
+	var PostActions = __webpack_require__(285);
 	
-	        var interval = Math.floor(seconds / 31536000);
-	
-	        if (interval > 1) {
-	            return interval + " years ago";
-	        }
-	        interval = Math.floor(seconds / 2592000);
-	        if (interval > 1) {
-	            return interval + " months ago";
-	        }
-	        interval = Math.floor(seconds / 86400);
-	        if (interval > 1) {
-	            return interval + " days ago";
-	        }
-	        interval = Math.floor(seconds / 3600);
-	        if (interval > 1) {
-	            return interval + " hours ago";
-	        }
-	        interval = Math.floor(seconds / 60);
-	        if (interval > 1) {
-	            return interval + " minutes ago";
-	        }
-	        return Math.floor(seconds) + " seconds ago";
+	var CommentCreate = React.createClass({
+	  displayName: 'CommentCreate',
+	  getInitialState: function getInitialState() {
+	    return { focused: false };
+	  },
+	  focus: function focus() {
+	    this.setState({ focused: true });
+	  },
+	  submit: function submit() {
+	    if (SessionStore.isUserLoggedIn()) {
+	      var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId, parent_comment_id: this.props.parentCommentId });
+	      PostActions.createComment(comment);
+	      this.setState({ body: undefined, focused: false });
+	    } else {
+	      $(".signin-link")[0].click();
 	    }
-	};
+	  },
+	  updateBody: function updateBody() {
+	    var _this = this;
 	
-	module.exports = TimeUtil;
+	    return function (e) {
+	      return _this.setState({ body: e.target.value });
+	    };
+	  },
+	
+	
+	  render: function render() {
+	    if (this.state.focused) {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create-focused' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
+	        React.createElement(
+	          'button',
+	          { onClick: this.submit },
+	          'Submit'
+	        )
+	      );
+	    } else {
+	      return React.createElement(
+	        'div',
+	        { className: 'comment-create' },
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.focus })
+	      );
+	    }
+	  }
+	});
+	
+	module.exports = CommentCreate;
 
 /***/ },
 /* 307 */
@@ -39283,63 +39335,40 @@
 
 /***/ },
 /* 309 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 	
-	var React = __webpack_require__(1);
-	var SessionStore = __webpack_require__(254);
-	var PostActions = __webpack_require__(285);
+	var TimeUtil = {
+	    timeSince: function timeSince(time_since) {
+	        var seconds = Math.floor((new Date() - time_since) / 1000);
 	
-	var CommentCreate = React.createClass({
-	  displayName: 'CommentCreate',
-	  getInitialState: function getInitialState() {
-	    return { focused: false };
-	  },
-	  focus: function focus() {
-	    this.setState({ focused: true });
-	  },
-	  submit: function submit() {
-	    if (SessionStore.isUserLoggedIn()) {
-	      var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId });
-	      PostActions.createComment(comment);
-	      this.setState({ body: undefined, focused: false });
-	    } else {
-	      $(".signin-link")[0].click();
+	        var interval = Math.floor(seconds / 31536000);
+	
+	        if (interval > 1) {
+	            return interval + " years ago";
+	        }
+	        interval = Math.floor(seconds / 2592000);
+	        if (interval > 1) {
+	            return interval + " months ago";
+	        }
+	        interval = Math.floor(seconds / 86400);
+	        if (interval > 1) {
+	            return interval + " days ago";
+	        }
+	        interval = Math.floor(seconds / 3600);
+	        if (interval > 1) {
+	            return interval + " hours ago";
+	        }
+	        interval = Math.floor(seconds / 60);
+	        if (interval > 1) {
+	            return interval + " minutes ago";
+	        }
+	        return Math.floor(seconds) + " seconds ago";
 	    }
-	  },
-	  updateBody: function updateBody() {
-	    var _this = this;
+	};
 	
-	    return function (e) {
-	      return _this.setState({ body: e.target.value });
-	    };
-	  },
-	
-	
-	  render: function render() {
-	    if (this.state.focused) {
-	      return React.createElement(
-	        'div',
-	        { className: 'comment-create-focused' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
-	        React.createElement(
-	          'button',
-	          { onClick: this.submit },
-	          'Submit'
-	        )
-	      );
-	    } else {
-	      return React.createElement(
-	        'div',
-	        { className: 'comment-create' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.focus })
-	      );
-	    }
-	  }
-	});
-	
-	module.exports = CommentCreate;
+	module.exports = TimeUtil;
 
 /***/ }
 /******/ ]);

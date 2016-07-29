@@ -138,7 +138,7 @@ const PostDetail = React.createClass({
         if (comment_votes && comment_votes[topLevelComment.id]) {
           voteStatus = comment_votes[topLevelComment.id]["vote_type"]
         }
-        return <CommentDetail key={ topLevelComment.id } comment={ topLevelComment } voteStatus={ voteStatus } commentsByParent={ post.comments_by_parent } commentVotes={ comment_votes }/>
+        return <CommentDetail key={ topLevelComment.id } postId={ post.id } comment={ topLevelComment } voteStatus={ voteStatus } commentsByParent={ post.comments_by_parent } commentVotes={ comment_votes }/>
       });
     }
     if (post.author) {
