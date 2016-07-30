@@ -68,8 +68,8 @@ const CommentDetail = React.createClass({
   render(){
     let comment = this.props.comment;
     let comment_votes = this.props.commentVotes;
-    let upvoteClass = "upvote";
-    let downvoteClass = "downvote";
+    let upvoteClass = "upvote glyphicon glyphicon-arrow-up";
+    let downvoteClass = "downvote glyphicon glyphicon-arrow-down";
     let pointsText = comment.points + (comment.points === 1 ? " point" : " points");
 
     let children;
@@ -103,9 +103,9 @@ const CommentDetail = React.createClass({
     }
 
     if (this.state.voteStatus === "upvote") {
-      upvoteClass = "upvote upvoted";
+      upvoteClass = "upvote upvoted glyphicon glyphicon-arrow-up";
     } else if (this.state.voteStatus === "downvote") {
-      downvoteClass = "downvote downvoted";
+      downvoteClass = "downvote downvoted glyphicon glyphicon-arrow-down";
     }
 
     return(
@@ -113,8 +113,8 @@ const CommentDetail = React.createClass({
         <div className="comment-detail-container">
           { expandOption }
           <div className="votes-container">
-            <div className="upvote-button" onClick={ this.toggleUpvote }><span className={ upvoteClass }>➜</span></div>
-            <div className="downvote-button" onClick={ this.toggleDownvote }><span className={ downvoteClass }>➜</span></div>
+            <div className="upvote-button" onClick={ this.toggleUpvote }><span className={ upvoteClass } /></div>
+            <div className="downvote-button" onClick={ this.toggleDownvote }><span className={ downvoteClass } /></div>
           </div>
           <div className="comment-text-container" onClick={ this.toggleChildren }>
             <div className="details">

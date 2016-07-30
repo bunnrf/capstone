@@ -12,7 +12,7 @@ const UploadImageButton = React.createClass({
 
   render: function() {
     return (
-      <button className="upload-button" onClick={this.upload}>Upload Image(s)</button>
+      <button className="image-upload-button" onClick={ this.upload }>Upload Image(s)</button>
     );
   }
 });

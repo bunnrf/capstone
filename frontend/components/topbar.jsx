@@ -14,6 +14,7 @@ const Topbar = React.createClass({
 
   getInitialState() {
     return { title: "",
+        description: "",
 				images: [],
 				uploadTrigger: false,
 				modalOpen: false };
@@ -21,7 +22,6 @@ const Topbar = React.createClass({
 
   componentDidMount() {
     this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
-		this.setState({ images: [ { title: undefined, image_url: null, description: undefined, ordinal: 0 } ] });
   },
 
   componentWillUnmount() {
@@ -29,6 +29,16 @@ const Topbar = React.createClass({
   },
 
 	handleSubmit(e) {
+    const images = this.state.images.slice();
+
+    // resetting ordinal here because strange things happen when it is
+    // maintained after deletion
+    let i = 0;
+    images.map((image) => {
+      image["ordinal"] = i;
+      i++;
+    });
+    
 		this.setState({ uploadTrigger: true });
 		e.preventDefault();
 		let post = {
@@ -47,13 +57,14 @@ const Topbar = React.createClass({
     if (!errors[field]) { return; }
 
     const messages = errors[field].map( (errorMsg, i) => {
-      return <li key={ i }>{ errorMsg }</li>;
+      return <li key={  i }>{ errorMsg }</li>;
     });
 
     return <ul>{ messages }</ul>;
   },
 
   openModal() {
+    $("body").addClass("noscroll");
     if (SessionStore.isUserLoggedIn()) {
       this.setState( { modalOpen: true } );
     } else {
@@ -63,19 +74,34 @@ const Topbar = React.createClass({
   },
 
 	closeModal: function(){
+    $("body").removeClass("noscroll")
     this.setState({ modalOpen: false });
   },
 
   update(property) {
-    return (e) => this.setState({[property]: e.target.value});
+    return (e) => this.setState({[property]: e.target.value });
   },
 
 	updateImage(index, property, value) {
-		let images = this.state.images;
-		images[index][property] = value;
+		let images = this.state.images.slice();
+    images[index][property] = value;
 
 		this.setState( { images: images } );
 	},
+
+  removeImage(index) {
+    let images = this.state.images.slice();
+    images.splice(index, 1);
+
+    // resetting ordinal here has strange effects, can't explain
+    // images var is what we want when logged, but image displayed is wrong
+    // for (let i = index; i < images.length; i++) {
+    //   images[i]["ordinal"] = i;
+    // }
+    // console.log(images);
+
+    this.setState( { images: images } );
+  },
 
 	addImageUploadForm: function(){
 		this.setState({ images: this.state.images.concat( { title: undefined, image_url: null, description: undefined, ordinal: this.state.images.length } ) });
@@ -106,29 +132,31 @@ const Topbar = React.createClass({
           <ul className="main-nav">
             <li className="logo-container"><a href="/" className="logo">imagr</a></li>
             <li className="menu-container"><a className="menu-icon"><div></div><div></div><div></div></a></li>
-            <li className="upload-container"><div className="upload-button" onClick={this.openModal}>upload images</div></li>
+            <li className="upload-container"><div className="upload-button" onClick={ this.openModal }>upload images</div></li>
           </ul>
           <UserNav />
         </div>
 
-        <Modal className="upload-modal" isOpen={this.state.modalOpen} onRequestClose={this.closeModal} style={this.customStyle()}>
-  				<button className="close-modal" onClick={this.closeModal}>X</button>
+        <Modal className="upload-modal" isOpen={ this.state.modalOpen } onRequestClose={ this.closeModal } style={ this.customStyle() }>
+  				<button className="close-modal" onClick={ this.closeModal }>X</button>
   				<div className="post-upload-form-container">
-  					<form onSubmit={this.handleSubmit} className="post-upload-form-box">
-  						Upload Images
+  					<form onSubmit={ this.handleSubmit } className="post-upload-form-box">
+  						Share your images!
   		        { this.fieldErrors("base") }
-  						<input type="text" value={this.state.title} onChange={this.update("title")} placeholder="Post Title" />
+  						<input type="text" value={ this.state.title } onChange={ this.update("title") } placeholder="Post Title" />
   						<div className="post-upload-form">
-  							{this.state.images.map((image) => {
-  								return <ImageUploadForm key={image.ordinal}
-  																			title={image.title}
-  																	image_url={image.url}
-  																description={image.description}
-  																updateState={this.updateImage}
-  																		ordinal={image.ordinal} />
-  							})}
-  							<input type="button" className="add-image-button" onClick={this.addImageUploadForm} value="Add Image" />
-  							<input type="submit" value="Submit" />
+  							{ this.state.images.map((image) => {
+  								return <ImageUploadForm key={ image.ordinal }
+  																			title={ image.title }
+  																	image_url={ image.url }
+  																description={ image.description }
+  																updateState={ this.updateImage }
+  																		ordinal={ image.ordinal }
+                                  removeImage={ this.removeImage } />
+  							  }) }
+  							<div className="add-image-button" onClick={ this.addImageUploadForm }><span className="glyphicon glyphicon-plus"></span></div>
+                <textarea value={ this.state.description } onChange={ this.update("description") } placeholder="Post Description(optional)" />
+  							<input type="submit" value="Submit Post" />
   						</div>
   					</form>
   				</div>

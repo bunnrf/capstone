@@ -28217,18 +28217,28 @@
 	
 	  getInitialState: function getInitialState() {
 	    return { title: "",
+	      description: "",
 	      images: [],
 	      uploadTrigger: false,
 	      modalOpen: false };
 	  },
 	  componentDidMount: function componentDidMount() {
 	    this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
-	    this.setState({ images: [{ title: undefined, image_url: null, description: undefined, ordinal: 0 }] });
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
 	    this.errorListener.remove();
 	  },
 	  handleSubmit: function handleSubmit(e) {
+	    var images = this.state.images.slice();
+	
+	    // resetting ordinal here because strange things happen when it is
+	    // maintained after deletion
+	    var i = 0;
+	    images.map(function (image) {
+	      image["ordinal"] = i;
+	      i++;
+	    });
+	
 	    this.setState({ uploadTrigger: true });
 	    e.preventDefault();
 	    var post = {
@@ -28262,6 +28272,7 @@
 	    );
 	  },
 	  openModal: function openModal() {
+	    $("body").addClass("noscroll");
 	    if (SessionStore.isUserLoggedIn()) {
 	      this.setState({ modalOpen: true });
 	    } else {
@@ -28272,6 +28283,7 @@
 	
 	
 	  closeModal: function closeModal() {
+	    $("body").removeClass("noscroll");
 	    this.setState({ modalOpen: false });
 	  },
 	
@@ -28283,8 +28295,21 @@
 	    };
 	  },
 	  updateImage: function updateImage(index, property, value) {
-	    var images = this.state.images;
+	    var images = this.state.images.slice();
 	    images[index][property] = value;
+	
+	    this.setState({ images: images });
+	  },
+	  removeImage: function removeImage(index) {
+	    var images = this.state.images.slice();
+	    images.splice(index, 1);
+	
+	    // resetting ordinal here has strange effects, can't explain
+	    // images var is what we want when logged, but image displayed is wrong
+	    // for (let i = index; i < images.length; i++) {
+	    //   images[i]["ordinal"] = i;
+	    // }
+	    // console.log(images);
 	
 	    this.setState({ images: images });
 	  },
@@ -28370,7 +28395,7 @@
 	          React.createElement(
 	            'form',
 	            { onSubmit: this.handleSubmit, className: 'post-upload-form-box' },
-	            'Upload Images',
+	            'Share your images!',
 	            this.fieldErrors("base"),
 	            React.createElement('input', { type: 'text', value: this.state.title, onChange: this.update("title"), placeholder: 'Post Title' }),
 	            React.createElement(
@@ -28382,10 +28407,16 @@
 	                  image_url: image.url,
 	                  description: image.description,
 	                  updateState: _this2.updateImage,
-	                  ordinal: image.ordinal });
+	                  ordinal: image.ordinal,
+	                  removeImage: _this2.removeImage });
 	              }),
-	              React.createElement('input', { type: 'button', className: 'add-image-button', onClick: this.addImageUploadForm, value: 'Add Image' }),
-	              React.createElement('input', { type: 'submit', value: 'Submit' })
+	              React.createElement(
+	                'div',
+	                { className: 'add-image-button', onClick: this.addImageUploadForm },
+	                React.createElement('span', { className: 'glyphicon glyphicon-plus' })
+	              ),
+	              React.createElement('textarea', { value: this.state.description, onChange: this.update("description"), placeholder: 'Post Description(optional)' }),
+	              React.createElement('input', { type: 'submit', value: 'Submit Post' })
 	            )
 	          )
 	        )
@@ -35774,23 +35805,62 @@
 	      _this.setState(_defineProperty({}, property, e.target.value));
 	    };
 	  },
+	  upload: function upload(e) {
+	    var _this2 = this;
+	
+	    e.preventDefault();
+	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
+	      if (!error) {
+	        _this2.handleUpload(results[0]);
+	      }
+	    });
+	  },
+	  removeSelf: function removeSelf() {
+	    this.props.removeImage(this.props.ordinal);
+	  },
 	
 	
 	  render: function render() {
 	    var imageOption = void 0;
 	
 	    if (this.state.image_url) {
-	      imageOption = React.createElement('img', { src: this.state.image_url });
+	      imageOption = React.createElement(
+	        'div',
+	        { className: 'image-upload-image-container' },
+	        React.createElement('img', { src: this.state.image_url }),
+	        React.createElement(
+	          'div',
+	          { className: 'image-edit-remove' },
+	          React.createElement(
+	            'div',
+	            { className: 'edit-image-button', onClick: this.upload },
+	            React.createElement('span', { className: 'glyphicon glyphicon-pencil' })
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'remove-image-button', onClick: this.removeSelf },
+	            React.createElement('span', { className: 'glyphicon glyphicon-trash' })
+	          )
+	        )
+	      );
 	    } else {
-	      imageOption = React.createElement(ImageUploadButton, { postImage: this.handleUpload });
+	      imageOption = React.createElement(
+	        'button',
+	        { className: 'image-upload-button', onClick: this.upload },
+	        'Upload Image(s)'
+	      );
 	    }
 	
 	    return React.createElement(
 	      'div',
 	      { className: 'image-upload-container' },
-	      React.createElement('input', { type: 'text', value: this.props.title, onChange: this.update("title"), placeholder: 'Caption(optional)' }),
-	      imageOption,
-	      React.createElement('textarea', { value: this.props.description, onChange: this.update("description"), placeholder: 'Description(optional)' })
+	      React.createElement('input', { type: 'text', value: this.props.title, onChange: this.update("title"), placeholder: 'Image Caption(optional)' }),
+	      React.createElement(
+	        'div',
+	        { className: 'image-upload-image-option-container' },
+	        imageOption
+	      ),
+	      React.createElement('textarea', { value: this.props.description, onChange: this.update("description"), placeholder: 'Image Description(optional)' })
 	    );
 	  }
 	});
@@ -35822,7 +35892,7 @@
 	  render: function render() {
 	    return React.createElement(
 	      "button",
-	      { className: "upload-button", onClick: this.upload },
+	      { className: "image-upload-button", onClick: this.upload },
 	      "Upload Image(s)"
 	    );
 	  }
@@ -36316,17 +36386,17 @@
 	    var post_votes = void 0;
 	    var comment_votes = void 0;
 	    var headerClass = "post-header";
-	    var upvoteClass = "upvote";
-	    var downvoteClass = "downvote";
+	    var upvoteClass = "upvote glyphicon glyphicon-arrow-up";
+	    var downvoteClass = "downvote glyphicon glyphicon-arrow-down";
 	
 	    if (this.state.currentUser) {
 	      post_votes = this.state.currentUser.post_votes;
 	      comment_votes = this.state.currentUser.comment_votes;
 	
 	      if (this.isUpvoted()) {
-	        upvoteClass = "upvote upvoted";
+	        upvoteClass = "upvote upvoted glyphicon glyphicon-arrow-up";
 	      } else if (this.isDownvoted()) {
-	        downvoteClass = "downvote downvoted";
+	        downvoteClass = "downvote downvoted glyphicon glyphicon-arrow-down";
 	      }
 	    }
 	
@@ -36440,20 +36510,12 @@
 	          React.createElement(
 	            'div',
 	            { className: 'upvote-button', onClick: this.toggleUpvote },
-	            React.createElement(
-	              'span',
-	              { className: upvoteClass },
-	              '➜'
-	            )
+	            React.createElement('span', { className: upvoteClass })
 	          ),
 	          React.createElement(
 	            'div',
 	            { className: 'downvote-button', onClick: this.toggleDownvote },
-	            React.createElement(
-	              'span',
-	              { className: downvoteClass },
-	              '➜'
-	            )
+	            React.createElement('span', { className: downvoteClass })
 	          ),
 	          React.createElement(
 	            'div',
@@ -39062,8 +39124,8 @@
 	  render: function render() {
 	    var comment = this.props.comment;
 	    var comment_votes = this.props.commentVotes;
-	    var upvoteClass = "upvote";
-	    var downvoteClass = "downvote";
+	    var upvoteClass = "upvote glyphicon glyphicon-arrow-up";
+	    var downvoteClass = "downvote glyphicon glyphicon-arrow-down";
 	    var pointsText = comment.points + (comment.points === 1 ? " point" : " points");
 	
 	    var children = void 0;
@@ -39107,9 +39169,9 @@
 	    }
 	
 	    if (this.state.voteStatus === "upvote") {
-	      upvoteClass = "upvote upvoted";
+	      upvoteClass = "upvote upvoted glyphicon glyphicon-arrow-up";
 	    } else if (this.state.voteStatus === "downvote") {
-	      downvoteClass = "downvote downvoted";
+	      downvoteClass = "downvote downvoted glyphicon glyphicon-arrow-down";
 	    }
 	
 	    return React.createElement(
@@ -39125,20 +39187,12 @@
 	          React.createElement(
 	            'div',
 	            { className: 'upvote-button', onClick: this.toggleUpvote },
-	            React.createElement(
-	              'span',
-	              { className: upvoteClass },
-	              '➜'
-	            )
+	            React.createElement('span', { className: upvoteClass })
 	          ),
 	          React.createElement(
 	            'div',
 	            { className: 'downvote-button', onClick: this.toggleDownvote },
-	            React.createElement(
-	              'span',
-	              { className: downvoteClass },
-	              '➜'
-	            )
+	            React.createElement('span', { className: downvoteClass })
 	          )
 	        ),
 	        React.createElement(
@@ -39205,11 +39259,18 @@
 	  focus: function focus() {
 	    this.setState({ focused: true });
 	  },
+	  blur: function blur(e) {
+	    if (e.relatedTarget && e.relatedTarget.id === "submit") {
+	      this.submit();
+	    } else {
+	      this.setState({ focused: false });
+	    }
+	  },
 	  submit: function submit() {
 	    if (SessionStore.isUserLoggedIn()) {
 	      var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId, parent_comment_id: this.props.parentCommentId });
 	      PostActions.createComment(comment);
-	      this.setState({ body: undefined, focused: false });
+	      this.setState({ body: "", focused: false });
 	    } else {
 	      $(".signin-link")[0].click();
 	    }
@@ -39228,10 +39289,10 @@
 	      return React.createElement(
 	        'div',
 	        { className: 'comment-create-focused' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), value: this.state.body }),
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onChange: this.updateBody(), onBlur: this.blur, value: this.state.body }),
 	        React.createElement(
 	          'button',
-	          { onClick: this.submit },
+	          { id: 'submit', onClick: this.submit },
 	          'Submit'
 	        )
 	      );
@@ -39239,7 +39300,7 @@
 	      return React.createElement(
 	        'div',
 	        { className: 'comment-create' },
-	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.focus })
+	        React.createElement('textarea', { placeholder: 'Submit a comment', onFocus: this.focus, value: this.state.body })
 	      );
 	    }
 	  }

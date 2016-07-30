@@ -106,17 +106,17 @@ const PostDetail = React.createClass({
     let post_votes;
     let comment_votes;
     let headerClass = "post-header";
-    let upvoteClass = "upvote";
-    let downvoteClass = "downvote";
+    let upvoteClass = "upvote glyphicon glyphicon-arrow-up";
+    let downvoteClass = "downvote glyphicon glyphicon-arrow-down";
 
     if (this.state.currentUser) {
       post_votes = this.state.currentUser.post_votes;
       comment_votes = this.state.currentUser.comment_votes;
 
       if (this.isUpvoted()) {
-        upvoteClass = "upvote upvoted";
+        upvoteClass = "upvote upvoted glyphicon glyphicon-arrow-up";
       } else if (this.isDownvoted()) {
-        downvoteClass = "downvote downvoted";
+        downvoteClass = "downvote downvoted glyphicon glyphicon-arrow-down";
       }
     }
 
@@ -127,7 +127,7 @@ const PostDetail = React.createClass({
     }
     if (post.description) {
       description = <div className="image-detail-description">
-        <Linkify>{post.description}</Linkify>
+        <Linkify>{ post.description }</Linkify>
       </div>
     }
     if (post.comments_by_parent){
@@ -143,7 +143,7 @@ const PostDetail = React.createClass({
     }
     if (post.author) {
       authorData = <div className="post-header-details">
-        <span>by </span><a href={"users/" + post.author.id}>{ post.author.username }</a><span> · { TimeUtil.timeSince(post.time_since) } </span>
+        <span>by </span><a href={ "users/" + post.author.id }>{ post.author.username }</a><span> · { TimeUtil.timeSince(post.time_since) } </span>
       </div>
     } else {
       authorData = <div className="post-header-details">
@@ -165,28 +165,28 @@ const PostDetail = React.createClass({
               <div className="post-header-title">
                 <h1>{ post.title }</h1>
               </div>
-              {authorData}
+              { authorData }
             </div>
             <div className="post-nav">
               <div className="post-show-prev" onClick={ this.props.prevPost }><span className="glyphicon glyphicon-menu-left"></span></div>
               <div className="post-show-next" onClick={ this.props.nextPost }>Next Post<span className="glyphicon glyphicon-menu-right" aria-hidden="true"></span></div>
             </div>
           </div>
-          {imagesIndex}
-          {description}
+          { imagesIndex }
+          { description }
           <div className="post-footer">
-            <div className="upvote-button" onClick={ this.toggleUpvote }><span className={upvoteClass}>➜</span></div>
-            <div className="downvote-button" onClick={ this.toggleDownvote }><span className={downvoteClass}>➜</span></div>
+            <div className="upvote-button" onClick={ this.toggleUpvote }><span className={ upvoteClass } /></div>
+            <div className="downvote-button" onClick={ this.toggleDownvote }><span className={ downvoteClass } /></div>
             <div className="post-stats"><span className="points">{ post.points } points</span></div>
           </div>
         </div>
         <div className="post-comments-container">
-          <CommentCreate postId={post.id}/>
-          {commentsIndex}
+          <CommentCreate postId={ post.id }/>
+          { commentsIndex }
         </div>
       </div>
     )
   }
-})
+});
 
 module.exports = PostDetail;

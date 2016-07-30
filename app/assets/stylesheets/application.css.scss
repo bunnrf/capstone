@@ -30,6 +30,11 @@ body {
   font-size: 14px;
 }
 
+// applied to the body when image upload form opens
+.noscroll {
+  overflow: hidden;
+}
+
 a {
   color: #4E76C9;
   text-decoration: none;
@@ -202,8 +207,13 @@ div .upload-button:hover {
   margin-left: -220px;
   margin-top: 100px;
   width: 360px;
-  height: 300px;
+  min-height: 300px;
+  max-height: 500px;
   z-index: 101;
+}
+
+.upload-modal {
+
 }
 
 input[type="text"], input[type="password"], textarea {
@@ -283,13 +293,110 @@ textarea:focus {
 .image-upload-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+  background: #dddddd;
+  background: rgba(0, 0, 0, .15);
+  width: 100%;
+  border-radius: 10px;
+  padding: 5px;
+  margin: 5px;
 }
 
-.image-upload-container img {
+.image-upload-image-option-container {
+  display: flex;
+  justify-content: space-around;
+}
+
+.image-upload-image-container {
+  position: relative;
+  max-width: 320px;
+}
+
+.image-upload-image-container img {
+  align-self: center;
   height: 200px;
-  max-width: 100%
+  max-width: 100%;
+}
+
+.image-edit-remove {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 67px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.remove-image-button {
+
+}
+
+.image-upload-container input, .image-upload-container textarea {
+  width: 90%;
+}
+
+.add-image-button, .edit-image-button, .remove-image-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 5px;
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+}
+
+.add-image-button {
+  background: #12a534;
+  background: -webkit-linear-gradient(#12a534 0, #2a8f31 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#12a534 0, #2a8f31 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#12a534 0, #2a8f31 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#12a534 0, #2a8f31 100%);
+}
+
+.add-image-button:hover {
+  background: #15a939;
+  background: -webkit-linear-gradient(#19ab3b 0, #309a39 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#19ab3b 0, #309a39 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#19ab3b 0, #309a39 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#19ab3b 0, #309a39 100%);
+}
+
+.glyphicon-plus {
+  -ms-transform: translate(1px, -1px); /* IE 9 */
+ 	-webkit-transform: translate(1px, -1px); /* Safari */
+  transform: translate(1px, -1px);
+}
+
+.edit-image-button {
+  background: #3274e5;
+  background: -webkit-linear-gradient(#3274e5 0, #2a61bf 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#3274e5 0, #2a61bf 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#3274e5 0, #2a61bf 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#3274e5 0, #2a61bf 100%);
+}
+
+.edit-image-button:hover {
+  background: #357bf2;
+  background: -webkit-linear-gradient(#357bf2 0, #306ed9 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#357bf2 0, #306ed9 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#357bf2 0, #306ed9 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#357bf2 0, #306ed9 100%);
+}
+
+.remove-image-button {
+  background: #12a534;
+  background: -webkit-linear-gradient(#d51234 0, #cf2a31 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#d51234 0, #cf2a31 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#d51234 0, #cf2a31 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#d51234 0, #cf2a31 100%);
+}
+
+.remove-image-button:hover {
+  background: #15a939;
+  background: -webkit-linear-gradient(#df1f3c 0, #d83139 100%); /* For Safari 5.1 to 6.0 */
+  background: -o-linear-gradient(#df1f3c 0, #d83139 100%); /* For Opera 11.1 to 12.0 */
+  background: -moz-linear-gradient(#df1f3c 0, #d83139 100%); /* For Firefox 3.6 to 15 */
+  background: linear-gradient(#df1f3c 0, #d83139 100%);
 }
 
 .close-modal {
@@ -519,18 +626,20 @@ input:focus {
   justify-content: center;
 }
 
-.upvote {
-  -ms-transform: rotate(-90deg); /* IE 9 */
-  -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
-  transform: rotate(-90deg);
-}
-
-.downvote {
-  -ms-transform: rotate(90deg); /* IE 9 */
-  -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
-  transform: rotate(90deg);
-  margin-left: 2px;
-}
+// without glyphicons, rotate a unicode char to make arrows
+//
+// .upvote {
+//   -ms-transform: rotate(-90deg); /* IE 9 */
+//   -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
+//   transform: rotate(-90deg);
+// }
+//
+// .downvote {
+//   -ms-transform: rotate(90deg); /* IE 9 */
+//   -webkit-transform: rotate(90deg); /* Chrome, Safari, Opera */
+//   transform: rotate(90deg);
+//   margin-left: 2px;
+// }
 
 .post-stats {
   margin-left: 6px;
@@ -581,15 +690,11 @@ input:focus {
 }
 
 .post-show-next:hover {
-  width: 110px;
   background: #357bf2;
   background: -webkit-linear-gradient(#357bf2 0, #306ed9 100%); /* For Safari 5.1 to 6.0 */
   background: -o-linear-gradient(#357bf2 0, #306ed9 100%); /* For Opera 11.1 to 12.0 */
   background: -moz-linear-gradient(#357bf2 0, #306ed9 100%); /* For Firefox 3.6 to 15 */
   background: linear-gradient(#357bf2 0, #306ed9 100%);
-  border: 1px solid #4d8eff;
-  border-bottom: 1px solid #1f478c;
-
 }
 
 .post-show-prev {
@@ -695,7 +800,7 @@ input:focus {
 }
 
 .votes-container div span {
-  font-size: 20px;
+  font-size: 16px;
 }
 
 .votes-container div span .upvote {

@@ -11,6 +11,14 @@ const CommentCreate = React.createClass({
     this.setState( { focused: true } );
   },
 
+  blur(e) {
+    if (e.relatedTarget && e.relatedTarget.id === "submit") {
+      this.submit();
+    } else {
+      this.setState( { focused: false } );
+    }
+  },
+
   submit() {
     if (SessionStore.isUserLoggedIn()) {
       const comment = Object.assign(
@@ -18,7 +26,7 @@ const CommentCreate = React.createClass({
         { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId, parent_comment_id: this.props.parentCommentId }
       );
       PostActions.createComment(comment);
-      this.setState( { body: undefined, focused: false } );
+      this.setState( { body: "", focused: false } );
     } else {
       $(".signin-link")[0].click();
     }
@@ -32,14 +40,14 @@ const CommentCreate = React.createClass({
     if (this.state.focused) {
       return (
         <div className="comment-create-focused">
-          <textarea placeholder="Submit a comment" onChange={ this.updateBody() } value={ this.state.body } />
-          <button onClick={ this.submit } >Submit</button>
+          <textarea placeholder="Submit a comment" onChange={ this.updateBody() } onBlur={ this.blur } value={ this.state.body } />
+          <button id="submit" onClick={ this.submit } >Submit</button>
         </div>
       );
     } else {
       return (
         <div className="comment-create">
-          <textarea placeholder="Submit a comment" onFocus={ this.focus } />
+          <textarea placeholder="Submit a comment" onFocus={ this.focus } value={ this.state.body } />
         </div>
       );
     }
