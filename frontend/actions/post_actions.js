@@ -7,6 +7,11 @@ const PostActions = {
     PostApiUtil.fetchAllPosts(this.receiveAllPosts)
   },
 
+  fetchPosts: function(limit, offset) {
+    const callback = offset ? this.appendPosts : this.receiveAllPosts;
+    PostApiUtil.fetchPosts(callback, limit, offset);
+  },
+
   fetchSinglePost: function(id) {
     PostApiUtil.fetchSinglePost(id, this.receiveSinglePost)
   },
@@ -15,7 +20,7 @@ const PostActions = {
     dispatcher.dispatch({
       actionType: PostConstants.POSTS_RECEIVED,
       posts: posts
-    })
+    });
   },
 
   createPost(post) {
@@ -26,7 +31,14 @@ const PostActions = {
     dispatcher.dispatch({
       actionType: PostConstants.POST_RECEIVED,
       post: post
-    })
+    });
+  },
+
+  appendPosts: function(posts) {
+    dispatcher.dispatch({
+      actionType: PostConstants.APPEND_POSTS,
+      posts: posts
+    });
   },
 
   createComment(comment) {

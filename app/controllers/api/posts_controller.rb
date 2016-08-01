@@ -1,6 +1,10 @@
 class Api::PostsController < ApplicationController
   def index
-    @posts = Post.all.includes(:author, :comments).joins(:images).where(:images => { :ordinal => 0 }).includes(:images)
+    if params[:limit] && params[:offset]
+      @posts = Post.all_tracks(params[:limit], params[:offset])
+    else
+      @posts = Post.all.includes(:author).joins(:images).where(:images => { :ordinal => 0 }).includes(:images)
+    end
   end
 
   def show

@@ -35915,6 +35915,11 @@
 	    PostApiUtil.fetchAllPosts(this.receiveAllPosts);
 	  },
 	
+	  fetchPosts: function fetchPosts(limit, offset) {
+	    var callback = offset ? this.appendPosts : this.receiveAllPosts;
+	    PostApiUtil.fetchPosts(callback, limit, offset);
+	  },
+	
 	  fetchSinglePost: function fetchSinglePost(id) {
 	    PostApiUtil.fetchSinglePost(id, this.receiveSinglePost);
 	  },
@@ -35938,6 +35943,13 @@
 	    });
 	  },
 	
+	  appendPosts: function appendPosts(posts) {
+	    dispatcher.dispatch({
+	      actionType: PostConstants.APPEND_POSTS,
+	      posts: posts
+	    });
+	  },
+	
 	  createComment: function createComment(comment) {
 	    PostApiUtil.createComment(comment, this.receiveSinglePost);
 	  }
@@ -35953,7 +35965,8 @@
 	
 	var PostConstants = {
 	  POSTS_RECEIVED: "POSTS_RECEIVED",
-	  POST_RECEIVED: "POST_RECEIVED"
+	  POST_RECEIVED: "POST_RECEIVED",
+	  APPEND_POSTS: "APPEND_POSTS"
 	};
 	
 	module.exports = PostConstants;
@@ -35970,6 +35983,16 @@
 	      url: "api/posts",
 	      success: function success(resp) {
 	        callback(resp);
+	      }
+	    });
+	  },
+	
+	  fetchPosts: function fetchPosts(callback, limit, offset) {
+	    $.ajax({
+	      url: "api/posts",
+	      data: { limit: limit, offset: offset },
+	      success: function success(posts) {
+	        callback(posts);
 	      }
 	    });
 	  },
@@ -36020,8 +36043,13 @@
 	var dispatcher = __webpack_require__(255);
 	
 	var _posts = {};
+	var _hasMorePosts = true;
 	
 	var PostStore = new Store(dispatcher);
+	
+	PostStore.hasMorePosts = function () {
+	  return _hasMorePosts;
+	};
 	
 	PostStore.all = function () {
 	  return Object.assign({}, _posts);
@@ -36037,10 +36065,18 @@
 	
 	PostStore.add = function (post) {};
 	
+	function appendPosts(posts) {
+	  _hasMorePosts = !!Object.keys(posts).length;
+	
+	  _posts = Object.assign(_posts, posts);
+	  PostStore.__emitChange();
+	};
+	
 	function resetAllPosts(posts) {
+	  _hasMorePosts = !!Object.keys(posts).length;
 	  _posts = posts;
 	  PostStore.__emitChange();
-	}
+	};
 	
 	// keep the post thumb for display in index
 	function resetSinglePost(post) {
@@ -36057,6 +36093,9 @@
 	      break;
 	    case PostConstants.POST_RECEIVED:
 	      resetSinglePost(payload.post);
+	      break;
+	    case PostConstants.APPEND_POSTS:
+	      appendPosts(payload.posts);
 	      break;
 	    case VoteConstants.VOTE_RECEIVED:
 	      resetSinglePost(payload.post);
@@ -36081,6 +36120,9 @@
 	var PostIndexItem = __webpack_require__(290);
 	var SentenceSorting = __webpack_require__(291);
 	
+	var INITIAL_REQUEST_SIZE = 40;
+	var ADDITIONAL_REQUEST_SIZE = 20;
+	
 	var PostIndex = React.createClass({
 	  displayName: 'PostIndex',
 	  getInitialState: function getInitialState() {
@@ -36090,14 +36132,40 @@
 	    this.setState({ posts: PostStore.all() });
 	  },
 	  componentDidMount: function componentDidMount() {
+	    if (!this.props.className) {
+	      window.addEventListener('scroll', this._onScroll);
+	    }
 	    this.postsListener = PostStore.addListener(this._onChange);
-	    PostActions.fetchAllPosts();
+	    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0);
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
+	    window.removeEventListener('scroll', this._onScroll);
 	    this.postsListener.remove();
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
 	    this.setState({ activePostIndex: newProps.activePostIndex });
+	  },
+	  _fetchMorePosts: function _fetchMorePosts(offset) {
+	    PostActions.fetchPosts(ADDITIONAL_REQUEST_SIZE, offset);
+	  },
+	  _onScroll: function _onScroll(e) {
+	    var scrollDif = $('#post-index').height() - (window.scrollY + window.innerHeight);
+	
+	    if (PostStore.hasMorePosts() && scrollDif < 300) {
+	      // this.setState({loading: true});
+	      var offset = Object.keys(this.state.posts).length;
+	      this._fetchMorePosts(offset);
+	    }
+	  },
+	  _onSideScroll: function _onSideScroll() {
+	    var scrollTop = $(".post-show-right-scroll-container").scrollTop();
+	    var scrollDif = $(".post-show-post-index-container").height() - scrollTop;
+	
+	    if (PostStore.hasMorePosts() && scrollDif < 700) {
+	      // this.setState({loading: true});
+	      var offset = Object.keys(this.state.posts).length;
+	      this._fetchMorePosts(offset);
+	    }
 	  },
 	  render: function render() {
 	    // debugger
@@ -36125,7 +36193,7 @@
 	        ),
 	        React.createElement(
 	          'div',
-	          { className: 'post-show-right-scroll-container' },
+	          { id: 'post-index', className: 'post-show-right-scroll-container', onScroll: this._onSideScroll },
 	          React.createElement(
 	            'div',
 	            { className: this.props.className },
@@ -36142,7 +36210,7 @@
 	        React.createElement(SentenceSorting, null),
 	        React.createElement(
 	          'div',
-	          { className: "post-index-container" },
+	          { id: 'post-index', className: "post-index-container" },
 	          keys.map(function (key) {
 	            return React.createElement(PostIndexItem, { key: key, post: posts[key] });
 	          })
@@ -36293,10 +36361,10 @@
 	var CommentDetail = __webpack_require__(305);
 	var CommentCreate = __webpack_require__(306);
 	var PostActions = __webpack_require__(285);
-	var VoteActions = __webpack_require__(307);
+	var VoteActions = __webpack_require__(308);
 	var PostStore = __webpack_require__(288);
 	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(309);
+	var TimeUtil = __webpack_require__(307);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
@@ -36320,7 +36388,7 @@
 	  },
 	  componentDidMount: function componentDidMount() {
 	    this.userListener = SessionStore.addListener(this._userChanged);
-	    this.windowListener = window.addEventListener('scroll', this.stickyScroll, false);
+	    window.addEventListener('scroll', this.stickyScroll, false);
 	  },
 	  _userChanged: function _userChanged() {
 	    var currentUser = SessionStore.currentUser();
@@ -36401,7 +36469,9 @@
 	    }
 	
 	    if (post.images) {
-	      imagesIndex = post.images.map(function (image) {
+	      imagesIndex = post.images.sort(function (a, b) {
+	        return a.ordinal - b.ordinal;
+	      }).map(function (image) {
 	        return React.createElement(ImageDetail, { key: image.id, image: image });
 	      });
 	    }
@@ -39064,8 +39134,8 @@
 	var React = __webpack_require__(1);
 	var CommentCreate = __webpack_require__(306);
 	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(309);
-	var VoteActions = __webpack_require__(307);
+	var TimeUtil = __webpack_require__(307);
+	var VoteActions = __webpack_require__(308);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
@@ -39310,12 +39380,49 @@
 
 /***/ },
 /* 307 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var TimeUtil = {
+	    timeSince: function timeSince(time_since) {
+	        var seconds = Math.floor((new Date() - time_since) / 1000);
+	
+	        var interval = Math.floor(seconds / 31536000);
+	
+	        if (interval > 1) {
+	            return interval + " years ago";
+	        }
+	        interval = Math.floor(seconds / 2592000);
+	        if (interval > 1) {
+	            return interval + " months ago";
+	        }
+	        interval = Math.floor(seconds / 86400);
+	        if (interval > 1) {
+	            return interval + " days ago";
+	        }
+	        interval = Math.floor(seconds / 3600);
+	        if (interval > 1) {
+	            return interval + " hours ago";
+	        }
+	        interval = Math.floor(seconds / 60);
+	        if (interval > 1) {
+	            return interval + " minutes ago";
+	        }
+	        return Math.floor(seconds) + " seconds ago";
+	    }
+	};
+	
+	module.exports = TimeUtil;
+
+/***/ },
+/* 308 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var VoteConstants = __webpack_require__(277);
-	var VoteApiUtil = __webpack_require__(308);
+	var VoteApiUtil = __webpack_require__(309);
 	var SessionStore = __webpack_require__(254);
 	var dispatcher = __webpack_require__(255);
 	
@@ -39352,7 +39459,7 @@
 	module.exports = VoteActions;
 
 /***/ },
-/* 308 */
+/* 309 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39393,43 +39500,6 @@
 	};
 	
 	module.exports = VoteApiUtil;
-
-/***/ },
-/* 309 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var TimeUtil = {
-	    timeSince: function timeSince(time_since) {
-	        var seconds = Math.floor((new Date() - time_since) / 1000);
-	
-	        var interval = Math.floor(seconds / 31536000);
-	
-	        if (interval > 1) {
-	            return interval + " years ago";
-	        }
-	        interval = Math.floor(seconds / 2592000);
-	        if (interval > 1) {
-	            return interval + " months ago";
-	        }
-	        interval = Math.floor(seconds / 86400);
-	        if (interval > 1) {
-	            return interval + " days ago";
-	        }
-	        interval = Math.floor(seconds / 3600);
-	        if (interval > 1) {
-	            return interval + " hours ago";
-	        }
-	        interval = Math.floor(seconds / 60);
-	        if (interval > 1) {
-	            return interval + " minutes ago";
-	        }
-	        return Math.floor(seconds) + " seconds ago";
-	    }
-	};
-	
-	module.exports = TimeUtil;
 
 /***/ }
 /******/ ]);

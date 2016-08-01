@@ -32,7 +32,7 @@ const PostDetail = React.createClass({
 
   componentDidMount() {
     this.userListener = SessionStore.addListener(this._userChanged);
-    this.windowListener = window.addEventListener('scroll', this.stickyScroll, false);
+    window.addEventListener('scroll', this.stickyScroll, false);
   },
 
   _userChanged() {
@@ -121,7 +121,9 @@ const PostDetail = React.createClass({
     }
 
     if(post.images){
-      imagesIndex = post.images.map((image) => {
+      imagesIndex = post.images.sort((a, b) => {
+        return a.ordinal - b.ordinal;
+      }).map((image) => {
         return <ImageDetail key={ image.id } image={ image } />
       });
     }

@@ -4,8 +4,11 @@ const VoteConstants = require('../constants/vote_constants');
 const dispatcher = require('../dispatcher/dispatcher');
 
 let _posts = {};
+let _hasMorePosts = true;
 
 const PostStore = new Store(dispatcher);
+
+PostStore.hasMorePosts = () => _hasMorePosts;
 
 PostStore.all = function() {
   return Object.assign({}, _posts);
@@ -23,10 +26,18 @@ PostStore.add = function(post) {
 
 };
 
+function appendPosts(posts) {
+  _hasMorePosts = !!Object.keys(posts).length;
+
+  _posts = Object.assign(_posts, posts);
+  PostStore.__emitChange();
+};
+
 function resetAllPosts(posts) {
+  _hasMorePosts = !!Object.keys(posts).length;
   _posts = posts;
   PostStore.__emitChange();
-}
+};
 
 // keep the post thumb for display in index
 function resetSinglePost(post) {
@@ -43,6 +54,9 @@ PostStore.__onDispatch = function(payload) {
       break;
     case PostConstants.POST_RECEIVED:
       resetSinglePost(payload.post);
+      break;
+    case PostConstants.APPEND_POSTS:
+      appendPosts(payload.posts);
       break;
     case VoteConstants.VOTE_RECEIVED:
       resetSinglePost(payload.post);

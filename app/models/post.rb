@@ -8,6 +8,10 @@ class Post < ActiveRecord::Base
   has_many :voters, through: :votes, source: :voter
   accepts_nested_attributes_for :images
 
+  def self.all_tracks(limit, offset)
+    Post.limit(limit).offset(offset).includes(:author).joins(:images).where(:images => { :ordinal => 0 }).includes(:images)
+  end
+
   def thumb
     url = self.images.first.image_url
     url.sub(".gifv", ".jpg").sub(".gif", ".jpg")

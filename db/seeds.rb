@@ -7,8 +7,10 @@
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
 
-# NOTE: seeds upto line 300 are hand-picked
-# NOTE: after that, faker is used to ramdomly seed
+# NOTE: three phases:
+# NOTE: 1. hand-picked post and image seeds
+# NOTE: 2. random comments and votes for those
+# NOTE: 3. random posts
 
 users = User.create([ { username: "demo", password: "password" }, { username: "michaelCera", password: "password" }, { username: "sarah", password: "password" }, { username: "mistersavage", password: "password" }])
 
@@ -106,7 +108,7 @@ https://www.wolframalpha.com", image_url: "http://i.imgur.com/lQprHgs.png", ordi
 
 http://getpocket.com", image_url: "http://i.imgur.com/jSxW01Y.png", ordinal: 7, post_id: 1 },
 
-{ title: "", description: "Thousand of free online courses about just about anything - perfect if you're studying for a test and need a quick recap  on a topic
+{ title: "Khan Academy", description: "Thousand of free online courses about just about anything - perfect if you're studying for a test and need a quick recap  on a topic
 
 http://khanacademy.org", image_url: "http://i.imgur.com/NVPk6hk.png", ordinal: 8, post_id: 1 },
 
@@ -175,6 +177,24 @@ http://www.foodnetwork.com/recipes/food-network-kitchens/slow-cooker-pulled-pork
 
 
                         { image_url: "http://i.imgur.com/eaoBRfx.png", ordinal: 0, post_id: 6 },
+
+
+                        { description: "The materials and planning board", image_url: "http://i.imgur.com/sQdKDNN.jpg", ordinal: 0, post_id: 7 },
+                        { description: "We found this door mirror at a local shop. It was pretty cheap, but it had bevelled edges. So we cut a slit into the boards to support the mirror as well as covering the edge. The holes will later house the LEDs.", image_url: "http://i.imgur.com/tTA1QfH.jpg", ordinal: 1, post_id: 7 },
+                        { description: "We picked our stain while our companion took a nap.", image_url: "http://i.imgur.com/ZEAe39T.jpg", ordinal: 2, post_id: 7 },
+                        { description: "We added one piece of wood in the middle for support, to fix some warping issues, and to hold the power strip.", image_url: "http://i.imgur.com/TvPD9HJ.jpg", ordinal: 3, post_id: 7 },
+                        { description: "This is the homemade power outlet that will be plugged into the power strip for power.", image_url: "http://i.imgur.com/M1FxnXC.jpg", ordinal: 4, post_id: 7 },
+                        { description: "We got the table into the apartment. Now all we had to wait for was the lights and two-way mirror.", image_url: "http://i.imgur.com/Q71H0nk.jpg", ordinal: 5, post_id: 7 },
+                        { description: "Raspberry Pi came in the mail!", image_url: "http://i.imgur.com/CX12V67.jpg", ordinal: 6, post_id: 7 },
+                        { description: "Toying around with it, trying to get the damn thing to work.", image_url: "http://i.imgur.com/o3ykuvN.jpg", ordinal: 7, post_id: 7 },
+                        { description: "Finally got some lights to turn on. It took forever though. ", image_url: "http://i.imgur.com/j7EmHVw.jpg", ordinal: 8, post_id: 7 },
+                        { image_url: "http://i.imgur.com/Rfq7wmn.jpg", ordinal: 9, post_id: 7 },
+                        { image_url: "http://i.imgur.com/h9l7mCS.jpg", ordinal: 10, post_id: 7 },
+                        { image_url: "http://i.imgur.com/ig4c2kQ.jpg", ordinal: 11, post_id: 7 },
+                        { description: "At first, we could only get half the lights to work.", image_url: "http://i.imgur.com/saqgKIO.jpg", ordinal: 11, post_id: 7 },
+                        { description: "Did a bit of editing to the code and got the damn thing to work!", image_url: "http://i.imgur.com/2gtuwoz.jpg", ordinal: 12, post_id: 7 },
+                        { description: "Without the lights on. I personally enjoy how you can't see what's underneath the glass.", image_url: "http://i.imgur.com/mlc7nTB.jpg", ordinal: 13, post_id: 7 },
+                        { image_url: "http://i.imgur.com/KBFCXNE.jpg", ordinal: 14, post_id: 7 },
 
 
                         { image_url: "https://i.imgur.com/voIIzxw.jpg", ordinal: 0, post_id: 7 },
@@ -298,11 +318,10 @@ The difference between the models and the real thing is that by adding an extra 
 Price: $35
 http://www.kleinbottle.com/baby_klein.htm", image_url: "http://i.imgur.com/WiQSpqC.jpg", ordinal: 8, post_id: 15 }])
 
-# { image_url: "http://i.imgur.com/h9M99vS.jpg", ordinal: 0, post_id: 13 },
-
 RANDOM_USER_COUNT = 100
 RANDOM_COMMENT_COUNT = 500
 RANDOM_VOTES_COUNT = 10000
+RANDOM_POSTS_COUNT = 250
 
 def truncate(text, options = {}, &block)
   if text
@@ -318,7 +337,7 @@ end
 random_users_arr = Array.new(RANDOM_USER_COUNT) { { username: Faker::Internet.user_name, password: "password" } }
 random_users = User.create(random_users_arr)
 
-random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { { body: truncate(Faker::StarWars.quote.html_safe, length: 255), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
+random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { { body: truncate(Faker::StarWars.quote.html_safe, length: 126), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
 random_comments = Comment.create(random_comments_arr)
 
 # randomly assign some comments as nested
@@ -331,7 +350,7 @@ random_comments = Comment.create(random_comments_arr)
 end
 
 random_votes_arr = Array.new(RANDOM_VOTES_COUNT) do
-  vote_type = (rand(10) > 8) ? "downvote" : "upvote"
+  vote_type = (rand(20) > 18) ? "downvote" : "upvote"
   user_id = random_users.sample.id
 
   votable = (rand(10) > 4) ? random_comments.sample : Post.all.sample
@@ -342,4 +361,13 @@ random_votes_arr = Array.new(RANDOM_VOTES_COUNT) do
   { vote_type: vote_type, user_id: user_id, votable_id: votable_id, votable_type: votable_type }
 end
 
-random_votes = Vote.create(random_votes_arr)
+Vote.create(random_votes_arr)
+
+random_image_urls = File.readlines(File.dirname(__FILE__) + "/urls.txt").map(&:chomp).push("http://i.imgur.com/h9M99vS.jpg")
+
+random_posts = []
+RANDOM_POSTS_COUNT.times do
+  random_posts.push( { title: truncate(Faker::Book.title.html_safe, length: 126), author_id: random_users.sample.id, images_attributes: [ { description: (rand(10) > 7 ? Faker::Hacker.say_something_smart.html_safe : nil), image_url: random_image_urls.sample, ordinal: 0 } ] } )
+end
+
+Post.create(random_posts)

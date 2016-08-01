@@ -5,16 +5,26 @@ const PostApiUtil = {
       success: function(resp) {
         callback(resp)
       }
-    })
+    });
+  },
+
+  fetchPosts: function(callback, limit, offset) {
+    $.ajax({
+      url: "api/posts",
+      data: { limit: limit, offset: offset },
+      success: function(posts) {
+        callback(posts);
+      }
+    });
   },
 
   fetchSinglePost: function(id, callback) {
     $.ajax({
       url: "api/posts/" + id,
       success: function(resp) {
-        callback(resp)
+        callback(resp);
       }
-    })
+    });
   },
 
   createPost: function(post, callback) {
@@ -23,9 +33,9 @@ const PostApiUtil = {
       method: "POST",
       data: { post: post },
       success: function(resp) {
-        callback(resp)
+        callback(resp);
       }
-    })
+    });
   },
 
   createComment: function(comment, callback) {
@@ -34,9 +44,9 @@ const PostApiUtil = {
       method: "POST",
       data: { comment: comment },
       success: function(resp) {
-        callback(resp)
+        callback(resp);
       }
-    })
+    });
   }
 };
 
