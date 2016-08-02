@@ -10,16 +10,21 @@ Imagr is a great place to share experiences, thoughts, and interests. Users can 
 
 ## Create A Post
 
-Found or made a funny image? Went on a trip to Nepal recently? Have something clever to say? Hop on Imagr on make a post about it! Making a post on Imagr is easy and the layout of images interspaced with narration makes story-telling even easier. If your post get enough of a reaction, you might hit the front page!
+Found or made a funny image? Went on a trip to Nepal recently? Have something clever to say? Hop on Imagr on make a post about it! Making a post on Imagr is easy and the layout of images interspaced with narration makes story-telling even easier. If your post gets enough of a reaction, you might hit the front page!
 
 ![create]
 
 ## Browse
 
-View, comment on, vote on, laugh about, and cry over other users' posts. The front page features the most popular recent posts, determined by users' voting and commenting, so hang there and you'll never miss a viral post.
+View, comment on, vote on, laugh about, and cry over other users' posts. The front page features the most popular recent posts, determined by users' voting and commenting, so hang around there and you'll never miss a viral post.
+
+![post]
+
+## Infinite Scroll
+
+The posts gallery requests more posts from the database when you've reached the end of it. This prevents strain on the server as well as the client's side.
 
 ![index]
-![post]
 
 ## Comment
 
