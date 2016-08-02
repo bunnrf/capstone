@@ -22,7 +22,7 @@ View, comment on, vote on, laugh about, and cry over other users' posts. The fro
 
 ## Infinite Scroll
 
-The posts gallery requests more posts from the database when you've reached the end of it. This prevents strain on the server as well as the client's side.
+The posts gallery requests more posts from the database when you've reached the end of it, instead of loading the full page. This prevents strain on the server as well as the client's side.
 
 ![index]
 
