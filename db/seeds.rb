@@ -319,9 +319,9 @@ http://www.kleinbottle.com/baby_klein.htm", image_url: "http://i.imgur.com/WiQSp
 p "fixed posts created", Time.now - t
 t = Time.now
 
-RANDOM_USER_COUNT = 250
+RANDOM_USER_COUNT = 200
 RANDOM_COMMENT_COUNT = 500
-RANDOM_VOTES_COUNT = 5000
+RANDOM_VOTES_COUNT = 2000
 RANDOM_POSTS_COUNT = 1000
 TOTAL_USER_COUNT = RANDOM_USER_COUNT + User.count
 FIXED_POSTS_COUNT = Post.count
@@ -340,15 +340,12 @@ end
 def create_child_comments(weight, post_id)
   Array.new(weight) do
     comment = create_comment(post_id)
-    if rand(6) < 1 && weight > 0
+    if rand(5) < 1 && weight > 3
       comment[:child_comments_attributes] = create_child_comments(weight - rand(weight + 1), post_id)
-    end
-
-    if weight > 3
       votes = Array.new(weight * 2 + rand(10)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1 } }
       comment[:votes_attributes] = votes
     end
-    
+
     comment
   end
 end
