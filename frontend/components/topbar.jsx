@@ -38,7 +38,7 @@ const Topbar = React.createClass({
       image["ordinal"] = i;
       i++;
     });
-    
+
 		this.setState({ uploadTrigger: true });
 		e.preventDefault();
 		let post = {
@@ -130,7 +130,7 @@ const Topbar = React.createClass({
       <div id="topbar">
         <div className="nav-container">
           <ul className="main-nav">
-            <li className="logo-container"><a href="/" className="logo">imagr</a></li>
+            <li className="logo-container"><a href="#/" className="logo">imagr</a></li>
             <li className="menu-container"><a className="menu-icon"><div></div><div></div><div></div></a></li>
             <li className="upload-container"><div className="upload-button" onClick={ this.openModal }>upload images</div></li>
           </ul>

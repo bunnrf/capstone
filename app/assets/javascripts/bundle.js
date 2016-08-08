@@ -57,10 +57,12 @@
 	var Modal = __webpack_require__(230);
 	
 	var App = __webpack_require__(251);
-	var PostStore = __webpack_require__(288);
+	var PostIndexStore = __webpack_require__(289);
+	var PostDetailStore = __webpack_require__(292);
 	var SessionStore = __webpack_require__(254);
-	var PostIndex = __webpack_require__(289);
-	var PostShow = __webpack_require__(292);
+	var PostIndex = __webpack_require__(288);
+	var PostShow = __webpack_require__(293);
+	var UserShow = __webpack_require__(311);
 	var SessionActions = __webpack_require__(278);
 	
 	var appRouter = React.createElement(
@@ -70,7 +72,8 @@
 	    Route,
 	    { path: '/', component: App },
 	    React.createElement(IndexRoute, { component: PostIndex }),
-	    React.createElement(Route, { path: '/posts/:postId', component: PostShow })
+	    React.createElement(Route, { path: '/posts/:postId', component: PostShow }),
+	    React.createElement(Route, { path: 'users/:userId', component: UserShow })
 	  )
 	);
 	
@@ -28172,6 +28175,7 @@
 	
 	var React = __webpack_require__(1);
 	var Topbar = __webpack_require__(252);
+	var PostIndex = __webpack_require__(288);
 	var SessionStore = __webpack_require__(254);
 	
 	var App = React.createClass({
@@ -28180,6 +28184,13 @@
 	    SessionStore.addListener(this.forceUpdate.bind(this));
 	  },
 	  render: function render() {
+	    // let postIndex;
+	    // if (this.props.children) {
+	    //   postIndex = <PostIndex className="post-show-post-index-container" activePostIndex={ this.props.children.props.params.postId }/>
+	    // } else {
+	    //   postIndex = <PostIndex />
+	    // }
+	
 	    return React.createElement(
 	      'div',
 	      null,
@@ -28354,7 +28365,7 @@
 	            { className: 'logo-container' },
 	            React.createElement(
 	              'a',
-	              { href: '/', className: 'logo' },
+	              { href: '#/', className: 'logo' },
 	              'imagr'
 	            )
 	          ),
@@ -36037,85 +36048,8 @@
 
 	'use strict';
 	
-	var Store = __webpack_require__(259).Store;
-	var PostConstants = __webpack_require__(286);
-	var VoteConstants = __webpack_require__(277);
-	var dispatcher = __webpack_require__(255);
-	
-	var _posts = {};
-	var _hasMorePosts = true;
-	
-	var PostStore = new Store(dispatcher);
-	
-	PostStore.hasMorePosts = function () {
-	  return _hasMorePosts;
-	};
-	
-	PostStore.all = function () {
-	  return Object.assign({}, _posts);
-	};
-	
-	PostStore.find = function (postId) {
-	  return Object.assign({}, _posts[postId]);
-	};
-	
-	PostStore.indexOf = function (postId) {
-	  return Object.keys(_posts).indexOf(postId);
-	};
-	
-	PostStore.add = function (post) {};
-	
-	function appendPosts(posts) {
-	  _hasMorePosts = !!Object.keys(posts).length;
-	
-	  _posts = Object.assign(_posts, posts);
-	  PostStore.__emitChange();
-	};
-	
-	function resetAllPosts(posts) {
-	  _hasMorePosts = !!Object.keys(posts).length;
-	  _posts = posts;
-	  PostStore.__emitChange();
-	};
-	
-	// keep the post thumb for display in index
-	function resetSinglePost(post) {
-	  var thumb = _posts[post.id].thumb;
-	  _posts[post.id] = post;
-	  _posts[post.id]['thumb'] = thumb;
-	  PostStore.__emitChange();
-	}
-	
-	PostStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case PostConstants.POSTS_RECEIVED:
-	      resetAllPosts(payload.posts);
-	      break;
-	    case PostConstants.POST_RECEIVED:
-	      resetSinglePost(payload.post);
-	      break;
-	    case PostConstants.APPEND_POSTS:
-	      appendPosts(payload.posts);
-	      break;
-	    case VoteConstants.VOTE_RECEIVED:
-	      resetSinglePost(payload.post);
-	      break;
-	    case VoteConstants.VOTE_REMOVED:
-	      resetSinglePost(payload.post);
-	      break;
-	  }
-	};
-	
-	module.exports = PostStore;
-
-/***/ },
-/* 289 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
 	var React = __webpack_require__(1);
-	var PostStore = __webpack_require__(288);
+	var PostIndexStore = __webpack_require__(289);
 	var PostActions = __webpack_require__(285);
 	var PostIndexItem = __webpack_require__(290);
 	var SentenceSorting = __webpack_require__(291);
@@ -36126,16 +36060,16 @@
 	var PostIndex = React.createClass({
 	  displayName: 'PostIndex',
 	  getInitialState: function getInitialState() {
-	    return { posts: PostStore.all(), activePostIndex: this.props.activePostIndex };
+	    return { posts: PostIndexStore.all(), activePostIndex: this.props.activePostIndex };
 	  },
 	  _onChange: function _onChange() {
-	    this.setState({ posts: PostStore.all() });
+	    this.setState({ posts: PostIndexStore.all() });
 	  },
 	  componentDidMount: function componentDidMount() {
 	    if (!this.props.className) {
 	      window.addEventListener('scroll', this._onScroll);
 	    }
-	    this.postsListener = PostStore.addListener(this._onChange);
+	    this.postsListener = PostIndexStore.addListener(this._onChange);
 	    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0);
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
@@ -36151,7 +36085,7 @@
 	  _onScroll: function _onScroll(e) {
 	    var scrollDif = $('#post-index').height() - (window.scrollY + window.innerHeight);
 	
-	    if (PostStore.hasMorePosts() && scrollDif < 300) {
+	    if (PostIndexStore.hasMorePosts() && scrollDif < 300) {
 	      // this.setState({loading: true});
 	      var offset = Object.keys(this.state.posts).length;
 	      this._fetchMorePosts(offset);
@@ -36161,7 +36095,7 @@
 	    var scrollTop = $(".post-show-right-scroll-container").scrollTop();
 	    var scrollDif = $(".post-show-post-index-container").height() - scrollTop;
 	
-	    if (PostStore.hasMorePosts() && scrollDif < 700) {
+	    if (PostIndexStore.hasMorePosts() && scrollDif < 700) {
 	      // this.setState({loading: true});
 	      var offset = Object.keys(this.state.posts).length;
 	      this._fetchMorePosts(offset);
@@ -36223,6 +36157,75 @@
 	module.exports = PostIndex;
 
 /***/ },
+/* 289 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Store = __webpack_require__(259).Store;
+	var PostConstants = __webpack_require__(286);
+	var VoteConstants = __webpack_require__(277);
+	var dispatcher = __webpack_require__(255);
+	
+	var _posts = {};
+	var _hasMorePosts = true;
+	
+	var PostIndexStore = new Store(dispatcher);
+	
+	PostIndexStore.hasMorePosts = function () {
+	  return _hasMorePosts;
+	};
+	
+	PostIndexStore.all = function () {
+	  return Object.assign({}, _posts);
+	};
+	
+	PostIndexStore.find = function (postId) {
+	  return Object.assign({}, _posts[postId]);
+	};
+	
+	PostIndexStore.indexOf = function (postId) {
+	  return Object.keys(_posts).indexOf(postId);
+	};
+	
+	PostIndexStore.add = function (post) {};
+	
+	function appendPosts(posts) {
+	  _hasMorePosts = !!Object.keys(posts).length;
+	
+	  _posts = Object.assign(_posts, posts);
+	  PostIndexStore.__emitChange();
+	};
+	
+	function resetAllPosts(posts) {
+	  _hasMorePosts = !!Object.keys(posts).length;
+	  _posts = posts;
+	  PostIndexStore.__emitChange();
+	};
+	
+	// keep the post thumb for display in index
+	// function resetSinglePost(post) {
+	//   // Object.assign(_posts[post.id], post);
+	//   let thumb = _posts[post.id].thumb;
+	//   _posts[post.id] = post;
+	//   _posts[post.id]['thumb'] = thumb;
+	//   PostIndexStore.__emitChange();
+	// };
+	
+	PostIndexStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case PostConstants.POSTS_RECEIVED:
+	      resetAllPosts(payload.posts);
+	      break;
+	    case PostConstants.APPEND_POSTS:
+	      appendPosts(payload.posts);
+	      break;
+	  }
+	};
+	
+	module.exports = PostIndexStore;
+
+/***/ },
 /* 290 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -36277,18 +36280,59 @@
 
 	'use strict';
 	
+	var Store = __webpack_require__(259).Store;
+	var PostConstants = __webpack_require__(286);
+	var VoteConstants = __webpack_require__(277);
+	var dispatcher = __webpack_require__(255);
+	
+	var _posts = {};
+	
+	var PostDetailStore = new Store(dispatcher);
+	
+	PostDetailStore.find = function (postId) {
+	  return Object.assign({}, _posts[postId]);
+	};
+	
+	function resetSinglePost(post) {
+	  _posts[post.id] = post;
+	  PostDetailStore.__emitChange();
+	};
+	
+	PostDetailStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case PostConstants.POST_RECEIVED:
+	      resetSinglePost(payload.post);
+	      break;
+	    case VoteConstants.VOTE_RECEIVED:
+	      resetSinglePost(payload.post);
+	      break;
+	    case VoteConstants.VOTE_REMOVED:
+	      resetSinglePost(payload.post);
+	      break;
+	  }
+	};
+	
+	module.exports = PostDetailStore;
+
+/***/ },
+/* 293 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	var React = __webpack_require__(1);
-	var PostStore = __webpack_require__(288);
+	var PostIndexStore = __webpack_require__(289);
+	var PostDetailStore = __webpack_require__(292);
 	var PostActions = __webpack_require__(285);
-	var PostIndex = __webpack_require__(289);
-	var PostDetail = __webpack_require__(293);
+	var PostIndex = __webpack_require__(288);
+	var PostDetail = __webpack_require__(294);
 	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var PostShow = React.createClass({
 	  displayName: 'PostShow',
 	  getInitialState: function getInitialState() {
 	    var postId = this.props.params.postId;
-	    return { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) };
+	    return { post: PostIndexStore.find(postId), activePostIndex: PostIndexStore.indexOf(postId) };
 	  },
 	  handleArrows: function handleArrows(event) {
 	    switch (event.keyCode) {
@@ -36304,34 +36348,35 @@
 	  },
 	  componentDidMount: function componentDidMount() {
 	    PostActions.fetchSinglePost(this.props.params.postId);
-	    this.PostListener = PostStore.addListener(this._onChange);
+	    this.PostIndexListener = PostIndexStore.addListener(this._onPostsChange);
+	    this.PostDetailListener = PostDetailStore.addListener(this._onPostChange);
 	    window.addEventListener("keydown", this.handleArrows);
 	  },
-	  _onChange: function _onChange() {
-	    var postId = this.props.params.postId;
-	    this.setState({ post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) });
+	  _onPostChange: function _onPostChange() {
+	    this.setState({ post: PostDetailStore.find(this.props.params.postId), activePostIndex: PostIndexStore.indexOf(this.props.params.postId) });
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
 	    var props = newProps || this.props;
 	    PostActions.fetchSinglePost(props.params.postId);
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
-	    this.PostListener.remove();
+	    this.PostIndexListener.remove();
+	    this.PostDetailListener.remove();
 	    window.removeEventListener("keydown", this.handleArrows);
 	  },
 	  prevPost: function prevPost() {
 	    if (this.state.activePostIndex > 0) {
-	      var posts = PostStore.all();
-	      var index = this.state.activePostIndex;
-	      this.setState({ activePostIndex: index - 1 });
-	      hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index - 1]).id);
+	      var posts = PostIndexStore.all();
+	      var index = this.state.activePostIndex - 1;
+	      this.setState({ activePostIndex: index });
+	      hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
 	    }
 	  },
 	  nextPost: function nextPost() {
-	    var posts = PostStore.all();
-	    var index = this.state.activePostIndex;
-	    this.setState({ activePostIndex: index + 1 });
-	    hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index + 1]).id);
+	    var posts = PostIndexStore.all();
+	    var index = this.state.activePostIndex + 1;
+	    this.setState({ activePostIndex: index });
+	    hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
 	  },
 	  render: function render() {
 	    return React.createElement(
@@ -36350,21 +36395,20 @@
 	module.exports = PostShow;
 
 /***/ },
-/* 293 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var Linkify = __webpack_require__(294);
-	var ImageDetail = __webpack_require__(302);
-	var CommentDetail = __webpack_require__(305);
-	var CommentCreate = __webpack_require__(306);
+	var Linkify = __webpack_require__(295);
+	var ImageDetail = __webpack_require__(303);
+	var CommentDetail = __webpack_require__(306);
+	var CommentCreate = __webpack_require__(307);
 	var PostActions = __webpack_require__(285);
-	var VoteActions = __webpack_require__(308);
-	var PostStore = __webpack_require__(288);
+	var VoteActions = __webpack_require__(309);
 	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(307);
+	var TimeUtil = __webpack_require__(308);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
@@ -36508,7 +36552,7 @@
 	        ),
 	        React.createElement(
 	          'a',
-	          { href: "users/" + post.author.id },
+	          { href: "#/users/" + post.author.id },
 	          post.author.username
 	        ),
 	        React.createElement(
@@ -36612,7 +36656,7 @@
 	module.exports = PostDetail;
 
 /***/ },
-/* 294 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36633,11 +36677,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _linkifyIt = __webpack_require__(295);
+	var _linkifyIt = __webpack_require__(296);
 	
 	var _linkifyIt2 = _interopRequireDefault(_linkifyIt);
 	
-	var _tlds = __webpack_require__(301);
+	var _tlds = __webpack_require__(302);
 	
 	var _tlds2 = _interopRequireDefault(_tlds);
 	
@@ -36783,7 +36827,7 @@
 
 
 /***/ },
-/* 295 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36938,7 +36982,7 @@
 	function compile(self) {
 	
 	  // Load & clone RE patterns.
-	  var re = self.re = assign({}, __webpack_require__(296));
+	  var re = self.re = assign({}, __webpack_require__(297));
 	
 	  // Define dynamic patterns
 	  var tlds = self.__tlds__.slice();
@@ -37415,16 +37459,16 @@
 
 
 /***/ },
-/* 296 */
+/* 297 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	// Use direct extract instead of `regenerate` to reduse browserified size
-	var src_Any = exports.src_Any = __webpack_require__(297).source;
-	var src_Cc  = exports.src_Cc = __webpack_require__(298).source;
-	var src_Z   = exports.src_Z  = __webpack_require__(299).source;
-	var src_P   = exports.src_P  = __webpack_require__(300).source;
+	var src_Any = exports.src_Any = __webpack_require__(298).source;
+	var src_Cc  = exports.src_Cc = __webpack_require__(299).source;
+	var src_Z   = exports.src_Z  = __webpack_require__(300).source;
+	var src_P   = exports.src_P  = __webpack_require__(301).source;
 	
 	// \p{\Z\P\Cc\CF} (white spaces + control + format + punctuation)
 	var src_ZPCc = exports.src_ZPCc = [ src_Z, src_P, src_Cc ].join('|');
@@ -37583,31 +37627,31 @@
 
 
 /***/ },
-/* 297 */
+/* 298 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /***/ },
-/* 298 */
+/* 299 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\x1F\x7F-\x9F]/
 
 /***/ },
-/* 299 */
+/* 300 */
 /***/ function(module, exports) {
 
 	module.exports=/[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/
 
 /***/ },
-/* 300 */
+/* 301 */
 /***/ function(module, exports) {
 
 	module.exports=/[!-#%-\*,-/:;\?@\[-\]_\{\}\xA1\xA7\xAB\xB6\xB7\xBB\xBF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E42\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]|\uD800[\uDD00-\uDD02\uDF9F\uDFD0]|\uD801\uDD6F|\uD802[\uDC57\uDD1F\uDD3F\uDE50-\uDE58\uDE7F\uDEF0-\uDEF6\uDF39-\uDF3F\uDF99-\uDF9C]|\uD804[\uDC47-\uDC4D\uDCBB\uDCBC\uDCBE-\uDCC1\uDD40-\uDD43\uDD74\uDD75\uDDC5-\uDDC9\uDDCD\uDDDB\uDDDD-\uDDDF\uDE38-\uDE3D\uDEA9]|\uD805[\uDCC6\uDDC1-\uDDD7\uDE41-\uDE43\uDF3C-\uDF3E]|\uD809[\uDC70-\uDC74]|\uD81A[\uDE6E\uDE6F\uDEF5\uDF37-\uDF3B\uDF44]|\uD82F\uDC9F|\uD836[\uDE87-\uDE8B]/
 
 /***/ },
-/* 301 */
+/* 302 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -39038,14 +39082,14 @@
 
 
 /***/ },
-/* 302 */
+/* 303 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var ImageDetailHeader = __webpack_require__(303);
-	var ImageDetailDescription = __webpack_require__(304);
+	var ImageDetailHeader = __webpack_require__(304);
+	var ImageDetailDescription = __webpack_require__(305);
 	
 	var Player = function Player(props) {
 	  var videourl = props.videourl.replace('.gifv', '.mp4').replace('.gif', '.mp4');
@@ -39075,7 +39119,7 @@
 	module.exports = ImageDetail;
 
 /***/ },
-/* 303 */
+/* 304 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -39100,13 +39144,13 @@
 	module.exports = ImageDetailHeader;
 
 /***/ },
-/* 304 */
+/* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var Linkify = __webpack_require__(294);
+	var Linkify = __webpack_require__(295);
 	
 	var ImageDetailDescription = React.createClass({
 	  displayName: 'ImageDetailDescription',
@@ -39126,16 +39170,16 @@
 	module.exports = ImageDetailDescription;
 
 /***/ },
-/* 305 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var React = __webpack_require__(1);
-	var CommentCreate = __webpack_require__(306);
+	var CommentCreate = __webpack_require__(307);
 	var SessionStore = __webpack_require__(254);
-	var TimeUtil = __webpack_require__(307);
-	var VoteActions = __webpack_require__(308);
+	var TimeUtil = __webpack_require__(308);
+	var VoteActions = __webpack_require__(309);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
@@ -39273,7 +39317,7 @@
 	            { className: 'details' },
 	            React.createElement(
 	              'a',
-	              { href: "users/" + comment.commenter.id },
+	              { href: "#/users/" + comment.commenter.id },
 	              comment.commenter.username
 	            ),
 	            React.createElement(
@@ -39312,7 +39356,7 @@
 	module.exports = CommentDetail;
 
 /***/ },
-/* 306 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39379,7 +39423,7 @@
 	module.exports = CommentCreate;
 
 /***/ },
-/* 307 */
+/* 308 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39416,13 +39460,13 @@
 	module.exports = TimeUtil;
 
 /***/ },
-/* 308 */
+/* 309 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var VoteConstants = __webpack_require__(277);
-	var VoteApiUtil = __webpack_require__(309);
+	var VoteApiUtil = __webpack_require__(310);
 	var SessionStore = __webpack_require__(254);
 	var dispatcher = __webpack_require__(255);
 	
@@ -39459,7 +39503,7 @@
 	module.exports = VoteActions;
 
 /***/ },
-/* 309 */
+/* 310 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39500,6 +39544,31 @@
 	};
 	
 	module.exports = VoteApiUtil;
+
+/***/ },
+/* 311 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(1);
+	
+	var UserShow = React.createClass({
+	  displayName: 'UserShow',
+	  render: function render() {
+	    return React.createElement(
+	      'div',
+	      null,
+	      React.createElement(
+	        'h2',
+	        null,
+	        'User pages coming soon'
+	      )
+	    );
+	  }
+	});
+	
+	module.exports = UserShow;
 
 /***/ }
 /******/ ]);

@@ -5,7 +5,6 @@ const CommentDetail = require('./comment_detail');
 const CommentCreate = require('./comment_create');
 const PostActions = require('../actions/post_actions');
 const VoteActions = require('../actions/vote_actions');
-const PostStore = require('../stores/post_store');
 const SessionStore = require('../stores/session_store')
 const TimeUtil = require('../util/time_util');
 
@@ -145,7 +144,7 @@ const PostDetail = React.createClass({
     }
     if (post.author) {
       authorData = <div className="post-header-details">
-        <span>by </span><a href={ "users/" + post.author.id }>{ post.author.username }</a><span> · { TimeUtil.timeSince(post.time_since) } </span>
+        <span>by </span><a href={ "#/users/" + post.author.id }>{ post.author.username }</a><span> · { TimeUtil.timeSince(post.time_since) } </span>
       </div>
     } else {
       authorData = <div className="post-header-details">

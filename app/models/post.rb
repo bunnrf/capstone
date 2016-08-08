@@ -18,12 +18,8 @@ class Post < ActiveRecord::Base
   end
 
   def points
-    points = 0
-    self.votes.each do |vote|
-      points += 1 if vote.vote_type == "upvote"
-      points -= 1 if vote.vote_type == "downvote"
-    end
-    points
+    counts = self.votes.group(:vote_type).count
+    (counts["upvote"] || 0) - (counts["downvote"] || 0)
   end
 
   def comments_by_parent

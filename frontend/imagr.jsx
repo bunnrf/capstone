@@ -9,10 +9,12 @@ const hashHistory = ReactRouter.hashHistory;
 const Modal = require('react-modal');
 
 const App = require('./components/app');
-const PostStore = require('./stores/post_store');
+const PostIndexStore = require('./stores/post_index_store');
+const PostDetailStore = require('./stores/post_detail_store');
 const SessionStore = require('./stores/session_store');
 const PostIndex = require('./components/post_index');
 const PostShow = require('./components/post_show');
+const UserShow = require('./components/user_show');
 const SessionActions = require('./actions/session_actions');
 
 const appRouter = (
@@ -20,6 +22,7 @@ const appRouter = (
     <Route path="/" component={ App }>
       <IndexRoute component={ PostIndex } />
       <Route path="/posts/:postId" component={ PostShow } />
+      <Route path="users/:userId" component={ UserShow } />
     </Route>
   </Router>
 );

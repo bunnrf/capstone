@@ -71,7 +71,7 @@ Rails.application.routes.draw do
       end
     end
     resources :votes, only: [:create, :update, :destroy]
-    resource :users, only: [:create]
+    resources :users, only: [:create, :show]
     resource :session, only: [:create, :destroy, :show]
   end
 

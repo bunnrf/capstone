@@ -1,5 +1,6 @@
 const React = require('react');
-const PostStore = require('../stores/post_store');
+const PostIndexStore = require('../stores/post_index_store');
+const PostDetailStore = require('../stores/post_detail_store');
 const PostActions = require('../actions/post_actions');
 const PostIndex = require('./post_index');
 const PostDetail = require('./post_detail');
@@ -8,7 +9,7 @@ const hashHistory = require('react-router').hashHistory;
 const PostShow = React.createClass({
   getInitialState() {
     const postId = this.props.params.postId;
-    return { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) };
+    return { post: PostIndexStore.find(postId), activePostIndex: PostIndexStore.indexOf(postId) };
   },
 
   handleArrows(event) {
@@ -26,13 +27,13 @@ const PostShow = React.createClass({
 
   componentDidMount() {
     PostActions.fetchSinglePost(this.props.params.postId);
-    this.PostListener = PostStore.addListener(this._onChange);
+    this.PostIndexListener = PostIndexStore.addListener(this._onPostsChange);
+    this.PostDetailListener = PostDetailStore.addListener(this._onPostChange);
     window.addEventListener("keydown", this.handleArrows);
   },
 
-  _onChange() {
-    const postId = this.props.params.postId;
-    this.setState( { post: PostStore.find(postId), activePostIndex: PostStore.indexOf(postId) } );
+  _onPostChange() {
+    this.setState( { post: PostDetailStore.find(this.props.params.postId), activePostIndex: PostIndexStore.indexOf(this.props.params.postId) } );
   },
 
   componentWillReceiveProps(newProps) {
@@ -41,24 +42,25 @@ const PostShow = React.createClass({
   },
 
   componentWillUnmount() {
-    this.PostListener.remove();
+    this.PostIndexListener.remove();
+    this.PostDetailListener.remove();
     window.removeEventListener("keydown", this.handleArrows);
   },
 
   prevPost() {
     if (this.state.activePostIndex > 0) {
-      const posts = PostStore.all();
-      const index = this.state.activePostIndex;
-      this.setState( { activePostIndex: index - 1 } );
-      hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index - 1]).id);
+      const posts = PostIndexStore.all();
+      const index = this.state.activePostIndex - 1;
+      this.setState( { activePostIndex: index } );
+      hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
     }
   },
 
   nextPost() {
-    const posts = PostStore.all();
-    const index = this.state.activePostIndex;
-    this.setState( { activePostIndex: index + 1 } );
-    hashHistory.push("posts/" + PostStore.find(Object.keys(posts)[index + 1]).id);
+    const posts = PostIndexStore.all();
+    const index = this.state.activePostIndex + 1;
+    this.setState( { activePostIndex: index } );
+    hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
   },
 
   render() {

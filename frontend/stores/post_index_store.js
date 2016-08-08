@@ -6,23 +6,23 @@ const dispatcher = require('../dispatcher/dispatcher');
 let _posts = {};
 let _hasMorePosts = true;
 
-const PostStore = new Store(dispatcher);
+const PostIndexStore = new Store(dispatcher);
 
-PostStore.hasMorePosts = () => _hasMorePosts;
+PostIndexStore.hasMorePosts = () => _hasMorePosts;
 
-PostStore.all = function() {
+PostIndexStore.all = function() {
   return Object.assign({}, _posts);
 };
 
-PostStore.find = function(postId) {
+PostIndexStore.find = function(postId) {
   return Object.assign({}, _posts[postId]);
 };
 
-PostStore.indexOf = function(postId) {
+PostIndexStore.indexOf = function(postId) {
   return Object.keys(_posts).indexOf(postId);
 };
 
-PostStore.add = function(post) {
+PostIndexStore.add = function(post) {
 
 };
 
@@ -30,41 +30,33 @@ function appendPosts(posts) {
   _hasMorePosts = !!Object.keys(posts).length;
 
   _posts = Object.assign(_posts, posts);
-  PostStore.__emitChange();
+  PostIndexStore.__emitChange();
 };
 
 function resetAllPosts(posts) {
   _hasMorePosts = !!Object.keys(posts).length;
   _posts = posts;
-  PostStore.__emitChange();
+  PostIndexStore.__emitChange();
 };
 
 // keep the post thumb for display in index
-function resetSinglePost(post) {
-  let thumb = _posts[post.id].thumb;
-  _posts[post.id] = post;
-  _posts[post.id]['thumb'] = thumb;
-  PostStore.__emitChange();
-}
+// function resetSinglePost(post) {
+//   // Object.assign(_posts[post.id], post);
+//   let thumb = _posts[post.id].thumb;
+//   _posts[post.id] = post;
+//   _posts[post.id]['thumb'] = thumb;
+//   PostIndexStore.__emitChange();
+// };
 
-PostStore.__onDispatch = function(payload) {
+PostIndexStore.__onDispatch = function(payload) {
   switch (payload.actionType) {
     case PostConstants.POSTS_RECEIVED:
       resetAllPosts(payload.posts);
       break;
-    case PostConstants.POST_RECEIVED:
-      resetSinglePost(payload.post);
-      break;
     case PostConstants.APPEND_POSTS:
       appendPosts(payload.posts);
-      break;
-    case VoteConstants.VOTE_RECEIVED:
-      resetSinglePost(payload.post);
-      break;
-    case VoteConstants.VOTE_REMOVED:
-      resetSinglePost(payload.post);
       break;
   }
 }
 
-module.exports = PostStore;
+module.exports = PostIndexStore;

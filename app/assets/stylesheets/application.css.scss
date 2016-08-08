@@ -204,8 +204,8 @@ div .upload-button:hover {
 
 .ReactModal__Content.ReactModal__Content--after-open {
   position: relative;
-  margin-left: -220px;
-  margin-top: 100px;
+  top: 80px;
+  margin: 0 auto;
   width: 360px;
   min-height: 300px;
   max-height: 500px;
@@ -804,7 +804,7 @@ input:focus {
 }
 
 .votes-container div span .upvote {
-  margin-left: -4px;
+
 }
 
 .upvote.upvoted {

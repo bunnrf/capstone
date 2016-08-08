@@ -7,13 +7,16 @@
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
 
-# NOTE: three phases:
 # NOTE: 1. hand-picked post and image seeds
-# NOTE: 2. random comments and votes for those
-# NOTE: 3. random posts
+# NOTE: 2. random users and comments for fixed posts
+# NOTE: 3. random top comments for fixed posts to demonstrate nested comments
+# NOTE: 4. random votes
+
+p "seeding start"
 
 users = User.create([ { username: "demo", password: "password" }, { username: "michaelCera", password: "password" }, { username: "sarah", password: "password" }, { username: "mistersavage", password: "password" }])
 
+t = Time.now
 posts = Post.create([ { title: "List of sites that help you study harder, get more work done, and become an all-around more awesome person", description: "**BONUS - A bunch of other educational websites and productivity tools:
 
 http://mailinator.com - free disposable email accounts
@@ -59,7 +62,7 @@ Allexperts: http://www.allexperts.com/browse.cgi?catLvl=3&catID=1059
 Google groups: https://groups.google.com/forum/?fromgroups#!forum/microsoft.public.excel
 PC world: http://www.pcworld.com/article/229504/five_excel_nightmares_and_how_to_fix_them.html
 PC world: http://www.pcworld.com/article/220782/use_microsoft_excel_for_everything.html", author_id: 1 },
-                      { title: "some cool pics", author_id: 2 },
+                      { title: "My roommate and I built an infinity table.", author_id: 2 },
                       { title: "Some Strange Fruit from Around the World", description: "Source: http://wunderpix.com/strangest-fruits-in-the-world/", author_id: 1 },
                       { title: "We got new neighbors. They have dogs.", author_id: 2 },
                       { title: "Don't drink and drive", author_id: 3 },
@@ -197,11 +200,6 @@ http://www.foodnetwork.com/recipes/food-network-kitchens/slow-cooker-pulled-pork
                         { image_url: "http://i.imgur.com/KBFCXNE.jpg", ordinal: 14, post_id: 7 },
 
 
-                        { image_url: "https://i.imgur.com/voIIzxw.jpg", ordinal: 0, post_id: 7 },
-                        { image_url: "https://i.imgur.com/eZoZkfx.jpg", ordinal: 2, post_id: 7 },
-                        { image_url: "https://i.imgur.com/ApIR0YL.jpg", ordinal: 3, post_id: 7 },
-
-
 { title: "Dragon Fruit", description: "or a fruit with such an unusual appearance, you might expect it to taste strong but it tastes surprisingly mildly sweet. The flesh is very similar to the taste of kiwifruit as the black and crunchy seeds are similar.
 
 The fruit can be eaten raw or as a juice and can even be made into wine. The flowers are also edible. It’s a favorite among health enthusiasts as it’s nutritious and contains only small amounts of calories.
@@ -318,30 +316,61 @@ The difference between the models and the real thing is that by adding an extra 
 Price: $35
 http://www.kleinbottle.com/baby_klein.htm", image_url: "http://i.imgur.com/WiQSpqC.jpg", ordinal: 8, post_id: 15 }])
 
-RANDOM_USER_COUNT = 100
-RANDOM_COMMENT_COUNT = 500
+p "fixed posts created", Time.now - t
+t = Time.now
+
+RANDOM_USER_COUNT = 250
+RANDOM_COMMENT_COUNT = 750
 RANDOM_VOTES_COUNT = 10000
-RANDOM_POSTS_COUNT = 250
+RANDOM_POSTS_COUNT = 1000
+TOTAL_USER_COUNT = RANDOM_USER_COUNT + User.count
 
-def truncate(text, options = {}, &block)
-  if text
-    length  = options.fetch(:length, 30)
+def create_random_comment
+  { body: Faker::StarWars.quote.html_safe.truncate(126), commenter_id: rand(TOTAL_USER_COUNT) + 1  }
+end
 
-    content = text.truncate(length, options)
-    content = options[:escape] == false ? content.html_safe : ERB::Util.html_escape(content)
-    content << capture(&block) if block_given? && text.length > length
-    content
+def create_comment(post_id, parent_comment_id = nil)
+  comment = create_random_comment
+  comment[:post_id] = post_id
+  comment[:parent_comment_id] = parent_comment_id if parent_comment_id
+  comment
+end
+
+def create_child_comments(weight, post_id)
+  Array.new(weight) do
+    comment = create_comment(post_id)
+    if rand(4) < 1 && weight > 0
+      comment[:child_comments_attributes] = create_child_comments(weight - rand(weight + 1) ,post_id, )
+    end
+
+    votes = Array.new(weight * 2 + rand(11)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1, votable_type: "Comment" } } if weight > 0
+    comment[:votes_attributes] = votes
+
+    comment
   end
+end
+
+def create_random_vote(user_count, post_count, comment_count)
+  vote_type = (rand(20) > 18) ? "downvote" : "upvote"
+  user_id = rand(user_count) + 1
+
+  votable_id, votable_type = (rand(10) > 4) ? [rand(comment_count) + 1, "Comment"] : [rand(post_count) + 1, "Post"]
+
+  { vote_type: vote_type, user_id: user_id, votable_id: votable_id, votable_type: votable_type }
 end
 
 random_users_arr = Array.new(RANDOM_USER_COUNT) { { username: Faker::Internet.user_name, password: "password" } }
 random_users = User.create(random_users_arr)
+p "random users created", Time.now - t
+t = Time.now
 
-random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { { body: truncate(Faker::StarWars.quote.html_safe, length: 126), commenter_id: random_users.sample.id, post_id: Post.all.sample.id } }
+fixed_posts_count = Post.count
+random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { create_random_comment }.each { |c| c[:post_id] = rand(fixed_posts_count) + 1 }
 random_comments = Comment.create(random_comments_arr)
+p "random comments created", Time.now - t
+t = Time.now
 
-# randomly assign some comments as nested
-(RANDOM_COMMENT_COUNT / 20).times do
+(RANDOM_COMMENT_COUNT / 4).times do
   parent_comment = random_comments.sample
   random_comment = random_comments.sample
   random_comment[:post_id] = parent_comment.post_id
@@ -349,25 +378,50 @@ random_comments = Comment.create(random_comments_arr)
   random_comment.save
 end
 
-random_votes_arr = Array.new(RANDOM_VOTES_COUNT) do
-  vote_type = (rand(20) > 18) ? "downvote" : "upvote"
-  user_id = random_users.sample.id
+top_comments = []
+fixed_posts_count.times do |post_idx|
+  post_id = post_idx + 1
+  3.times do
+    weight = rand(21) + 5
+    comment = create_comment(post_id)
 
-  votable = (rand(10) > 4) ? random_comments.sample : Post.all.sample
+    child_comments = create_child_comments(weight, post_id)
+    comment[:child_comments_attributes] = child_comments
 
-  votable_id = votable.id
-  votable_type = votable.class.name
+    votes = Array.new(weight * 5 + (rand(60) - 20)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1, votable_type: "Comment" } }
+    comment[:votes_attributes] = votes
 
-  { vote_type: vote_type, user_id: user_id, votable_id: votable_id, votable_type: votable_type }
+    top_comments << comment
+  end
 end
+p "top comments generated", Time.now - t
+t = Time.now
+top_comments = Comment.create(top_comments)
+p "top comments created", Time.now - t
+t = Time.now
 
-Vote.create(random_votes_arr)
+Vote.create(Array.new(RANDOM_VOTES_COUNT) { create_random_vote(User.count, fixed_posts_count, RANDOM_COMMENT_COUNT) })
+p "random votes created", Time.now - t
+t = Time.now
 
 random_image_urls = File.readlines(File.dirname(__FILE__) + "/urls.txt").map(&:chomp).push("http://i.imgur.com/h9M99vS.jpg")
 
 random_posts = []
 RANDOM_POSTS_COUNT.times do
-  random_posts.push( { title: truncate(Faker::Book.title.html_safe, length: 126), author_id: random_users.sample.id, images_attributes: [ { description: (rand(10) > 7 ? Faker::Hacker.say_something_smart.html_safe : nil), image_url: random_image_urls.sample, ordinal: 0 } ] } )
+  random_posts.push( { title:Faker::Book.title.html_safe.truncate(126), author_id: rand(TOTAL_USER_COUNT) + 1, images_attributes: [ { description: (rand(10) > 7 ? Faker::Hacker.say_something_smart.html_safe : nil), image_url: random_image_urls.sample, ordinal: 0 } ] } )
 end
-
+p "random posts generated", Time.now - t
+t = Time.now
 Post.create(random_posts)
+p "random posts created", Time.now - t
+t = Time.now
+
+total_posts_count = Post.count
+Comment.create(Array.new(RANDOM_COMMENT_COUNT) { create_comment(rand(total_posts_count) + 1) } )
+p "random comments created", Time.now - t
+t = Time.now
+
+comments_count = Comment.count
+Vote.create(Array.new(RANDOM_VOTES_COUNT) { create_random_vote(TOTAL_USER_COUNT, total_posts_count, comments_count) })
+p "random votes created", Time.now - t
+p "seeding done"

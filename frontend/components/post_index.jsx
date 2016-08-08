@@ -1,5 +1,5 @@
 const React = require('react');
-const PostStore = require('../stores/post_store');
+const PostIndexStore = require('../stores/post_index_store');
 const PostActions = require('../actions/post_actions');
 const PostIndexItem = require('./post_index_item');
 const SentenceSorting = require('./sentence_sorting');
@@ -9,18 +9,18 @@ const ADDITIONAL_REQUEST_SIZE = 20;
 
 const PostIndex = React.createClass({
   getInitialState() {
-    return { posts: PostStore.all(), activePostIndex: this.props.activePostIndex }
+    return { posts: PostIndexStore.all(), activePostIndex: this.props.activePostIndex }
   },
 
   _onChange() {
-    this.setState( { posts: PostStore.all() } );
+    this.setState( { posts: PostIndexStore.all() } );
   },
 
   componentDidMount() {
     if (!this.props.className) {
       window.addEventListener('scroll', this._onScroll);
     }
-    this.postsListener = PostStore.addListener(this._onChange);
+    this.postsListener = PostIndexStore.addListener(this._onChange);
     PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0);
   },
 
@@ -40,7 +40,7 @@ const PostIndex = React.createClass({
   _onScroll(e) {
     const scrollDif = $('#post-index').height() - (window.scrollY + window.innerHeight);
 
-    if (PostStore.hasMorePosts() && scrollDif < 300) {
+    if (PostIndexStore.hasMorePosts() && scrollDif < 300) {
       // this.setState({loading: true});
       const offset = Object.keys(this.state.posts).length;
       this._fetchMorePosts(offset);
@@ -51,7 +51,7 @@ const PostIndex = React.createClass({
     const scrollTop = $(".post-show-right-scroll-container").scrollTop();
     const scrollDif = $(".post-show-post-index-container").height() - scrollTop;
 
-    if (PostStore.hasMorePosts() && scrollDif < 700) {
+    if (PostIndexStore.hasMorePosts() && scrollDif < 700) {
       // this.setState({loading: true});
       const offset = Object.keys(this.state.posts).length;
       this._fetchMorePosts(offset);

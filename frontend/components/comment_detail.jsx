@@ -118,7 +118,7 @@ const CommentDetail = React.createClass({
           </div>
           <div className="comment-text-container" onClick={ this.toggleChildren }>
             <div className="details">
-              <a href={ "users/" + comment.commenter.id }>{ comment.commenter.username }</a>
+              <a href={ "#/users/" + comment.commenter.id }>{ comment.commenter.username }</a>
               <span> { pointsText } : { TimeUtil.timeSince(comment.time_since) }{ repliesText } <a id="reply" onClick={ this.toggleReply }>reply</a></span>
             </div>
             <div className="body">
