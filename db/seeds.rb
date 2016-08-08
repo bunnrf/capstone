@@ -320,10 +320,11 @@ p "fixed posts created", Time.now - t
 t = Time.now
 
 RANDOM_USER_COUNT = 250
-RANDOM_COMMENT_COUNT = 750
-RANDOM_VOTES_COUNT = 10000
+RANDOM_COMMENT_COUNT = 500
+RANDOM_VOTES_COUNT = 5000
 RANDOM_POSTS_COUNT = 1000
 TOTAL_USER_COUNT = RANDOM_USER_COUNT + User.count
+FIXED_POSTS_COUNT = Post.count
 
 def create_random_comment
   { body: Faker::StarWars.quote.html_safe.truncate(126), commenter_id: rand(TOTAL_USER_COUNT) + 1  }
@@ -339,13 +340,15 @@ end
 def create_child_comments(weight, post_id)
   Array.new(weight) do
     comment = create_comment(post_id)
-    if rand(4) < 1 && weight > 0
-      comment[:child_comments_attributes] = create_child_comments(weight - rand(weight + 1) ,post_id, )
+    if rand(6) < 1 && weight > 0
+      comment[:child_comments_attributes] = create_child_comments(weight - rand(weight + 1), post_id)
     end
 
-    votes = Array.new(weight * 2 + rand(11)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1, votable_type: "Comment" } } if weight > 0
-    comment[:votes_attributes] = votes
-
+    if weight > 3
+      votes = Array.new(weight * 2 + rand(10)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1 } }
+      comment[:votes_attributes] = votes
+    end
+    
     comment
   end
 end
@@ -359,14 +362,11 @@ def create_random_vote(user_count, post_count, comment_count)
   { vote_type: vote_type, user_id: user_id, votable_id: votable_id, votable_type: votable_type }
 end
 
-random_users_arr = Array.new(RANDOM_USER_COUNT) { { username: Faker::Internet.user_name, password: "password" } }
-random_users = User.create(random_users_arr)
+User.create(Array.new(RANDOM_USER_COUNT) { { username: Faker::Internet.user_name, password: "password" } } )
 p "random users created", Time.now - t
 t = Time.now
 
-fixed_posts_count = Post.count
-random_comments_arr = Array.new(RANDOM_COMMENT_COUNT) { create_random_comment }.each { |c| c[:post_id] = rand(fixed_posts_count) + 1 }
-random_comments = Comment.create(random_comments_arr)
+random_comments = Comment.create(Array.new(RANDOM_COMMENT_COUNT) { create_random_comment }.each { |c| c[:post_id] = rand(FIXED_POSTS_COUNT) + 1 })
 p "random comments created", Time.now - t
 t = Time.now
 
@@ -379,40 +379,35 @@ t = Time.now
 end
 
 top_comments = []
-fixed_posts_count.times do |post_idx|
+FIXED_POSTS_COUNT.times do |post_idx|
   post_id = post_idx + 1
   3.times do
-    weight = rand(21) + 5
+    weight = rand(10) + 5
     comment = create_comment(post_id)
 
     child_comments = create_child_comments(weight, post_id)
     comment[:child_comments_attributes] = child_comments
 
-    votes = Array.new(weight * 5 + (rand(60) - 20)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1, votable_type: "Comment" } }
+    votes = Array.new(weight * 2 + (rand(20) + 20)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1 } }
     comment[:votes_attributes] = votes
 
     top_comments << comment
   end
 end
+
 p "top comments generated", Time.now - t
 t = Time.now
-top_comments = Comment.create(top_comments)
+Comment.create(top_comments)
 p "top comments created", Time.now - t
 t = Time.now
 
-Vote.create(Array.new(RANDOM_VOTES_COUNT) { create_random_vote(User.count, fixed_posts_count, RANDOM_COMMENT_COUNT) })
+Vote.create(Array.new(RANDOM_VOTES_COUNT) { create_random_vote(TOTAL_USER_COUNT, FIXED_POSTS_COUNT, RANDOM_COMMENT_COUNT) })
 p "random votes created", Time.now - t
 t = Time.now
 
 random_image_urls = File.readlines(File.dirname(__FILE__) + "/urls.txt").map(&:chomp).push("http://i.imgur.com/h9M99vS.jpg")
 
-random_posts = []
-RANDOM_POSTS_COUNT.times do
-  random_posts.push( { title:Faker::Book.title.html_safe.truncate(126), author_id: rand(TOTAL_USER_COUNT) + 1, images_attributes: [ { description: (rand(10) > 7 ? Faker::Hacker.say_something_smart.html_safe : nil), image_url: random_image_urls.sample, ordinal: 0 } ] } )
-end
-p "random posts generated", Time.now - t
-t = Time.now
-Post.create(random_posts)
+Post.create(Array.new(RANDOM_POSTS_COUNT) { { title:Faker::Book.title.html_safe.truncate(126), author_id: rand(TOTAL_USER_COUNT) + 1, images_attributes: [ { description: (rand(10) > 7 ? Faker::Hacker.say_something_smart.html_safe : nil), image_url: random_image_urls.sample, ordinal: 0 } ] } } )
 p "random posts created", Time.now - t
 t = Time.now
 
