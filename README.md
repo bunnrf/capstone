@@ -1,128 +1,52 @@
 # Imagr
 
-[Heroku link][heroku]
+[Live link][heroku]
 
-[heroku]: http://www.herokuapp.com
+[heroku]: http://www.imagr.us
 
-## Minimum Viable Product
+Imagr is an image gallery web application inspired by Imgur built using Ruby on Rails and Facebook's React.js. The front end leverages the Flux design pattern to deliver a fluid experience for the user.
 
-Imagr is a web application inspired by Imgur that will be built using Ruby on Rails and React.js.  By the end of Week 9, this app will, at a minimum, satisfy the following criteria:
+Imagr is a great place to share experiences, thoughts, and interests. Users can create posts which other users can then vote and comment on.
 
-- [ ] Hosting on Heroku
-- [ ] New account creation, login, and guest/demo login
-- [ ] A production README, replacing this README
-- [ ] Posts of images/collections of images
-  - [ ] Smooth, bug-free navigation
-  - [ ] Adequate seed data to demonstrate the site's features
-  - [ ] Adequate CSS styling
-- [ ] Comments on posts and other comments
-  - [ ] Smooth, bug-free navigation
-  - [ ] Adequate seed data to demonstrate the site's features
-  - [ ] Adequate CSS styling
-- [ ] Upvote/downvote on posts and comments
-  - [ ] Smooth, bug-free navigation
-  - [ ] Adequate seed data to demonstrate the site's features
-  - [ ] Adequate CSS styling
+## Create A Post
 
-## Design Docs
-* [View Wireframes][views]
-* [React Components][components]
-* [Flux Cycles][flux-cycles]
-* [API endpoints][api-endpoints]
-* [DB schema][schema]
+Found or made a funny image? Went on a trip to Nepal recently? Have something clever to say? Hop on Imagr on make a post about it! Making a post on Imagr is easy and the layout of images interspaced with narration makes story-telling even easier. If your post gets enough of a reaction, you might hit the front page!
 
-[views]: docs/views.md
-[components]: docs/components.md
-[flux-cycles]: docs/flux-cycles.md
-[api-endpoints]: docs/api-endpoints.md
-[schema]: docs/schema.md
+![create]
 
-## Implementation Timeline
+## Browse
 
-### Phase 1: Backend setup and Front End User Authentication (1 day, W1 Tu 6pm)
+View, comment on, vote on, laugh about, and cry over other users' posts. The front page features the most popular recent posts, determined by users' voting and commenting, so hang around there and you'll never miss a viral post.
 
-**Objective:** Functioning rails project with Authentication
+![post]
 
-- [ ] create new project
-- [ ] create `User` model
-- [ ] authentication
-- [ ] user signup/signin pages
-- [ ] blank landing page after signin
+## Infinite Scroll
 
-### Phase 2: Posts Model, API, and basic APIUtil (1.5 days, W1 Th 12pm)
+The posts gallery requests more posts from the database when you've reached the end of it, instead of loading the full page. This prevents strain on the server as well as the client's side.
 
-**Objective:** Posts can be made, viewed, edited and destroyed through
-the API.
+![index]
 
-- [ ] create `Post` model
-- [ ] seed the database with a small amount of test data
-- [ ] CRUD API for posts (`PostsController`)
-- [ ] jBuilder views for posts
-- [ ] setup Webpack & Flux scaffold
-- [ ] setup `APIUtil` to interact with the API
-- [ ] test out API interaction in the console.
+## Comment
 
-### Phase 3: Flux Architecture and Router (1.5 days, W1 F 6pm)
+Imagr is home to many thoughtful and funny people. Look for a worthy post and compete to get the top comment!
 
-**Objective:** Posts can be created, read, edited and destroyed with the
-user interface.
+![comments]
 
-- [ ] setup the flux loop with skeleton files
-- [ ] setup React Router
-- implement each post component, building out the flux loop as needed.
-  - [ ] `PostsIndex`
-  - [ ] `PostIndexItem`
-  - [ ] `PostForm`
-- [ ] save Posts to the DB when the form loses focus or is left idle
-  after editing.
+## Future Direction
 
-### Phase 4: Start Styling (0.5 days, W2 M 12pm)
+### User Pages
 
-**Objective:** Existing pages (including signup/signin) will look good.
+I would like to give users the option to view their personal pages, which might feature their created posts, favorite posts, and tally the votes their contributions have earned.
 
-- [ ] create a basic style guide
-- [ ] position elements on the page
-- [ ] add basic colors & styles
+### Tagging
 
-### Phase 5: Comments (1 day, W2 Tu 12pm)
+At the moment, the only information available to group posts by is in their titles. It'd be cool if posters or viewers could tag posts (eg funny, NBA) and then choose to view posts with those tags.
 
-**Objective:** Comments are polymorphic, belong to a post or comment.
+### Imgur Api
 
-- [ ] create `Comment` model
-- build out API, Flux loop, and components for:
-  - [ ] Comment CRUD
-  - [ ] commenting on posts
-  - [ ] commenting on comments
-  - [ ] viewing comment trees
-- [ ] Use CSS to style new views
+Imgur has an API which "exposes their entire infrastructure". If I can get past feeling guilty over 'stealing' content from people on Imgur, it'd be a cool thing to feature on my site.
 
-### Phase 6: Upvoting/downvoting (1 day, W2 W 12pm)
-
-**Objective:** Posts and comments can be upvoted and downvoted and store their vote count.
-
-- [ ] functionality to increment/decrement vote count of post and comment models
-- build out API, Flux loop, and components for:
-  - [ ] fetching vote count
-  - [ ] upvoting/downvoting
-- [ ] Style new elements
-
-### Phase 7: Styling Cleanup, Seeding, and bonus (3 days, W2 F 6pm)
-
-**objective:** Make the site feel more cohesive and awesome.
-
-- [ ] Get feedback on my UI from others
-- [ ] Refactor HTML classes & CSS rules
-- [ ] Add modals, transitions, and other styling flourishes.
-
-### Bonus Features (TBD)
-- [ ] Advanced search of posts
-- [ ] Pagination / infinite scroll for Posts Index
-- [ ] Favorite posts
-- [ ] Tags for posts
-- [ ] Multiple sessions
-
-[phase-one]: docs/phases/phase1.md
-[phase-two]: docs/phases/phase2.md
-[phase-three]: docs/phases/phase3.md
-[phase-four]: docs/phases/phase4.md
-[phase-five]: docs/phases/phase5.md
+[index]: ./docs/screenshots/index.png
+[create]: ./docs/screenshots/create.png
+[post]: ./docs/screenshots/post.png
+[comments]: ./docs/screenshots/comments.png
