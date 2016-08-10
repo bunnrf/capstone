@@ -3,26 +3,29 @@ const Topbar = require('./topbar');
 const PostIndex = require('./post_index');
 const SessionStore = require('../stores/session_store');
 
-const App = React.createClass({
-  componentDidMount(){
+module.exports = React.createClass({
+  componentDidMount() {
     SessionStore.addListener(this.forceUpdate.bind(this));
   },
 
-  render(){
-    // let postIndex;
-    // if (this.props.children) {
-    //   postIndex = <PostIndex className="post-show-post-index-container" activePostIndex={ this.props.children.props.params.postId }/>
-    // } else {
-    //   postIndex = <PostIndex />
-    // }
+  render() {
+    let context;
+    if (this.props.location.pathname === "/") {
+      context = "splash";
+    } else {
+      context = "post";
+    }
 
+    // used before storing active post index in post store
+    // { this.props.children ? React.cloneElement(this.props.children, { updateActive: this.updateActive } ) : undefined }
     return(
       <div>
         <Topbar />
-        { this.props.children }
+        <div className={ context === "splash" ? "splash-content" : "single-post-show" }>
+          { this.props.children }
+          <PostIndex context={ context }/>
+        </div>
       </div>
     )
   }
-})
-
-module.exports = App;
+});

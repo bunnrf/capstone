@@ -131,7 +131,7 @@ const PostDetail = React.createClass({
         <Linkify>{ post.description }</Linkify>
       </div>
     }
-    if (post.comments_by_parent){
+    if (post.comments_by_parent) {
       commentsIndex = post.comments_by_parent[""].sort((a, b) => {
         return b.points - a.points;
       }).map((topLevelComment) => {

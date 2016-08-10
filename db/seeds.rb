@@ -381,12 +381,8 @@ FIXED_POSTS_COUNT.times do |post_idx|
   3.times do
     weight = rand(10) + 5
     comment = create_comment(post_id)
-
-    child_comments = create_child_comments(weight, post_id)
-    comment[:child_comments_attributes] = child_comments
-
-    votes = Array.new(weight * 2 + (rand(20) + 20)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1 } }
-    comment[:votes_attributes] = votes
+    comment[:child_comments_attributes] = create_child_comments(weight, post_id)
+    comment[:votes_attributes] = Array.new(weight * 2 + (rand(20) + 20)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1 } }
 
     top_comments << comment
   end
@@ -414,6 +410,6 @@ p "random comments created", Time.now - t
 t = Time.now
 
 comments_count = Comment.count
-Vote.create(Array.new(RANDOM_VOTES_COUNT) { create_random_vote(TOTAL_USER_COUNT, total_posts_count, comments_count) })
+Vote.create(Array.new(1000) { create_random_vote(TOTAL_USER_COUNT, total_posts_count, comments_count) })
 p "random votes created", Time.now - t
 p "seeding done"

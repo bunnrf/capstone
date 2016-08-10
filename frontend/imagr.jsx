@@ -20,25 +20,11 @@ const SessionActions = require('./actions/session_actions');
 const appRouter = (
   <Router history={ hashHistory }>
     <Route path="/" component={ App }>
-      <IndexRoute component={ PostIndex } />
       <Route path="/posts/:postId" component={ PostShow } />
-      <Route path="users/:userId" component={ UserShow } />
+      <Route path="/users/:userId" component={ UserShow } />
     </Route>
   </Router>
 );
-
-// function _ensureUserFetched(nextState, replace, asyncDoneCallback){
-//   //Any time we render the app, we want to ensure that we have already
-//   //checked to see if the user is logged in. This should only fire once --
-//   //when the user first visits our website / after a reload
-//   if ( SessionStore.currentUserHasBeenFetched() ) {
-//     //If the current user has already been fetched, we're done.
-//     asyncDoneCallback();
-//   } else {
-//     //If not, initiate the fetch, and pass the asyncDoneCallback to be invoked upon completion
-//     SessionActions.fetchCurrentUser(asyncDoneCallback);
-//   }
-// }
 
 function _ensureLoggedIn(nextState, replace) {
   if (!SessionStore.isUserLoggedIn()){

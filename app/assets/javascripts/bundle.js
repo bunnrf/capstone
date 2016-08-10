@@ -71,24 +71,10 @@
 	  React.createElement(
 	    Route,
 	    { path: '/', component: App },
-	    React.createElement(IndexRoute, { component: PostIndex }),
 	    React.createElement(Route, { path: '/posts/:postId', component: PostShow }),
-	    React.createElement(Route, { path: 'users/:userId', component: UserShow })
+	    React.createElement(Route, { path: '/users/:userId', component: UserShow })
 	  )
 	);
-	
-	// function _ensureUserFetched(nextState, replace, asyncDoneCallback){
-	//   //Any time we render the app, we want to ensure that we have already
-	//   //checked to see if the user is logged in. This should only fire once --
-	//   //when the user first visits our website / after a reload
-	//   if ( SessionStore.currentUserHasBeenFetched() ) {
-	//     //If the current user has already been fetched, we're done.
-	//     asyncDoneCallback();
-	//   } else {
-	//     //If not, initiate the fetch, and pass the asyncDoneCallback to be invoked upon completion
-	//     SessionActions.fetchCurrentUser(asyncDoneCallback);
-	//   }
-	// }
 	
 	function _ensureLoggedIn(nextState, replace) {
 	  if (!SessionStore.isUserLoggedIn()) {
@@ -28178,29 +28164,34 @@
 	var PostIndex = __webpack_require__(288);
 	var SessionStore = __webpack_require__(254);
 	
-	var App = React.createClass({
-	  displayName: 'App',
+	module.exports = React.createClass({
+	  displayName: 'exports',
 	  componentDidMount: function componentDidMount() {
 	    SessionStore.addListener(this.forceUpdate.bind(this));
 	  },
 	  render: function render() {
-	    // let postIndex;
-	    // if (this.props.children) {
-	    //   postIndex = <PostIndex className="post-show-post-index-container" activePostIndex={ this.props.children.props.params.postId }/>
-	    // } else {
-	    //   postIndex = <PostIndex />
-	    // }
+	    var context = void 0;
+	    if (this.props.location.pathname === "/") {
+	      context = "splash";
+	    } else {
+	      context = "post";
+	    }
 	
+	    // used before storing active post index in post store
+	    // { this.props.children ? React.cloneElement(this.props.children, { updateActive: this.updateActive } ) : undefined }
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(Topbar, null),
-	      this.props.children
+	      React.createElement(
+	        'div',
+	        { className: context === "splash" ? "splash-content" : "single-post-show" },
+	        this.props.children,
+	        React.createElement(PostIndex, { context: context })
+	      )
 	    );
 	  }
 	});
-	
-	module.exports = App;
 
 /***/ },
 /* 252 */
@@ -36060,13 +36051,13 @@
 	var PostIndex = React.createClass({
 	  displayName: 'PostIndex',
 	  getInitialState: function getInitialState() {
-	    return { posts: PostIndexStore.all(), activePostIndex: this.props.activePostIndex };
+	    return { posts: PostIndexStore.all(), context: this.props.context, activePostIndex: this.props.activePostIndex };
 	  },
 	  _onChange: function _onChange() {
 	    this.setState({ posts: PostIndexStore.all() });
 	  },
 	  componentDidMount: function componentDidMount() {
-	    if (!this.props.className) {
+	    if (this.state.context === "splash") {
 	      window.addEventListener('scroll', this._onScroll);
 	    }
 	    this.postsListener = PostIndexStore.addListener(this._onChange);
@@ -36077,15 +36068,21 @@
 	    this.postsListener.remove();
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
-	    this.setState({ activePostIndex: newProps.activePostIndex });
+	    if (this.state.context !== "post" && newProps.context === "post") {
+	      window.removeEventListener('scroll', this._onScroll);
+	    }
+	    if (this.state.context !== "splash" && newProps.context === "splash") {
+	      window.addEventListener('scroll', this._onScroll);
+	    }
+	    this.setState({ context: newProps.context, activePostIndex: newProps.activePostIndex });
 	  },
 	  _fetchMorePosts: function _fetchMorePosts(offset) {
 	    PostActions.fetchPosts(ADDITIONAL_REQUEST_SIZE, offset);
 	  },
 	  _onScroll: function _onScroll(e) {
-	    var scrollDif = $('#post-index').height() - (window.scrollY + window.innerHeight);
+	    var scrollDiff = $('#post-index').height() - (window.scrollY + window.innerHeight);
 	
-	    if (PostIndexStore.hasMorePosts() && scrollDif < 300) {
+	    if (PostIndexStore.hasMorePosts() && scrollDiff < 300) {
 	      // this.setState({loading: true});
 	      var offset = Object.keys(this.state.posts).length;
 	      this._fetchMorePosts(offset);
@@ -36093,21 +36090,20 @@
 	  },
 	  _onSideScroll: function _onSideScroll() {
 	    var scrollTop = $(".post-show-right-scroll-container").scrollTop();
-	    var scrollDif = $(".post-show-post-index-container").height() - scrollTop;
+	    var scrollDiff = $(".post-show-post-index-container").height() - scrollTop;
 	
-	    if (PostIndexStore.hasMorePosts() && scrollDif < 700) {
+	    if (PostIndexStore.hasMorePosts() && scrollDiff < 700) {
 	      // this.setState({loading: true});
 	      var offset = Object.keys(this.state.posts).length;
 	      this._fetchMorePosts(offset);
 	    }
 	  },
 	  render: function render() {
-	    // debugger
 	    var posts = this.state.posts;
 	    var keys = Object.keys(posts);
-	    var activeKey = keys[this.state.activePostIndex];
+	    var activeKey = keys[PostIndexStore.activePostIndex()];
 	
-	    if (this.props.className) {
+	    if (this.state.context === "post") {
 	      return React.createElement(
 	        'div',
 	        { className: 'post-show-right' },
@@ -36130,7 +36126,7 @@
 	          { id: 'post-index', className: 'post-show-right-scroll-container', onScroll: this._onSideScroll },
 	          React.createElement(
 	            'div',
-	            { className: this.props.className },
+	            { className: 'post-show-post-index-container' },
 	            keys.map(function (key) {
 	              return React.createElement(PostIndexItem, { key: key, post: posts[key], active: key === activeKey ? true : false });
 	            })
@@ -36169,11 +36165,15 @@
 	
 	var _posts = {};
 	var _hasMorePosts = true;
+	var _activePostIndex = void 0;
 	
 	var PostIndexStore = new Store(dispatcher);
 	
 	PostIndexStore.hasMorePosts = function () {
 	  return _hasMorePosts;
+	};
+	PostIndexStore.activePostIndex = function () {
+	  return _activePostIndex;
 	};
 	
 	PostIndexStore.all = function () {
@@ -36186,6 +36186,10 @@
 	
 	PostIndexStore.indexOf = function (postId) {
 	  return Object.keys(_posts).indexOf(postId);
+	};
+	
+	PostIndexStore.updateActiveIndex = function (index) {
+	  _activePostIndex = index;
 	};
 	
 	PostIndexStore.add = function (post) {};
@@ -36203,6 +36207,8 @@
 	  PostIndexStore.__emitChange();
 	};
 	
+	// used before post detail store
+	//
 	// keep the post thumb for display in index
 	// function resetSinglePost(post) {
 	//   // Object.assign(_posts[post.id], post);
@@ -36332,7 +36338,7 @@
 	  displayName: 'PostShow',
 	  getInitialState: function getInitialState() {
 	    var postId = this.props.params.postId;
-	    return { post: PostIndexStore.find(postId), activePostIndex: PostIndexStore.indexOf(postId) };
+	    return { post: PostIndexStore.find(postId) };
 	  },
 	  handleArrows: function handleArrows(event) {
 	    switch (event.keyCode) {
@@ -36351,13 +36357,16 @@
 	    this.PostIndexListener = PostIndexStore.addListener(this._onPostsChange);
 	    this.PostDetailListener = PostDetailStore.addListener(this._onPostChange);
 	    window.addEventListener("keydown", this.handleArrows);
+	    PostIndexStore.updateActiveIndex(PostIndexStore.indexOf(this.props.params.postId));
 	  },
+	  _onPostsChange: function _onPostsChange() {},
 	  _onPostChange: function _onPostChange() {
-	    this.setState({ post: PostDetailStore.find(this.props.params.postId), activePostIndex: PostIndexStore.indexOf(this.props.params.postId) });
+	    this.setState({ post: PostDetailStore.find(this.props.params.postId) });
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
 	    var props = newProps || this.props;
 	    PostActions.fetchSinglePost(props.params.postId);
+	    PostIndexStore.updateActiveIndex(PostIndexStore.indexOf(props.params.postId));
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
 	    this.PostIndexListener.remove();
@@ -36365,29 +36374,24 @@
 	    window.removeEventListener("keydown", this.handleArrows);
 	  },
 	  prevPost: function prevPost() {
-	    if (this.state.activePostIndex > 0) {
+	    var index = PostIndexStore.activePostIndex() - 1;
+	    if (index > 0) {
+	      PostIndexStore.updateActiveIndex(index);
 	      var posts = PostIndexStore.all();
-	      var index = this.state.activePostIndex - 1;
-	      this.setState({ activePostIndex: index });
 	      hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
 	    }
 	  },
 	  nextPost: function nextPost() {
+	    var index = PostIndexStore.activePostIndex() + 1;
+	    PostIndexStore.updateActiveIndex(index);
 	    var posts = PostIndexStore.all();
-	    var index = this.state.activePostIndex + 1;
-	    this.setState({ activePostIndex: index });
 	    hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
 	  },
 	  render: function render() {
 	    return React.createElement(
 	      'div',
-	      { className: 'single-post-show' },
-	      React.createElement(
-	        'div',
-	        { className: 'post-show-left' },
-	        React.createElement(PostDetail, { post: this.state.post, prevPost: this.prevPost, nextPost: this.nextPost })
-	      ),
-	      React.createElement(PostIndex, { className: 'post-show-post-index-container', activePostIndex: this.state.activePostIndex })
+	      { className: 'post-show-left' },
+	      React.createElement(PostDetail, { post: this.state.post, prevPost: this.prevPost, nextPost: this.nextPost })
 	    );
 	  }
 	});
@@ -39253,7 +39257,7 @@
 	      if (this.state.displayChildren) {
 	        expandOption = React.createElement(
 	          'span',
-	          { className: 'comment-expand-option' },
+	          { className: 'comment-expand-option', onClick: this.toggleChildren },
 	          '-'
 	        );
 	        children = commentsByParent[comment.id].sort(function (a, b) {
@@ -39268,7 +39272,7 @@
 	      } else {
 	        expandOption = React.createElement(
 	          'span',
-	          { className: 'comment-expand-option' },
+	          { className: 'comment-expand-option', onClick: this.toggleChildren },
 	          '+'
 	        );
 	      }
@@ -39562,7 +39566,7 @@
 	      React.createElement(
 	        'h2',
 	        null,
-	        'User pages coming soon'
+	        '        User pages coming soon'
 	      )
 	    );
 	  }

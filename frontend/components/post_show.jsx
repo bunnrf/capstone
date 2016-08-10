@@ -9,7 +9,7 @@ const hashHistory = require('react-router').hashHistory;
 const PostShow = React.createClass({
   getInitialState() {
     const postId = this.props.params.postId;
-    return { post: PostIndexStore.find(postId), activePostIndex: PostIndexStore.indexOf(postId) };
+    return { post: PostIndexStore.find(postId) };
   },
 
   handleArrows(event) {
@@ -30,15 +30,21 @@ const PostShow = React.createClass({
     this.PostIndexListener = PostIndexStore.addListener(this._onPostsChange);
     this.PostDetailListener = PostDetailStore.addListener(this._onPostChange);
     window.addEventListener("keydown", this.handleArrows);
+    PostIndexStore.updateActiveIndex(PostIndexStore.indexOf(this.props.params.postId));
+  },
+
+  _onPostsChange() {
+
   },
 
   _onPostChange() {
-    this.setState( { post: PostDetailStore.find(this.props.params.postId), activePostIndex: PostIndexStore.indexOf(this.props.params.postId) } );
+    this.setState( { post: PostDetailStore.find(this.props.params.postId) } );
   },
 
   componentWillReceiveProps(newProps) {
     let props = newProps || this.props;
     PostActions.fetchSinglePost(props.params.postId);
+    PostIndexStore.updateActiveIndex(PostIndexStore.indexOf(props.params.postId));
   },
 
   componentWillUnmount() {
@@ -48,28 +54,25 @@ const PostShow = React.createClass({
   },
 
   prevPost() {
-    if (this.state.activePostIndex > 0) {
+    let index = PostIndexStore.activePostIndex() - 1;
+    if (index > 0) {
+      PostIndexStore.updateActiveIndex(index);
       const posts = PostIndexStore.all();
-      const index = this.state.activePostIndex - 1;
-      this.setState( { activePostIndex: index } );
       hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
     }
   },
 
   nextPost() {
+    let index = PostIndexStore.activePostIndex() + 1;
+    PostIndexStore.updateActiveIndex(index);
     const posts = PostIndexStore.all();
-    const index = this.state.activePostIndex + 1;
-    this.setState( { activePostIndex: index } );
     hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
   },
 
   render() {
     return(
-      <div className="single-post-show">
-        <div className="post-show-left">
-          <PostDetail post={ this.state.post } prevPost={ this.prevPost } nextPost={ this.nextPost } />
-        </div>
-        <PostIndex className="post-show-post-index-container" activePostIndex={ this.state.activePostIndex }/>
+      <div className="post-show-left">
+        <PostDetail post={ this.state.post } prevPost={ this.prevPost } nextPost={ this.nextPost } />
       </div>
     )
   }

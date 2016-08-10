@@ -9,7 +9,7 @@ const ADDITIONAL_REQUEST_SIZE = 20;
 
 const PostIndex = React.createClass({
   getInitialState() {
-    return { posts: PostIndexStore.all(), activePostIndex: this.props.activePostIndex }
+    return { posts: PostIndexStore.all(), context: this.props.context, activePostIndex: this.props.activePostIndex }
   },
 
   _onChange() {
@@ -17,7 +17,7 @@ const PostIndex = React.createClass({
   },
 
   componentDidMount() {
-    if (!this.props.className) {
+    if (this.state.context === "splash") {
       window.addEventListener('scroll', this._onScroll);
     }
     this.postsListener = PostIndexStore.addListener(this._onChange);
@@ -30,7 +30,13 @@ const PostIndex = React.createClass({
   },
 
   componentWillReceiveProps(newProps) {
-    this.setState( { activePostIndex: newProps.activePostIndex } );
+    if (this.state.context !== "post" && newProps.context === "post") {
+      window.removeEventListener('scroll', this._onScroll);
+    }
+    if (this.state.context !== "splash" && newProps.context === "splash") {
+      window.addEventListener('scroll', this._onScroll);
+    }
+    this.setState( { context: newProps.context, activePostIndex: newProps.activePostIndex } );
   },
 
   _fetchMorePosts(offset) {
@@ -38,9 +44,9 @@ const PostIndex = React.createClass({
   },
 
   _onScroll(e) {
-    const scrollDif = $('#post-index').height() - (window.scrollY + window.innerHeight);
+    const scrollDiff = $('#post-index').height() - (window.scrollY + window.innerHeight);
 
-    if (PostIndexStore.hasMorePosts() && scrollDif < 300) {
+    if (PostIndexStore.hasMorePosts() && scrollDiff < 300) {
       // this.setState({loading: true});
       const offset = Object.keys(this.state.posts).length;
       this._fetchMorePosts(offset);
@@ -49,9 +55,9 @@ const PostIndex = React.createClass({
 
   _onSideScroll() {
     const scrollTop = $(".post-show-right-scroll-container").scrollTop();
-    const scrollDif = $(".post-show-post-index-container").height() - scrollTop;
+    const scrollDiff = $(".post-show-post-index-container").height() - scrollTop;
 
-    if (PostIndexStore.hasMorePosts() && scrollDif < 700) {
+    if (PostIndexStore.hasMorePosts() && scrollDiff < 700) {
       // this.setState({loading: true});
       const offset = Object.keys(this.state.posts).length;
       this._fetchMorePosts(offset);
@@ -59,12 +65,11 @@ const PostIndex = React.createClass({
   },
 
   render() {
-    // debugger
     const posts = this.state.posts;
     const keys = Object.keys(posts);
-    const activeKey = keys[this.state.activePostIndex];
+    const activeKey = keys[PostIndexStore.activePostIndex()];
 
-    if (this.props.className) {
+    if (this.state.context === "post") {
         return(
           <div className="post-show-right">
             <div className="post-show-post-index-header">
@@ -72,7 +77,7 @@ const PostIndex = React.createClass({
               <h3>sorted by popularity</h3>
             </div>
             <div id="post-index" className="post-show-right-scroll-container" onScroll={ this._onSideScroll }>
-              <div className={ this.props.className }>
+              <div className="post-show-post-index-container">
                 {keys.map((key) => {
                   return <PostIndexItem key={ key } post={ posts[key] } active={ key === activeKey ? true : false } />;
                 })}

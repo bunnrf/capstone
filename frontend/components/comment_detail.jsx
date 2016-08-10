@@ -81,7 +81,7 @@ const CommentDetail = React.createClass({
     if (commentsByParent[comment.id]) {
       repliesText = " : " + Object.keys(commentsByParent[comment.id]).length + (Object.keys(commentsByParent[comment.id]).length === 1 ? " reply " : " replies ");
       if (this.state.displayChildren) {
-        expandOption = <span className="comment-expand-option">-</span>;
+        expandOption = <span className="comment-expand-option" onClick={ this.toggleChildren }>-</span>;
         children = commentsByParent[comment.id].sort((a, b) => {
           return b.points - a.points;
         }).map((childComment) => {
@@ -92,7 +92,7 @@ const CommentDetail = React.createClass({
           return <CommentDetail key={ childComment.id } comment={ childComment } voteStatus={ voteStatus } commentsByParent={ commentsByParent } commentVotes={ comment_votes } />
         });
       } else {
-        expandOption = <span className="comment-expand-option">+</span>;
+        expandOption = <span className="comment-expand-option" onClick={ this.toggleChildren }>+</span>;
       }
     }
 

@@ -4,7 +4,7 @@ const UserShow = React.createClass({
   render(){
     return(
       <div>
-        <h2>User pages coming soon</h2>
+        <h2>        User pages coming soon</h2>
       </div>
     )
   }

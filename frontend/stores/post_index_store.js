@@ -5,10 +5,12 @@ const dispatcher = require('../dispatcher/dispatcher');
 
 let _posts = {};
 let _hasMorePosts = true;
+let _activePostIndex;
 
 const PostIndexStore = new Store(dispatcher);
 
 PostIndexStore.hasMorePosts = () => _hasMorePosts;
+PostIndexStore.activePostIndex = () => _activePostIndex;
 
 PostIndexStore.all = function() {
   return Object.assign({}, _posts);
@@ -20,6 +22,10 @@ PostIndexStore.find = function(postId) {
 
 PostIndexStore.indexOf = function(postId) {
   return Object.keys(_posts).indexOf(postId);
+};
+
+PostIndexStore.updateActiveIndex = function(index) {
+  _activePostIndex = index;
 };
 
 PostIndexStore.add = function(post) {
@@ -39,6 +45,8 @@ function resetAllPosts(posts) {
   PostIndexStore.__emitChange();
 };
 
+// used before post detail store
+//
 // keep the post thumb for display in index
 // function resetSinglePost(post) {
 //   // Object.assign(_posts[post.id], post);
