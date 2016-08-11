@@ -54,19 +54,13 @@ const PostShow = React.createClass({
   },
 
   prevPost() {
-    let index = PostIndexStore.activePostIndex() - 1;
-    if (index > 0) {
-      PostIndexStore.updateActiveIndex(index);
-      const posts = PostIndexStore.all();
-      hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
+    if (PostIndexStore.activePostIndex() > 0) {
+      hashHistory.push("posts/" + PostIndexStore.prevId());
     }
   },
 
   nextPost() {
-    let index = PostIndexStore.activePostIndex() + 1;
-    PostIndexStore.updateActiveIndex(index);
-    const posts = PostIndexStore.all();
-    hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
+    hashHistory.push("posts/" + PostIndexStore.nextId());
   },
 
   render() {

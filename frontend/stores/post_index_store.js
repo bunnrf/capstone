@@ -21,11 +21,19 @@ PostIndexStore.find = function(postId) {
 };
 
 PostIndexStore.indexOf = function(postId) {
-  return Object.keys(_posts).indexOf(postId);
+  return Object.keys(_posts).find(key => _posts[key].id === parseInt(postId) );
 };
 
 PostIndexStore.updateActiveIndex = function(index) {
-  _activePostIndex = index;
+  _activePostIndex = parseInt(index);
+};
+
+PostIndexStore.nextId = function() {
+  return _posts[_activePostIndex + 1].id;
+};
+
+PostIndexStore.prevId = function() {
+  return _posts[_activePostIndex - 1].id;
 };
 
 PostIndexStore.add = function(post) {

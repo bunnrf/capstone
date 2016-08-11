@@ -1,9 +1,9 @@
 class Api::PostsController < ApplicationController
   def index
     if params[:limit] && params[:offset]
-      @posts = Post.all_tracks(params[:limit], params[:offset])
+      @posts = Post.index(params[:limit], params[:offset])
     else
-      @posts = Post.all.includes(:author).joins(:images).where(:images => { :ordinal => 0 }).includes(:images)
+      @posts = Post.index(100, 0)
     end
   end
 

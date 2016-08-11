@@ -148,7 +148,7 @@ const PostDetail = React.createClass({
       </div>
     } else {
       authorData = <div className="post-header-details">
-        author unrecognized
+        loading...
       </div>
     }
 

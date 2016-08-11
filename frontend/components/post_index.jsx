@@ -70,21 +70,21 @@ const PostIndex = React.createClass({
     const activeKey = keys[PostIndexStore.activePostIndex()];
 
     if (this.state.context === "post") {
-        return(
-          <div className="post-show-right">
-            <div className="post-show-post-index-header">
-              <h2>Most Viral Images</h2>
-              <h3>sorted by popularity</h3>
-            </div>
-            <div id="post-index" className="post-show-right-scroll-container" onScroll={ this._onSideScroll }>
-              <div className="post-show-post-index-container">
-                {keys.map((key) => {
-                  return <PostIndexItem key={ key } post={ posts[key] } active={ key === activeKey ? true : false } />;
-                })}
-              </div>
+      return(
+        <div className="post-show-right">
+          <div className="post-show-post-index-header">
+            <h2>Most Viral Images</h2>
+            <h3>sorted by popularity</h3>
+          </div>
+          <div id="post-index" className="post-show-right-scroll-container" onScroll={ this._onSideScroll }>
+            <div className="post-show-post-index-container">
+              {keys.map((key) => {
+                return <PostIndexItem key={ key } post={ posts[key] } active={ key === activeKey ? true : false } />;
+              })}
             </div>
           </div>
-        )
+        </div>
+      )
     } else {
       return(
         <div className="post-index-content">

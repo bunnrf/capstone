@@ -36185,11 +36185,21 @@
 	};
 	
 	PostIndexStore.indexOf = function (postId) {
-	  return Object.keys(_posts).indexOf(postId);
+	  return Object.keys(_posts).find(function (key) {
+	    return _posts[key].id === parseInt(postId);
+	  });
 	};
 	
 	PostIndexStore.updateActiveIndex = function (index) {
-	  _activePostIndex = index;
+	  _activePostIndex = parseInt(index);
+	};
+	
+	PostIndexStore.nextId = function () {
+	  return _posts[_activePostIndex + 1].id;
+	};
+	
+	PostIndexStore.prevId = function () {
+	  return _posts[_activePostIndex - 1].id;
 	};
 	
 	PostIndexStore.add = function (post) {};
@@ -36374,18 +36384,12 @@
 	    window.removeEventListener("keydown", this.handleArrows);
 	  },
 	  prevPost: function prevPost() {
-	    var index = PostIndexStore.activePostIndex() - 1;
-	    if (index > 0) {
-	      PostIndexStore.updateActiveIndex(index);
-	      var posts = PostIndexStore.all();
-	      hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
+	    if (PostIndexStore.activePostIndex() > 0) {
+	      hashHistory.push("posts/" + PostIndexStore.prevId());
 	    }
 	  },
 	  nextPost: function nextPost() {
-	    var index = PostIndexStore.activePostIndex() + 1;
-	    PostIndexStore.updateActiveIndex(index);
-	    var posts = PostIndexStore.all();
-	    hashHistory.push("posts/" + PostIndexStore.find(Object.keys(posts)[index]).id);
+	    hashHistory.push("posts/" + PostIndexStore.nextId());
 	  },
 	  render: function render() {
 	    return React.createElement(
@@ -36571,7 +36575,7 @@
 	      authorData = React.createElement(
 	        'div',
 	        { className: 'post-header-details' },
-	        'author unrecognized'
+	        'loading...'
 	      );
 	    }
 	
