@@ -66,8 +66,8 @@ const Topbar = React.createClass({
   },
 
   openModal() {
-    $("body").addClass("noscroll");
     if (SessionStore.isUserLoggedIn()) {
+      $("body").addClass("noscroll");
       this.setState( { modalOpen: true } );
     } else {
       // this is awful

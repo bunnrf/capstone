@@ -28276,8 +28276,8 @@
 	    );
 	  },
 	  openModal: function openModal() {
-	    $("body").addClass("noscroll");
 	    if (SessionStore.isUserLoggedIn()) {
+	      $("body").addClass("noscroll");
 	      this.setState({ modalOpen: true });
 	    } else {
 	      // this is awful
@@ -35591,8 +35591,17 @@
 	
 	var PostIndexItem = React.createClass({
 	  displayName: 'PostIndexItem',
+	  getInitialState: function getInitialState() {
+	    return { displayInfo: false };
+	  },
 	  handleClick: function handleClick() {
 	    hashHistory.push("posts/" + this.props.post.id);
+	  },
+	  showInfo: function showInfo() {
+	    this.setState({ displayInfo: true });
+	  },
+	  hideInfo: function hideInfo() {
+	    this.setState({ displayInfo: false });
 	  },
 	  render: function render() {
 	    var post = this.props.post;
@@ -35600,8 +35609,35 @@
 	
 	    return React.createElement(
 	      'div',
-	      { key: post.id, className: className, onClick: this.handleClick },
-	      React.createElement('img', { alt: true, src: post.thumb, autoPlay: 'false' })
+	      null,
+	      React.createElement(
+	        'div',
+	        { className: className, onClick: this.handleClick, onMouseOver: this.showInfo, onMouseLeave: this.hideInfo },
+	        React.createElement('img', { alt: true, src: post.thumb, autoPlay: 'false' })
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: this.state.displayInfo ? "post-info" : "post-info-hidden" },
+	        React.createElement(
+	          'div',
+	          { className: 'post-info-top' },
+	          React.createElement(
+	            'span',
+	            null,
+	            post.title
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { className: 'post-info-bottom' },
+	          React.createElement(
+	            'span',
+	            null,
+	            post.points,
+	            ' points'
+	          )
+	        )
+	      )
 	    );
 	  }
 	});

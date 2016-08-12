@@ -537,6 +537,28 @@ input:focus {
   cursor: pointer;
 }
 
+.post-info {
+  position: absolute;
+  background: #111111;
+  width: 184px;
+  margin-top: -6px;
+  border-radius: 3px;
+  z-index: 100;
+}
+
+.post-info-hidden {
+  display: none;
+}
+
+.post-info-top {
+  padding: 10px;
+}
+
+.post-info-bottom {
+  background: #343434;
+  padding: 10px;
+}
+
 .post img {
   position: absolute;
   top: -9999px;
