@@ -17,7 +17,11 @@ class Post < ActiveRecord::Base
   end
 
   def self.most_popular(limit, offset)
-    index.limit(limit).offset(offset).order("vote_points desc")
+    index.limit(limit).offset(offset).order("vote_points DESC")
+  end
+
+  def self.most_recent(limit, offset)
+    index.limit(limit).offset(offset).order("created_at DESC")
   end
 
   def self.show(post_id)

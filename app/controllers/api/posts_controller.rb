@@ -7,6 +7,16 @@ class Api::PostsController < ApplicationController
     end
   end
 
+  def most_popular
+    @posts = Post.most_popular(params[:limit], params[:offset])
+    render :index
+  end
+
+  def most_recent
+    @posts = Post.most_recent(params[:limit], params[:offset])
+    render :index
+  end
+
   def show
     @post = Post.show(params[:id])[0]
   end

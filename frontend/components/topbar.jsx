@@ -4,6 +4,7 @@ const ImageUploadForm = require('./image_upload_form');
 const PostActions = require('../actions/post_actions');
 const SessionStore = require('../stores/session_store');
 const ErrorStore = require('../stores/error_store');
+const hashHistory = require('react-router').hashHistory;
 
 const Modal = require('react-modal');
 
@@ -17,7 +18,8 @@ const Topbar = React.createClass({
         description: "",
 				images: [],
 				uploadTrigger: false,
-				modalOpen: false };
+				modalOpen: false,
+        menuOpen: false };
   },
 
   componentDidMount() {
@@ -73,7 +75,7 @@ const Topbar = React.createClass({
     }
   },
 
-	closeModal: function(){
+	closeModal: function() {
     $("body").removeClass("noscroll")
     this.setState({ modalOpen: false });
   },
@@ -103,11 +105,16 @@ const Topbar = React.createClass({
     this.setState( { images: images } );
   },
 
-	addImageUploadForm: function(){
+	addImageUploadForm: function() {
 		this.setState({ images: this.state.images.concat( { title: undefined, image_url: null, description: undefined, ordinal: this.state.images.length } ) });
 	},
 
-	customStyle: function(){
+  toggleMenuDisplay: function() {
+    $(".menu-list").css("display", this.state.menuOpen ? "none" : "flex");
+    this.setState( { menuOpen: !this.state.menuOpen } );
+  },
+
+  customStyle: function() {
 		return {
 		  overlay : {
 		    backgroundColor   : 'rgba(0, 0, 0, 0.9)'
@@ -125,14 +132,19 @@ const Topbar = React.createClass({
 		}
 	},
 
-  render(){
+  render() {
     return(
       <div id="topbar">
         <div className="nav-container">
           <ul className="main-nav">
             <li className="logo-container"><a href="#/" className="logo">imagr</a></li>
-            <li className="menu-container"><a className="menu-icon"><div></div><div></div><div></div></a></li>
+            <li className="menu-container"><a className="menu-icon" onClick={ this.toggleMenuDisplay }><div></div><div></div><div></div></a></li>
             <li className="upload-container"><div className="upload-button" onClick={ this.openModal }>upload images</div></li>
+            <div className="menu-list">
+              <div><a href="#/">Home</a></div>
+              <div><a href="">About</a></div>
+              <div><a href="https://github.com/bunnrf/imagr">GitHub</a></div>
+            </div>
           </ul>
           <UserNav />
         </div>

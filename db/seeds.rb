@@ -340,12 +340,11 @@ end
 def create_child_comments(weight, post_id)
   Array.new(weight) do
     comment = create_comment(post_id)
-    if rand(5) < 1 && weight > 3
+    if rand(7) < 1 && weight > 5
       comment[:child_comments_attributes] = create_child_comments(weight - rand(weight + 1), post_id)
-      votes = Array.new(weight * 2 + rand(10)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1 } }
+      votes = Array.new(rand(weight) * 2 + rand(10)) { { vote_type: "upvote", user_id: rand(TOTAL_USER_COUNT) + 1 } }
       comment[:votes_attributes] = votes
     end
-
     comment
   end
 end
@@ -375,6 +374,7 @@ t = Time.now
   random_comment.save
 end
 
+# create comments with many votes and many children to demonstrate nesting
 top_comments = []
 FIXED_POSTS_COUNT.times do |post_idx|
   post_id = post_idx + 1
@@ -409,7 +409,11 @@ Comment.create(Array.new(RANDOM_COMMENT_COUNT) { create_comment(rand(total_posts
 p "random comments created", Time.now - t
 t = Time.now
 
+# heroku db row limit is 10000
+row_count = User.count + Post.count + Image.count + Comment.count + Vote.count
+puts "Total row count: #{row_count}, creating #{9900 - row_count} votes..."
+
 comments_count = Comment.count
-Vote.create(Array.new(1000) { create_random_vote(TOTAL_USER_COUNT, total_posts_count, comments_count) })
+Vote.create(Array.new(9900 - (row_count)) { create_random_vote(TOTAL_USER_COUNT, total_posts_count, comments_count) })
 p "random votes created", Time.now - t
 p "seeding done"

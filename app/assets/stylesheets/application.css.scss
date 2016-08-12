@@ -148,22 +148,54 @@ button:hover, [type="submit"]:hover, [type="button"]:hover, [type="demo-submit"]
   // letter-spacing: .1em;
 }
 
-.nav-container .menu-container {
+.menu-container {
   width: 40px;
+  .menu-icon {
+    display: flex;
+    flex-direction: column;
+    padding-top: 5px;
+    z-index: 10;
+    div {
+      width: 18px;
+      height: 2px;
+      background: #fff;
+      opacity: .9;
+      margin-bottom: 2px;
+    }
+  }
 }
 
-.nav-container .menu-container .menu-icon {
-  display: flex;
+.menu-list {
+  display: none;
   flex-direction: column;
-  padding-top: 5px;
+  justify-content: space-around;
+  position: relative;
+  left: -220px;
+  top: 50px;
+  height: 70px;
+  width: 85px;
+  padding-left: 0;
+  background: #efefef;
+  border-radius: 5px;
+  z-index: 5;
 }
 
-.nav-container .menu-container div {
-  width: 18px;
-  height: 2px;
-  background: #fff;
-  opacity: .9;
-  margin-bottom: 2px;
+.menu-list div {
+  height: 18px;
+  width: 100%;
+}
+
+.menu-list div:hover {
+  background: #ababab;
+}
+
+.menu-list a {
+  width: 100%;
+  color: black;
+}
+
+.menu-list li:hover {
+
 }
 
 .nav-container .upload-container {
