@@ -12,13 +12,28 @@ class Post < ActiveRecord::Base
     limit(limit).offset(offset)
   end
 
-  def self.index(limit, offset)
-    select("posts.*, images.image_url as thumb_url,
-    COUNT(case when votes.vote_type = 'upvote' then votes.* end) -
-    COUNT(case when votes.vote_type = 'downvote' then votes.* end) as vote_points")
-    .limit(limit).offset(offset).joins(:images).where(images: { ordinal: 0 } )
+  def self.index
+    select("posts.*").with_thumbs.with_points.group("posts.id")
+  end
+
+  def self.most_popular(limit, offset)
+    index.limit(limit).offset(offset).order("vote_points desc")
+  end
+
+  def self.show(post_id)
+    select("posts.*").where(posts: { id: post_id } )
+    .joins(:images).joins(:author).with_points
+    .group("posts.id")
+  end
+
+  def self.with_thumbs
+    select("images.image_url AS thumb_url").joins(:images)
+    .where(images: { ordinal: 0 } ).group("images.image_url")
+  end
+
+  def self.with_points
+    select("COUNT(CASE WHEN votes.vote_type = 'upvote' THEN votes.* END) - COUNT(CASE WHEN votes.vote_type = 'downvote' THEN votes.* END) AS vote_points")
     .joins("LEFT JOIN votes ON posts.id = votes.votable_id AND votes.votable_type = 'Post'")
-    .group("posts.id, images.image_url").order("vote_points desc")
   end
 
   def thumb
@@ -32,12 +47,6 @@ class Post < ActiveRecord::Base
   end
 
   def comments_by_parent
-    comments_by_parent = Hash.new { |hash, key| hash[key] = [] }
-
-    comments.includes(:commenter).each do |comment|
-      comments_by_parent[comment.parent_comment_id] << comment
-    end
-
-    comments_by_parent
+    Comment.comments_by_parent(comments)
   end
 end

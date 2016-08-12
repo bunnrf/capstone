@@ -1,14 +1,14 @@
 class Api::PostsController < ApplicationController
   def index
     if params[:limit] && params[:offset]
-      @posts = Post.index(params[:limit], params[:offset])
+      @posts = Post.most_popular(params[:limit], params[:offset])
     else
-      @posts = Post.index(100, 0)
+      @posts = Post.index
     end
   end
 
   def show
-    @post = Post.includes(:author, :comments, :images).find(params[:id])
+    @post = Post.show(params[:id])[0]
   end
 
   def new
