@@ -79,7 +79,7 @@ const PostIndex = React.createClass({
           <div id="post-index" className="post-show-right-scroll-container" onScroll={ this._onSideScroll }>
             <div className="post-show-post-index-container">
               {keys.map((key) => {
-                return <PostIndexItem key={ key } post={ posts[key] } active={ key === activeKey ? true : false } />;
+                return <PostIndexItem key={ key } post={ posts[key] } active={ key === activeKey ? true : false }/>;
               })}
             </div>
           </div>
@@ -91,7 +91,7 @@ const PostIndex = React.createClass({
           <SentenceSorting />
           <div id="post-index" className={"post-index-container"}>
             {keys.map((key) => {
-              return <PostIndexItem key={ key } post={ posts[key] } />;
+              return <PostIndexItem key={ key } post={ posts[key] }/>;
             })}
           </div>
         </div>

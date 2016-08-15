@@ -35592,7 +35592,7 @@
 	var PostIndexItem = React.createClass({
 	  displayName: 'PostIndexItem',
 	  getInitialState: function getInitialState() {
-	    return { displayInfo: false };
+	    return { displayInfo: false, postShow: this.props.active !== undefined };
 	  },
 	  handleClick: function handleClick() {
 	    hashHistory.push("posts/" + this.props.post.id);
@@ -35607,37 +35607,40 @@
 	    var post = this.props.post;
 	    var className = this.props.active ? "post-active" : "post";
 	
+	    var postInfo = React.createElement(
+	      'div',
+	      { className: this.state.displayInfo ? "post-info" : "post-info-hidden" },
+	      React.createElement(
+	        'div',
+	        { className: 'post-info-top' },
+	        React.createElement(
+	          'span',
+	          null,
+	          post.title
+	        )
+	      ),
+	      React.createElement(
+	        'div',
+	        { className: 'post-info-bottom' },
+	        React.createElement(
+	          'span',
+	          null,
+	          post.points,
+	          ' points'
+	        )
+	      )
+	    );
+	
 	    return React.createElement(
 	      'div',
 	      null,
 	      React.createElement(
 	        'div',
 	        { className: className, onClick: this.handleClick, onMouseOver: this.showInfo, onMouseLeave: this.hideInfo },
-	        React.createElement('img', { alt: true, src: post.thumb, autoPlay: 'false' })
+	        React.createElement('img', { alt: true, src: post.thumb, autoPlay: 'false' }),
+	        this.state.postShow ? postInfo : undefined
 	      ),
-	      React.createElement(
-	        'div',
-	        { className: this.state.displayInfo ? "post-info" : "post-info-hidden" },
-	        React.createElement(
-	          'div',
-	          { className: 'post-info-top' },
-	          React.createElement(
-	            'span',
-	            null,
-	            post.title
-	          )
-	        ),
-	        React.createElement(
-	          'div',
-	          { className: 'post-info-bottom' },
-	          React.createElement(
-	            'span',
-	            null,
-	            post.points,
-	            ' points'
-	          )
-	        )
-	      )
+	      this.state.postShow ? undefined : postInfo
 	    );
 	  }
 	});
