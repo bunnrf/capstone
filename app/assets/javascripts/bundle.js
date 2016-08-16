@@ -46,9 +46,6 @@
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var ReactDOM = __webpack_require__(38);
-	
 	var ReactRouter = __webpack_require__(168);
 	var Router = ReactRouter.Router;
 	var Route = ReactRouter.Route;
@@ -57,13 +54,13 @@
 	var Modal = __webpack_require__(230);
 	
 	var App = __webpack_require__(251);
-	var PostIndexStore = __webpack_require__(254);
-	var PostDetailStore = __webpack_require__(284);
-	var SessionStore = __webpack_require__(282);
-	var PostIndex = __webpack_require__(253);
-	var PostShow = __webpack_require__(285);
-	var UserShow = __webpack_require__(303);
-	var SessionActions = __webpack_require__(304);
+	var PostIndexStore = __webpack_require__(289);
+	var PostDetailStore = __webpack_require__(292);
+	var SessionStore = __webpack_require__(254);
+	var PostIndex = __webpack_require__(288);
+	var PostShow = __webpack_require__(293);
+	var UserShow = __webpack_require__(311);
+	var SessionActions = __webpack_require__(278);
 	
 	var appRouter = React.createElement(
 	  Router,
@@ -28159,10 +28156,9 @@
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
 	var Topbar = __webpack_require__(252);
-	var PostIndex = __webpack_require__(253);
-	var SessionStore = __webpack_require__(282);
+	var PostIndex = __webpack_require__(288);
+	var SessionStore = __webpack_require__(254);
 	
 	module.exports = React.createClass({
 	  displayName: 'exports',
@@ -28201,12 +28197,11 @@
 	
 	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	var React = __webpack_require__(1);
-	var UserNav = __webpack_require__(308);
-	var ImageUploadForm = __webpack_require__(310);
-	var PostActions = __webpack_require__(278);
-	var SessionStore = __webpack_require__(282);
-	var ErrorStore = __webpack_require__(309);
+	var UserNav = __webpack_require__(253);
+	var ImageUploadForm = __webpack_require__(283);
+	var PostActions = __webpack_require__(285);
+	var SessionStore = __webpack_require__(254);
+	var ErrorStore = __webpack_require__(282);
 	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var Modal = __webpack_require__(230);
@@ -28473,118 +28468,284 @@
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var PostIndexStore = __webpack_require__(254);
-	var PostActions = __webpack_require__(278);
-	var PostIndexItem = __webpack_require__(280);
-	var SentenceSorting = __webpack_require__(281);
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
-	var INITIAL_REQUEST_SIZE = 40;
-	var ADDITIONAL_REQUEST_SIZE = 20;
+	var Link = __webpack_require__(168).Link;
+	var SessionStore = __webpack_require__(254);
+	var SessionActions = __webpack_require__(278);
+	var ErrorStore = __webpack_require__(282);
 	
-	var PostIndex = React.createClass({
-	  displayName: 'PostIndex',
-	  getInitialState: function getInitialState() {
-	    return { posts: PostIndexStore.all(), context: this.props.context, activePostIndex: this.props.activePostIndex };
+	var Modal = __webpack_require__(230);
+	
+	var UserNav = React.createClass({
+	  displayName: 'UserNav',
+	
+	
+	  DEMO_USERNAME: "demo",
+	  DEMO_PASSWORD: "password",
+	
+	  demoLoginHandler: function demoLoginHandler(e) {
+	    e.preventDefault();
+	    this.setState({ username: "", password: "", mode: "login" });
+	    var _username = this.DEMO_USERNAME.split("").slice();
+	    this.fillDemoUsername(_username);
 	  },
-	  _onChange: function _onChange() {
-	    this.setState({ posts: PostIndexStore.all() });
+	
+	
+	  fillDemoUsername: function fillDemoUsername(_username) {
+	    var self = this;
+	    if (_username.length > 0) {
+	      setTimeout(function () {
+	        self.setState({
+	          username: self.state.username + _username.shift()
+	        });
+	
+	        self.fillDemoUsername(_username);
+	      }, 120);
+	    } else {
+	      var _password = this.DEMO_PASSWORD.split("").slice();
+	      this.fillDemoPassword(_password);
+	    }
+	  },
+	
+	  fillDemoPassword: function fillDemoPassword(_password) {
+	    var _this = this;
+	
+	    var self = this;
+	    if (_password.length > 0) {
+	      setTimeout(function () {
+	        self.setState({
+	          password: self.state.password + _password.shift()
+	        });
+	        self.fillDemoPassword(_password);
+	      }, 120);
+	    } else {
+	      (function () {
+	        var e = { preventDefault: function preventDefault() {} };
+	        setTimeout(function () {
+	          _this.handleDemoSubmit(e);
+	        }, 500);
+	      })();
+	    }
+	  },
+	
+	  handleDemoSubmit: function handleDemoSubmit(e) {
+	    e.preventDefault();
+	
+	    var formData = { username: this.state.username, password: this.state.password };
+	
+	    SessionActions.login(formData);
+	  },
+	
+	
+	  contextTypes: {
+	    router: React.PropTypes.object.isRequired
+	  },
+	
+	  getInitialState: function getInitialState() {
+	    return { username: "", password: "", mode: this.props.mode, modalOpen: false };
 	  },
 	  componentDidMount: function componentDidMount() {
-	    if (this.state.context === "splash") {
-	      window.addEventListener('scroll', this._onScroll);
-	    }
-	    this.postsListener = PostIndexStore.addListener(this._onChange);
-	    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0);
+	    this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
+	    this.sessionListener = SessionStore.addListener(this.redirectIfLoggedIn);
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
-	    window.removeEventListener('scroll', this._onScroll);
-	    this.postsListener.remove();
+	    this.errorListener.remove();
+	    this.sessionListener.remove();
 	  },
-	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
-	    if (this.state.context !== "post" && newProps.context === "post") {
-	      window.removeEventListener('scroll', this._onScroll);
+	  redirectIfLoggedIn: function redirectIfLoggedIn() {
+	    if (SessionStore.isUserLoggedIn()) {
+	      this.closeModal();
 	    }
-	    if (this.state.context !== "splash" && newProps.context === "splash") {
-	      window.addEventListener('scroll', this._onScroll);
-	    }
-	    this.setState({ context: newProps.context, activePostIndex: newProps.activePostIndex });
 	  },
-	  _fetchMorePosts: function _fetchMorePosts(offset) {
-	    PostActions.fetchPosts(ADDITIONAL_REQUEST_SIZE, offset);
-	  },
-	  _onScroll: function _onScroll(e) {
-	    var scrollDiff = $('#post-index').height() - (window.scrollY + window.innerHeight);
+	  handleSubmit: function handleSubmit(e) {
+	    e.preventDefault();
 	
-	    if (PostIndexStore.hasMorePosts() && scrollDiff < 300) {
-	      // this.setState({loading: true});
-	      var offset = Object.keys(this.state.posts).length;
-	      this._fetchMorePosts(offset);
+	    var formData = { username: this.state.username, password: this.state.password };
+	
+	    if (this.state.mode === "login") {
+	      SessionActions.login(formData);
+	    } else {
+	      SessionActions.signup(formData);
 	    }
 	  },
-	  _onSideScroll: function _onSideScroll() {
-	    var scrollTop = $(".post-show-right-scroll-container").scrollTop();
-	    var scrollDiff = $(".post-show-post-index-container").height() - scrollTop;
+	  fieldErrors: function fieldErrors(field) {
+	    var errors = ErrorStore.formErrors(this.state.mode);
 	
-	    if (PostIndexStore.hasMorePosts() && scrollDiff < 700) {
-	      // this.setState({loading: true});
-	      var offset = Object.keys(this.state.posts).length;
-	      this._fetchMorePosts(offset);
+	    if (!errors[field]) {
+	      return;
 	    }
-	  },
-	  render: function render() {
-	    var posts = this.state.posts;
-	    var keys = Object.keys(posts);
-	    var activeKey = keys[PostIndexStore.activePostIndex()];
 	
-	    if (this.state.context === "post") {
+	    var messages = errors[field].map(function (errorMsg, i) {
 	      return React.createElement(
-	        'div',
-	        { className: 'post-show-right' },
+	        'li',
+	        { key: i },
+	        errorMsg
+	      );
+	    });
+	
+	    return React.createElement(
+	      'ul',
+	      null,
+	      messages
+	    );
+	  },
+	  update: function update(property) {
+	    var _this2 = this;
+	
+	    return function (e) {
+	      return _this2.setState(_defineProperty({}, property, e.target.value));
+	    };
+	  },
+	
+	
+	  openLogin: function openLogin() {
+	    this.setState({ modalOpen: true, mode: "login" });
+	  },
+	
+	  openSignup: function openSignup() {
+	    this.setState({ modalOpen: true, mode: "sign up" });
+	  },
+	
+	  closeModal: function closeModal() {
+	    this.setState({ modalOpen: false });
+	  },
+	
+	  customStyle: function customStyle() {
+	    return {
+	      overlay: {
+	        backgroundColor: 'rgba(0, 0, 0, 0.9)'
+	      },
+	      content: {
+	        position: 'absolute',
+	        border: 'none',
+	        background: '#2B2B2B',
+	        overflow: 'auto',
+	        WebkitOverflowScrolling: 'touch',
+	        borderRadius: '0px',
+	        outline: 'none',
+	        padding: '20px'
+	      }
+	    };
+	  },
+	
+	  render: function render() {
+	    var navLink = void 0;
+	    if (this.state.mode === "login") {
+	      navLink = React.createElement(
+	        'a',
+	        { onClick: this.openSignup },
+	        'sign up instead'
+	      );
+	    } else {
+	      navLink = React.createElement(
+	        'a',
+	        { onClick: this.openLogin },
+	        'login instead'
+	      );
+	    }
+	
+	    if (SessionStore.isUserLoggedIn()) {
+	      return React.createElement(
+	        'ul',
+	        { className: 'user-nav' },
 	        React.createElement(
-	          'div',
-	          { className: 'post-show-post-index-header' },
-	          React.createElement(
-	            'h2',
-	            null,
-	            'Most Viral Images'
-	          ),
-	          React.createElement(
-	            'h3',
-	            null,
-	            'sorted by popularity'
-	          )
+	          'li',
+	          { className: 'header-name' },
+	          'Hi, ',
+	          SessionStore.currentUser().username,
+	          '!'
 	        ),
 	        React.createElement(
-	          'div',
-	          { id: 'post-index', className: 'post-show-right-scroll-container', onScroll: this._onSideScroll },
+	          'li',
+	          null,
 	          React.createElement(
-	            'div',
-	            { className: 'post-show-post-index-container' },
-	            keys.map(function (key) {
-	              return React.createElement(PostIndexItem, { key: key, post: posts[key], active: key === activeKey ? true : false });
-	            })
+	            'a',
+	            { className: 'logout-button', onClick: SessionActions.logout },
+	            'logout'
 	          )
 	        )
 	      );
 	    } else {
 	      return React.createElement(
-	        'div',
-	        { className: 'post-index-content' },
-	        React.createElement(SentenceSorting, null),
+	        'ul',
+	        { className: 'user-nav' },
 	        React.createElement(
-	          'div',
-	          { id: 'post-index', className: "post-index-container" },
-	          keys.map(function (key) {
-	            return React.createElement(PostIndexItem, { key: key, post: posts[key] });
-	          })
+	          'li',
+	          { className: 'signin-button' },
+	          React.createElement(
+	            'a',
+	            { onClick: this.openLogin, className: 'signin-link' },
+	            'sign in'
+	          )
+	        ),
+	        React.createElement(
+	          'li',
+	          { className: 'signup-button' },
+	          React.createElement(
+	            'a',
+	            { onClick: this.openSignup, className: 'signup-link' },
+	            'sign up'
+	          )
+	        ),
+	        React.createElement(
+	          Modal,
+	          { className: 'login-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
+	          React.createElement(
+	            'button',
+	            { className: 'close-modal', onClick: this.closeModal },
+	            'X'
+	          ),
+	          React.createElement(
+	            'div',
+	            { className: 'login-form-container' },
+	            React.createElement(
+	              'form',
+	              { onSubmit: this.handleSubmit, className: 'login-form-box' },
+	              'Welcome!',
+	              React.createElement('br', null),
+	              'Please ',
+	              this.state.mode,
+	              ' or ',
+	              navLink,
+	              React.createElement('br', null),
+	              this.fieldErrors("base"),
+	              React.createElement(
+	                'span',
+	                null,
+	                'imagr'
+	              ),
+	              React.createElement(
+	                'div',
+	                { className: 'login-form' },
+	                this.fieldErrors("username"),
+	                React.createElement('input', { type: 'text',
+	                  value: this.state.username,
+	                  onChange: this.update("username"),
+	                  className: 'login-input-username',
+	                  placeholder: 'Username' }),
+	                this.fieldErrors("password"),
+	                React.createElement('input', { type: 'password',
+	                  value: this.state.password,
+	                  onChange: this.update("password"),
+	                  className: 'login-input-password',
+	                  placeholder: 'Password' }),
+	                React.createElement(
+	                  'div',
+	                  { className: 'login-submit-container' },
+	                  React.createElement('input', { id: 'demo-login', type: 'demo-submit', formAction: 'none', className: 'modal-submit', value: 'Demo Login', onClick: this.demoLoginHandler, readOnly: true }),
+	                  React.createElement('input', { type: 'submit', value: 'Submit' })
+	                )
+	              )
+	            )
+	          )
 	        )
 	      );
 	    }
 	  }
 	});
 	
-	module.exports = PostIndex;
+	module.exports = UserNav;
 
 /***/ },
 /* 254 */
@@ -28592,91 +28753,87 @@
 
 	'use strict';
 	
-	var Store = __webpack_require__(255).Store;
-	var PostConstants = __webpack_require__(273);
-	var VoteConstants = __webpack_require__(274);
-	var dispatcher = __webpack_require__(275);
+	var dispatcher = __webpack_require__(255);
+	var Store = __webpack_require__(259).Store;
+	var SessionConstants = __webpack_require__(276);
+	var VoteConstants = __webpack_require__(277);
 	
-	var _posts = {};
-	var _hasMorePosts = true;
-	var _activePostIndex = void 0;
+	var SessionStore = new Store(dispatcher);
 	
-	var PostIndexStore = new Store(dispatcher);
+	var _currentUser = {};
+	var _currentUserHasBeenFetched = false;
 	
-	PostIndexStore.hasMorePosts = function () {
-	  return _hasMorePosts;
-	};
-	PostIndexStore.activePostIndex = function () {
-	  return _activePostIndex;
+	var _login = function _login(currentUser) {
+	  _currentUser = currentUser;
+	  _currentUserHasBeenFetched = true;
 	};
 	
-	PostIndexStore.all = function () {
-	  return Object.assign({}, _posts);
+	var _logout = function _logout() {
+	  _currentUser = {};
+	  _currentUserHasBeenFetched = true;
 	};
 	
-	PostIndexStore.find = function (postId) {
-	  return Object.assign({}, _posts[postId]);
-	};
-	
-	PostIndexStore.indexOf = function (postId) {
-	  return Object.keys(_posts).find(function (key) {
-	    return _posts[key].id === parseInt(postId);
-	  });
-	};
-	
-	PostIndexStore.updateActiveIndex = function (index) {
-	  _activePostIndex = parseInt(index);
-	};
-	
-	PostIndexStore.nextId = function () {
-	  return _posts[_activePostIndex + 1].id;
-	};
-	
-	PostIndexStore.prevId = function () {
-	  return _posts[_activePostIndex - 1].id;
-	};
-	
-	PostIndexStore.add = function (post) {};
-	
-	function appendPosts(posts) {
-	  _hasMorePosts = !!Object.keys(posts).length;
-	
-	  _posts = Object.assign(_posts, posts);
-	  PostIndexStore.__emitChange();
-	};
-	
-	function resetAllPosts(posts) {
-	  _hasMorePosts = !!Object.keys(posts).length;
-	  _posts = posts;
-	  PostIndexStore.__emitChange();
-	};
-	
-	// used before post detail store
-	//
-	// keep the post thumb for display in index
-	// function resetSinglePost(post) {
-	//   // Object.assign(_posts[post.id], post);
-	//   let thumb = _posts[post.id].thumb;
-	//   _posts[post.id] = post;
-	//   _posts[post.id]['thumb'] = thumb;
-	//   PostIndexStore.__emitChange();
-	// };
-	
-	PostIndexStore.__onDispatch = function (payload) {
+	SessionStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
-	    case PostConstants.POSTS_RECEIVED:
-	      resetAllPosts(payload.posts);
+	    case SessionConstants.LOGIN:
+	      _login(payload.currentUser);
+	      SessionStore.__emitChange();
 	      break;
-	    case PostConstants.APPEND_POSTS:
-	      appendPosts(payload.posts);
+	    case SessionConstants.LOGOUT:
+	      _logout();
+	      SessionStore.__emitChange();
+	      break;
+	    case VoteConstants.VOTE_RECEIVED:
+	      SessionStore.__emitChange();
+	      break;
+	    case VoteConstants.VOTE_REMOVED:
+	      SessionStore.__emitChange();
 	      break;
 	  }
 	};
 	
-	module.exports = PostIndexStore;
+	SessionStore.currentUser = function () {
+	  return Object.assign({}, _currentUser);
+	};
+	
+	SessionStore.currentUserHasBeenFetched = function () {
+	  return !!_currentUserHasBeenFetched;
+	};
+	
+	SessionStore.isUserLoggedIn = function () {
+	  return !!_currentUser.id;
+	};
+	
+	SessionStore._addVote = function (vote) {
+	  if (vote.votable_type === "Post") {
+	    _currentUser.post_votes[vote.votable_id] = { vote_type: vote.vote_type };
+	  } else {
+	    _currentUser.comment_votes[vote.votable_id] = { vote_type: vote.vote_type };
+	  }
+	};
+	
+	SessionStore._removeVote = function (vote) {
+	  if (vote.votable_type === "Post") {
+	    _currentUser.post_votes[vote.votable_id] = "";
+	  } else {
+	    _currentUser.comment_votes[vote.votable_id] = "";
+	  }
+	};
+	
+	module.exports = SessionStore;
 
 /***/ },
 /* 255 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Dispatcher = __webpack_require__(256).Dispatcher;
+	
+	module.exports = new Dispatcher();
+
+/***/ },
+/* 256 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -28688,15 +28845,323 @@
 	 * of patent rights can be found in the PATENTS file in the same directory.
 	 */
 	
-	module.exports.Container = __webpack_require__(256);
-	module.exports.MapStore = __webpack_require__(260);
-	module.exports.Mixin = __webpack_require__(272);
-	module.exports.ReduceStore = __webpack_require__(261);
-	module.exports.Store = __webpack_require__(262);
+	module.exports.Dispatcher = __webpack_require__(257);
 
 
 /***/ },
-/* 256 */
+/* 257 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright (c) 2014-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule Dispatcher
+	 * 
+	 * @preventMunge
+	 */
+	
+	'use strict';
+	
+	exports.__esModule = true;
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	var invariant = __webpack_require__(258);
+	
+	var _prefix = 'ID_';
+	
+	/**
+	 * Dispatcher is used to broadcast payloads to registered callbacks. This is
+	 * different from generic pub-sub systems in two ways:
+	 *
+	 *   1) Callbacks are not subscribed to particular events. Every payload is
+	 *      dispatched to every registered callback.
+	 *   2) Callbacks can be deferred in whole or part until other callbacks have
+	 *      been executed.
+	 *
+	 * For example, consider this hypothetical flight destination form, which
+	 * selects a default city when a country is selected:
+	 *
+	 *   var flightDispatcher = new Dispatcher();
+	 *
+	 *   // Keeps track of which country is selected
+	 *   var CountryStore = {country: null};
+	 *
+	 *   // Keeps track of which city is selected
+	 *   var CityStore = {city: null};
+	 *
+	 *   // Keeps track of the base flight price of the selected city
+	 *   var FlightPriceStore = {price: null}
+	 *
+	 * When a user changes the selected city, we dispatch the payload:
+	 *
+	 *   flightDispatcher.dispatch({
+	 *     actionType: 'city-update',
+	 *     selectedCity: 'paris'
+	 *   });
+	 *
+	 * This payload is digested by `CityStore`:
+	 *
+	 *   flightDispatcher.register(function(payload) {
+	 *     if (payload.actionType === 'city-update') {
+	 *       CityStore.city = payload.selectedCity;
+	 *     }
+	 *   });
+	 *
+	 * When the user selects a country, we dispatch the payload:
+	 *
+	 *   flightDispatcher.dispatch({
+	 *     actionType: 'country-update',
+	 *     selectedCountry: 'australia'
+	 *   });
+	 *
+	 * This payload is digested by both stores:
+	 *
+	 *   CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
+	 *     if (payload.actionType === 'country-update') {
+	 *       CountryStore.country = payload.selectedCountry;
+	 *     }
+	 *   });
+	 *
+	 * When the callback to update `CountryStore` is registered, we save a reference
+	 * to the returned token. Using this token with `waitFor()`, we can guarantee
+	 * that `CountryStore` is updated before the callback that updates `CityStore`
+	 * needs to query its data.
+	 *
+	 *   CityStore.dispatchToken = flightDispatcher.register(function(payload) {
+	 *     if (payload.actionType === 'country-update') {
+	 *       // `CountryStore.country` may not be updated.
+	 *       flightDispatcher.waitFor([CountryStore.dispatchToken]);
+	 *       // `CountryStore.country` is now guaranteed to be updated.
+	 *
+	 *       // Select the default city for the new country
+	 *       CityStore.city = getDefaultCityForCountry(CountryStore.country);
+	 *     }
+	 *   });
+	 *
+	 * The usage of `waitFor()` can be chained, for example:
+	 *
+	 *   FlightPriceStore.dispatchToken =
+	 *     flightDispatcher.register(function(payload) {
+	 *       switch (payload.actionType) {
+	 *         case 'country-update':
+	 *         case 'city-update':
+	 *           flightDispatcher.waitFor([CityStore.dispatchToken]);
+	 *           FlightPriceStore.price =
+	 *             getFlightPriceStore(CountryStore.country, CityStore.city);
+	 *           break;
+	 *     }
+	 *   });
+	 *
+	 * The `country-update` payload will be guaranteed to invoke the stores'
+	 * registered callbacks in order: `CountryStore`, `CityStore`, then
+	 * `FlightPriceStore`.
+	 */
+	
+	var Dispatcher = (function () {
+	  function Dispatcher() {
+	    _classCallCheck(this, Dispatcher);
+	
+	    this._callbacks = {};
+	    this._isDispatching = false;
+	    this._isHandled = {};
+	    this._isPending = {};
+	    this._lastID = 1;
+	  }
+	
+	  /**
+	   * Registers a callback to be invoked with every dispatched payload. Returns
+	   * a token that can be used with `waitFor()`.
+	   */
+	
+	  Dispatcher.prototype.register = function register(callback) {
+	    var id = _prefix + this._lastID++;
+	    this._callbacks[id] = callback;
+	    return id;
+	  };
+	
+	  /**
+	   * Removes a callback based on its token.
+	   */
+	
+	  Dispatcher.prototype.unregister = function unregister(id) {
+	    !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.unregister(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
+	    delete this._callbacks[id];
+	  };
+	
+	  /**
+	   * Waits for the callbacks specified to be invoked before continuing execution
+	   * of the current callback. This method should only be used by a callback in
+	   * response to a dispatched payload.
+	   */
+	
+	  Dispatcher.prototype.waitFor = function waitFor(ids) {
+	    !this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Must be invoked while dispatching.') : invariant(false) : undefined;
+	    for (var ii = 0; ii < ids.length; ii++) {
+	      var id = ids[ii];
+	      if (this._isPending[id]) {
+	        !this._isHandled[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Circular dependency detected while ' + 'waiting for `%s`.', id) : invariant(false) : undefined;
+	        continue;
+	      }
+	      !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
+	      this._invokeCallback(id);
+	    }
+	  };
+	
+	  /**
+	   * Dispatches a payload to all registered callbacks.
+	   */
+	
+	  Dispatcher.prototype.dispatch = function dispatch(payload) {
+	    !!this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.') : invariant(false) : undefined;
+	    this._startDispatching(payload);
+	    try {
+	      for (var id in this._callbacks) {
+	        if (this._isPending[id]) {
+	          continue;
+	        }
+	        this._invokeCallback(id);
+	      }
+	    } finally {
+	      this._stopDispatching();
+	    }
+	  };
+	
+	  /**
+	   * Is this Dispatcher currently dispatching.
+	   */
+	
+	  Dispatcher.prototype.isDispatching = function isDispatching() {
+	    return this._isDispatching;
+	  };
+	
+	  /**
+	   * Call the callback stored with the given id. Also do some internal
+	   * bookkeeping.
+	   *
+	   * @internal
+	   */
+	
+	  Dispatcher.prototype._invokeCallback = function _invokeCallback(id) {
+	    this._isPending[id] = true;
+	    this._callbacks[id](this._pendingPayload);
+	    this._isHandled[id] = true;
+	  };
+	
+	  /**
+	   * Set up bookkeeping needed when dispatching.
+	   *
+	   * @internal
+	   */
+	
+	  Dispatcher.prototype._startDispatching = function _startDispatching(payload) {
+	    for (var id in this._callbacks) {
+	      this._isPending[id] = false;
+	      this._isHandled[id] = false;
+	    }
+	    this._pendingPayload = payload;
+	    this._isDispatching = true;
+	  };
+	
+	  /**
+	   * Clear bookkeeping used for dispatching.
+	   *
+	   * @internal
+	   */
+	
+	  Dispatcher.prototype._stopDispatching = function _stopDispatching() {
+	    delete this._pendingPayload;
+	    this._isDispatching = false;
+	  };
+	
+	  return Dispatcher;
+	})();
+	
+	module.exports = Dispatcher;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+
+/***/ },
+/* 258 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/* WEBPACK VAR INJECTION */(function(process) {/**
+	 * Copyright 2013-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 *
+	 * @providesModule invariant
+	 */
+	
+	"use strict";
+	
+	/**
+	 * Use invariant() to assert state which your program assumes to be true.
+	 *
+	 * Provide sprintf-style format (only %s is supported) and arguments
+	 * to provide information about what broke and what you were
+	 * expecting.
+	 *
+	 * The invariant message will be stripped in production, but the invariant
+	 * will remain to ensure logic does not differ in production.
+	 */
+	
+	var invariant = function (condition, format, a, b, c, d, e, f) {
+	  if (process.env.NODE_ENV !== 'production') {
+	    if (format === undefined) {
+	      throw new Error('invariant requires an error message argument');
+	    }
+	  }
+	
+	  if (!condition) {
+	    var error;
+	    if (format === undefined) {
+	      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
+	    } else {
+	      var args = [a, b, c, d, e, f];
+	      var argIndex = 0;
+	      error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
+	        return args[argIndex++];
+	      }));
+	    }
+	
+	    error.framesToPop = 1; // we don't care about invariant's own frame
+	    throw error;
+	  }
+	};
+	
+	module.exports = invariant;
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+
+/***/ },
+/* 259 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/**
+	 * Copyright (c) 2014-2015, Facebook, Inc.
+	 * All rights reserved.
+	 *
+	 * This source code is licensed under the BSD-style license found in the
+	 * LICENSE file in the root directory of this source tree. An additional grant
+	 * of patent rights can be found in the PATENTS file in the same directory.
+	 */
+	
+	module.exports.Container = __webpack_require__(260);
+	module.exports.MapStore = __webpack_require__(263);
+	module.exports.Mixin = __webpack_require__(275);
+	module.exports.ReduceStore = __webpack_require__(264);
+	module.exports.Store = __webpack_require__(265);
+
+
+/***/ },
+/* 260 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -28718,10 +29183,10 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FluxStoreGroup = __webpack_require__(257);
+	var FluxStoreGroup = __webpack_require__(261);
 	
 	var invariant = __webpack_require__(258);
-	var shallowEqual = __webpack_require__(259);
+	var shallowEqual = __webpack_require__(262);
 	
 	var DEFAULT_OPTIONS = {
 	  pure: true,
@@ -28879,7 +29344,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 257 */
+/* 261 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -28960,62 +29425,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 258 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright 2013-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule invariant
-	 */
-	
-	"use strict";
-	
-	/**
-	 * Use invariant() to assert state which your program assumes to be true.
-	 *
-	 * Provide sprintf-style format (only %s is supported) and arguments
-	 * to provide information about what broke and what you were
-	 * expecting.
-	 *
-	 * The invariant message will be stripped in production, but the invariant
-	 * will remain to ensure logic does not differ in production.
-	 */
-	
-	var invariant = function (condition, format, a, b, c, d, e, f) {
-	  if (process.env.NODE_ENV !== 'production') {
-	    if (format === undefined) {
-	      throw new Error('invariant requires an error message argument');
-	    }
-	  }
-	
-	  if (!condition) {
-	    var error;
-	    if (format === undefined) {
-	      error = new Error('Minified exception occurred; use the non-minified dev environment ' + 'for the full error message and additional helpful warnings.');
-	    } else {
-	      var args = [a, b, c, d, e, f];
-	      var argIndex = 0;
-	      error = new Error('Invariant Violation: ' + format.replace(/%s/g, function () {
-	        return args[argIndex++];
-	      }));
-	    }
-	
-	    error.framesToPop = 1; // we don't care about invariant's own frame
-	    throw error;
-	  }
-	};
-	
-	module.exports = invariant;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
-
-/***/ },
-/* 259 */
+/* 262 */
 /***/ function(module, exports) {
 
 	/**
@@ -29070,7 +29480,7 @@
 	module.exports = shallowEqual;
 
 /***/ },
-/* 260 */
+/* 263 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -29091,8 +29501,8 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FluxReduceStore = __webpack_require__(261);
-	var Immutable = __webpack_require__(271);
+	var FluxReduceStore = __webpack_require__(264);
+	var Immutable = __webpack_require__(274);
 	
 	var invariant = __webpack_require__(258);
 	
@@ -29220,7 +29630,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 261 */
+/* 264 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -29241,9 +29651,9 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var FluxStore = __webpack_require__(262);
+	var FluxStore = __webpack_require__(265);
 	
-	var abstractMethod = __webpack_require__(270);
+	var abstractMethod = __webpack_require__(273);
 	var invariant = __webpack_require__(258);
 	
 	var FluxReduceStore = (function (_FluxStore) {
@@ -29327,7 +29737,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 262 */
+/* 265 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -29346,7 +29756,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var _require = __webpack_require__(263);
+	var _require = __webpack_require__(266);
 	
 	var EventEmitter = _require.EventEmitter;
 	
@@ -29510,7 +29920,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 263 */
+/* 266 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -29523,14 +29933,14 @@
 	 */
 	
 	var fbemitter = {
-	  EventEmitter: __webpack_require__(264)
+	  EventEmitter: __webpack_require__(267)
 	};
 	
 	module.exports = fbemitter;
 
 
 /***/ },
-/* 264 */
+/* 267 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -29549,11 +29959,11 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var EmitterSubscription = __webpack_require__(265);
-	var EventSubscriptionVendor = __webpack_require__(267);
+	var EmitterSubscription = __webpack_require__(268);
+	var EventSubscriptionVendor = __webpack_require__(270);
 	
-	var emptyFunction = __webpack_require__(269);
-	var invariant = __webpack_require__(268);
+	var emptyFunction = __webpack_require__(272);
+	var invariant = __webpack_require__(271);
 	
 	/**
 	 * @class BaseEventEmitter
@@ -29727,7 +30137,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 265 */
+/* 268 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -29748,7 +30158,7 @@
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 	
-	var EventSubscription = __webpack_require__(266);
+	var EventSubscription = __webpack_require__(269);
 	
 	/**
 	 * EmitterSubscription represents a subscription with listener and context data.
@@ -29780,7 +30190,7 @@
 	module.exports = EmitterSubscription;
 
 /***/ },
-/* 266 */
+/* 269 */
 /***/ function(module, exports) {
 
 	/**
@@ -29834,7 +30244,7 @@
 	module.exports = EventSubscription;
 
 /***/ },
-/* 267 */
+/* 270 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -29853,7 +30263,7 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 	
-	var invariant = __webpack_require__(268);
+	var invariant = __webpack_require__(271);
 	
 	/**
 	 * EventSubscriptionVendor stores a set of EventSubscriptions that are
@@ -29943,7 +30353,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 268 */
+/* 271 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -29998,7 +30408,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 269 */
+/* 272 */
 /***/ function(module, exports) {
 
 	/**
@@ -30040,7 +30450,7 @@
 	module.exports = emptyFunction;
 
 /***/ },
-/* 270 */
+/* 273 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -30067,7 +30477,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 271 */
+/* 274 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -35051,7 +35461,7 @@
 	}));
 
 /***/ },
-/* 272 */
+/* 275 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {/**
@@ -35068,7 +35478,7 @@
 	
 	'use strict';
 	
-	var FluxStoreGroup = __webpack_require__(257);
+	var FluxStoreGroup = __webpack_require__(261);
 	
 	var invariant = __webpack_require__(258);
 	
@@ -35174,21 +35584,20 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
 
 /***/ },
-/* 273 */
+/* 276 */
 /***/ function(module, exports) {
 
 	"use strict";
 	
-	var PostConstants = {
-	  POSTS_RECEIVED: "POSTS_RECEIVED",
-	  POST_RECEIVED: "POST_RECEIVED",
-	  APPEND_POSTS: "APPEND_POSTS"
+	var SessionConstants = {
+		LOGIN: "LOGIN",
+		LOGOUT: "LOGOUT"
 	};
 	
-	module.exports = PostConstants;
+	module.exports = SessionConstants;
 
 /***/ },
-/* 274 */
+/* 277 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35201,277 +35610,336 @@
 	module.exports = VoteConstants;
 
 /***/ },
-/* 275 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var Dispatcher = __webpack_require__(276).Dispatcher;
-	
-	module.exports = new Dispatcher();
-
-/***/ },
-/* 276 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/**
-	 * Copyright (c) 2014-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 */
-	
-	module.exports.Dispatcher = __webpack_require__(277);
-
-
-/***/ },
-/* 277 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/* WEBPACK VAR INJECTION */(function(process) {/**
-	 * Copyright (c) 2014-2015, Facebook, Inc.
-	 * All rights reserved.
-	 *
-	 * This source code is licensed under the BSD-style license found in the
-	 * LICENSE file in the root directory of this source tree. An additional grant
-	 * of patent rights can be found in the PATENTS file in the same directory.
-	 *
-	 * @providesModule Dispatcher
-	 * 
-	 * @preventMunge
-	 */
-	
-	'use strict';
-	
-	exports.__esModule = true;
-	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-	
-	var invariant = __webpack_require__(258);
-	
-	var _prefix = 'ID_';
-	
-	/**
-	 * Dispatcher is used to broadcast payloads to registered callbacks. This is
-	 * different from generic pub-sub systems in two ways:
-	 *
-	 *   1) Callbacks are not subscribed to particular events. Every payload is
-	 *      dispatched to every registered callback.
-	 *   2) Callbacks can be deferred in whole or part until other callbacks have
-	 *      been executed.
-	 *
-	 * For example, consider this hypothetical flight destination form, which
-	 * selects a default city when a country is selected:
-	 *
-	 *   var flightDispatcher = new Dispatcher();
-	 *
-	 *   // Keeps track of which country is selected
-	 *   var CountryStore = {country: null};
-	 *
-	 *   // Keeps track of which city is selected
-	 *   var CityStore = {city: null};
-	 *
-	 *   // Keeps track of the base flight price of the selected city
-	 *   var FlightPriceStore = {price: null}
-	 *
-	 * When a user changes the selected city, we dispatch the payload:
-	 *
-	 *   flightDispatcher.dispatch({
-	 *     actionType: 'city-update',
-	 *     selectedCity: 'paris'
-	 *   });
-	 *
-	 * This payload is digested by `CityStore`:
-	 *
-	 *   flightDispatcher.register(function(payload) {
-	 *     if (payload.actionType === 'city-update') {
-	 *       CityStore.city = payload.selectedCity;
-	 *     }
-	 *   });
-	 *
-	 * When the user selects a country, we dispatch the payload:
-	 *
-	 *   flightDispatcher.dispatch({
-	 *     actionType: 'country-update',
-	 *     selectedCountry: 'australia'
-	 *   });
-	 *
-	 * This payload is digested by both stores:
-	 *
-	 *   CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
-	 *     if (payload.actionType === 'country-update') {
-	 *       CountryStore.country = payload.selectedCountry;
-	 *     }
-	 *   });
-	 *
-	 * When the callback to update `CountryStore` is registered, we save a reference
-	 * to the returned token. Using this token with `waitFor()`, we can guarantee
-	 * that `CountryStore` is updated before the callback that updates `CityStore`
-	 * needs to query its data.
-	 *
-	 *   CityStore.dispatchToken = flightDispatcher.register(function(payload) {
-	 *     if (payload.actionType === 'country-update') {
-	 *       // `CountryStore.country` may not be updated.
-	 *       flightDispatcher.waitFor([CountryStore.dispatchToken]);
-	 *       // `CountryStore.country` is now guaranteed to be updated.
-	 *
-	 *       // Select the default city for the new country
-	 *       CityStore.city = getDefaultCityForCountry(CountryStore.country);
-	 *     }
-	 *   });
-	 *
-	 * The usage of `waitFor()` can be chained, for example:
-	 *
-	 *   FlightPriceStore.dispatchToken =
-	 *     flightDispatcher.register(function(payload) {
-	 *       switch (payload.actionType) {
-	 *         case 'country-update':
-	 *         case 'city-update':
-	 *           flightDispatcher.waitFor([CityStore.dispatchToken]);
-	 *           FlightPriceStore.price =
-	 *             getFlightPriceStore(CountryStore.country, CityStore.city);
-	 *           break;
-	 *     }
-	 *   });
-	 *
-	 * The `country-update` payload will be guaranteed to invoke the stores'
-	 * registered callbacks in order: `CountryStore`, `CityStore`, then
-	 * `FlightPriceStore`.
-	 */
-	
-	var Dispatcher = (function () {
-	  function Dispatcher() {
-	    _classCallCheck(this, Dispatcher);
-	
-	    this._callbacks = {};
-	    this._isDispatching = false;
-	    this._isHandled = {};
-	    this._isPending = {};
-	    this._lastID = 1;
-	  }
-	
-	  /**
-	   * Registers a callback to be invoked with every dispatched payload. Returns
-	   * a token that can be used with `waitFor()`.
-	   */
-	
-	  Dispatcher.prototype.register = function register(callback) {
-	    var id = _prefix + this._lastID++;
-	    this._callbacks[id] = callback;
-	    return id;
-	  };
-	
-	  /**
-	   * Removes a callback based on its token.
-	   */
-	
-	  Dispatcher.prototype.unregister = function unregister(id) {
-	    !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.unregister(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
-	    delete this._callbacks[id];
-	  };
-	
-	  /**
-	   * Waits for the callbacks specified to be invoked before continuing execution
-	   * of the current callback. This method should only be used by a callback in
-	   * response to a dispatched payload.
-	   */
-	
-	  Dispatcher.prototype.waitFor = function waitFor(ids) {
-	    !this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Must be invoked while dispatching.') : invariant(false) : undefined;
-	    for (var ii = 0; ii < ids.length; ii++) {
-	      var id = ids[ii];
-	      if (this._isPending[id]) {
-	        !this._isHandled[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): Circular dependency detected while ' + 'waiting for `%s`.', id) : invariant(false) : undefined;
-	        continue;
-	      }
-	      !this._callbacks[id] ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatcher.waitFor(...): `%s` does not map to a registered callback.', id) : invariant(false) : undefined;
-	      this._invokeCallback(id);
-	    }
-	  };
-	
-	  /**
-	   * Dispatches a payload to all registered callbacks.
-	   */
-	
-	  Dispatcher.prototype.dispatch = function dispatch(payload) {
-	    !!this._isDispatching ? process.env.NODE_ENV !== 'production' ? invariant(false, 'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.') : invariant(false) : undefined;
-	    this._startDispatching(payload);
-	    try {
-	      for (var id in this._callbacks) {
-	        if (this._isPending[id]) {
-	          continue;
-	        }
-	        this._invokeCallback(id);
-	      }
-	    } finally {
-	      this._stopDispatching();
-	    }
-	  };
-	
-	  /**
-	   * Is this Dispatcher currently dispatching.
-	   */
-	
-	  Dispatcher.prototype.isDispatching = function isDispatching() {
-	    return this._isDispatching;
-	  };
-	
-	  /**
-	   * Call the callback stored with the given id. Also do some internal
-	   * bookkeeping.
-	   *
-	   * @internal
-	   */
-	
-	  Dispatcher.prototype._invokeCallback = function _invokeCallback(id) {
-	    this._isPending[id] = true;
-	    this._callbacks[id](this._pendingPayload);
-	    this._isHandled[id] = true;
-	  };
-	
-	  /**
-	   * Set up bookkeeping needed when dispatching.
-	   *
-	   * @internal
-	   */
-	
-	  Dispatcher.prototype._startDispatching = function _startDispatching(payload) {
-	    for (var id in this._callbacks) {
-	      this._isPending[id] = false;
-	      this._isHandled[id] = false;
-	    }
-	    this._pendingPayload = payload;
-	    this._isDispatching = true;
-	  };
-	
-	  /**
-	   * Clear bookkeeping used for dispatching.
-	   *
-	   * @internal
-	   */
-	
-	  Dispatcher.prototype._stopDispatching = function _stopDispatching() {
-	    delete this._pendingPayload;
-	    this._isDispatching = false;
-	  };
-	
-	  return Dispatcher;
-	})();
-	
-	module.exports = Dispatcher;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
-
-/***/ },
 /* 278 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var PostConstants = __webpack_require__(273);
-	var PostApiUtil = __webpack_require__(279);
-	var dispatcher = __webpack_require__(275);
+	var SessionApiUtil = __webpack_require__(279);
+	var ErrorActions = __webpack_require__(280);
+	var dispatcher = __webpack_require__(255);
+	var SessionConstants = __webpack_require__(276);
+	var hashHistory = __webpack_require__(168).hashHistory;
+	
+	var SessionActions = {
+	  signup: function signup(user) {
+	    SessionApiUtil.signup(user, this.receiveCurrentUser, ErrorActions.setErrors);
+	  },
+	
+	  login: function login(user) {
+	    SessionApiUtil.login(user, this.receiveCurrentUser, ErrorActions.setErrors);
+	  },
+	
+	  logout: function logout() {
+	    SessionApiUtil.logout(SessionActions.removeCurrentUser);
+	  },
+	  fetchCurrentUser: function fetchCurrentUser(complete) {
+	    SessionApiUtil.fetchCurrentUser(SessionActions.receiveCurrentUser, complete);
+	  },
+	  receiveCurrentUser: function receiveCurrentUser(currentUser) {
+	    dispatcher.dispatch({
+	      actionType: SessionConstants.LOGIN,
+	      currentUser: currentUser
+	    });
+	  },
+	  removeCurrentUser: function removeCurrentUser() {
+	    dispatcher.dispatch({
+	      actionType: SessionConstants.LOGOUT
+	    });
+	    hashHistory.push("/");
+	  }
+	};
+	
+	module.exports = SessionActions;
+
+/***/ },
+/* 279 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var SessionApiUtil = {
+		login: function login(user, success, _error) {
+			$.ajax({
+				url: '/api/session',
+				type: 'POST',
+				data: { user: user },
+				success: success,
+				error: function error(xhr) {
+					var errors = xhr.responseJSON;
+					_error("login", errors);
+				}
+			});
+		},
+		logout: function logout(success) {
+			$.ajax({
+				url: '/api/session',
+				method: 'DELETE',
+				success: success,
+				error: function error() {
+					console.log("Logout error in SessionApiUtil#logout");
+				}
+			});
+		},
+		signup: function signup(user, success, _error2) {
+			$.ajax({
+				url: '/api/user',
+				type: 'POST',
+				dataType: 'json',
+				data: { user: user },
+				success: success,
+				error: function error(xhr) {
+					var errors = xhr.responseJSON;
+					_error2("signup", errors);
+				}
+			});
+		},
+		fetchCurrentUser: function fetchCurrentUser(success, _complete) {
+			$.ajax({
+				url: '/api/session',
+				method: 'GET',
+				success: success,
+				error: function error(xhr) {
+					console.log("Error in SessionApiUtil#fetchCurrentUser");
+				},
+				complete: function complete() {
+					_complete();
+				}
+			});
+		}
+	};
+	
+	module.exports = SessionApiUtil;
+
+/***/ },
+/* 280 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var dispatcher = __webpack_require__(255);
+	var ErrorConstants = __webpack_require__(281);
+	
+	var ErrorActions = {
+	  setErrors: function setErrors(form, errors) {
+	    dispatcher.dispatch({
+	      actionType: ErrorConstants.SET_ERRORS,
+	      form: form,
+	      errors: errors
+	    });
+	  },
+	  clearErrors: function clearErrors() {
+	    dispatcher.dispatch({
+	      actionType: ErrorConstants.CLEAR_ERRORS
+	    });
+	  }
+	};
+	
+	module.exports = ErrorActions;
+
+/***/ },
+/* 281 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var ErrorConstants = {
+	  SET_ERRORS: "SET_ERRORS",
+	  CLEAR_ERRORS: "CLEAR_ERRORS"
+	};
+	
+	module.exports = ErrorConstants;
+
+/***/ },
+/* 282 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Store = __webpack_require__(259).Store;
+	var dispatcher = __webpack_require__(255);
+	var ErrorConstants = __webpack_require__(281);
+	
+	var ErrorStore = new Store(dispatcher);
+	
+	var _errors = {};
+	var _form = "";
+	
+	function setErrors(payload) {
+	  _errors = payload.errors;
+	  _form = payload.form;
+	  ErrorStore.__emitChange();
+	}
+	
+	function clearErrors() {
+	  _errors = {};
+	  _form = "";
+	  ErrorStore.__emitChange();
+	}
+	
+	ErrorStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case ErrorConstants.SET_ERRORS:
+	      setErrors(payload);
+	      break;
+	    case ErrorConstants.CLEAR_ERRORS:
+	      clearErrors();
+	      break;
+	  }
+	};
+	
+	ErrorStore.formErrors = function (form) {
+	  if (form !== _form) {
+	    return {};
+	  }
+	
+	  // copies the _errors object into a new object
+	  var result = {};
+	  for (var field in _errors) {
+	    result[field] = Array.from(_errors[field]);
+	  }
+	
+	  return result;
+	};
+	
+	ErrorStore.form = function () {
+	  return _form;
+	};
+	
+	module.exports = ErrorStore;
+
+/***/ },
+/* 283 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
+	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+	
+	var ImageUploadButton = __webpack_require__(284);
+	
+	var ImageUploadForm = React.createClass({
+	  displayName: "ImageUploadForm",
+	
+	  getInitialState: function getInitialState() {
+	    return { image_url: this.props.image_url };
+	  },
+	
+	  handleUpload: function handleUpload(results) {
+	    this.props.updateState(this.props.ordinal, "image_url", results.url);
+	    this.setState({ image_url: results.url });
+	  },
+	
+	  update: function update(property) {
+	    var _this = this;
+	
+	    return function (e) {
+	      _this.props.updateState(_this.props.ordinal, property, e.target.value);
+	      _this.setState(_defineProperty({}, property, e.target.value));
+	    };
+	  },
+	  upload: function upload(e) {
+	    var _this2 = this;
+	
+	    e.preventDefault();
+	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
+	      if (!error) {
+	        _this2.handleUpload(results[0]);
+	      }
+	    });
+	  },
+	  removeSelf: function removeSelf() {
+	    this.props.removeImage(this.props.ordinal);
+	  },
+	
+	
+	  render: function render() {
+	    var imageOption = void 0;
+	
+	    if (this.state.image_url) {
+	      imageOption = React.createElement(
+	        "div",
+	        { className: "image-upload-image-container" },
+	        React.createElement("img", { src: this.state.image_url }),
+	        React.createElement(
+	          "div",
+	          { className: "image-edit-remove" },
+	          React.createElement(
+	            "div",
+	            { className: "edit-image-button", onClick: this.upload },
+	            React.createElement("span", { className: "glyphicon glyphicon-pencil" })
+	          ),
+	          React.createElement(
+	            "div",
+	            { className: "remove-image-button", onClick: this.removeSelf },
+	            React.createElement("span", { className: "glyphicon glyphicon-trash" })
+	          )
+	        )
+	      );
+	    } else {
+	      imageOption = React.createElement(
+	        "button",
+	        { className: "image-upload-button", onClick: this.upload },
+	        "Upload Image(s)"
+	      );
+	    }
+	
+	    return React.createElement(
+	      "div",
+	      { className: "image-upload-container" },
+	      React.createElement("input", { type: "text", value: this.props.title, onChange: this.update("title"), placeholder: "Image Caption(optional)" }),
+	      React.createElement(
+	        "div",
+	        { className: "image-upload-image-option-container" },
+	        imageOption
+	      ),
+	      React.createElement("textarea", { value: this.props.description, onChange: this.update("description"), placeholder: "Image Description(optional)" })
+	    );
+	  }
+	});
+	
+	module.exports = ImageUploadForm;
+
+/***/ },
+/* 284 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var UploadImageButton = React.createClass({
+	  displayName: "UploadImageButton",
+	
+	  upload: function upload(e) {
+	    var _this = this;
+	
+	    e.preventDefault();
+	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
+	      if (!error) {
+	        _this.props.postImage(results[0]);
+	      }
+	    });
+	  },
+	
+	  render: function render() {
+	    return React.createElement(
+	      "button",
+	      { className: "image-upload-button", onClick: this.upload },
+	      "Upload Image(s)"
+	    );
+	  }
+	});
+	
+	module.exports = UploadImageButton;
+
+/***/ },
+/* 285 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var PostConstants = __webpack_require__(286);
+	var PostApiUtil = __webpack_require__(287);
+	var dispatcher = __webpack_require__(255);
 	
 	var PostActions = {
 	  fetchAllPosts: function fetchAllPosts() {
@@ -35521,7 +35989,21 @@
 	module.exports = PostActions;
 
 /***/ },
-/* 279 */
+/* 286 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var PostConstants = {
+	  POSTS_RECEIVED: "POSTS_RECEIVED",
+	  POST_RECEIVED: "POST_RECEIVED",
+	  APPEND_POSTS: "APPEND_POSTS"
+	};
+	
+	module.exports = PostConstants;
+
+/***/ },
+/* 287 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -35581,16 +36063,222 @@
 	module.exports = PostApiUtil;
 
 /***/ },
-/* 280 */
+/* 288 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
+	var PostIndexStore = __webpack_require__(289);
+	var PostActions = __webpack_require__(285);
+	var PostIndexItem = __webpack_require__(290);
+	var SentenceSorting = __webpack_require__(291);
+	
+	var INITIAL_REQUEST_SIZE = 40;
+	var ADDITIONAL_REQUEST_SIZE = 20;
+	
+	var PostIndex = React.createClass({
+	  displayName: 'PostIndex',
+	  getInitialState: function getInitialState() {
+	    return { posts: PostIndexStore.all(), context: this.props.context, activePostIndex: this.props.activePostIndex };
+	  },
+	  _onChange: function _onChange() {
+	    this.setState({ posts: PostIndexStore.all() });
+	  },
+	  componentDidMount: function componentDidMount() {
+	    if (this.state.context === "splash") {
+	      window.addEventListener('scroll', this._onScroll);
+	    }
+	    this.postsListener = PostIndexStore.addListener(this._onChange);
+	    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0);
+	  },
+	  componentWillUnmount: function componentWillUnmount() {
+	    window.removeEventListener('scroll', this._onScroll);
+	    this.postsListener.remove();
+	  },
+	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
+	    if (this.state.context !== "post" && newProps.context === "post") {
+	      window.removeEventListener('scroll', this._onScroll);
+	    }
+	    if (this.state.context !== "splash" && newProps.context === "splash") {
+	      window.addEventListener('scroll', this._onScroll);
+	    }
+	    this.setState({ context: newProps.context, activePostIndex: newProps.activePostIndex });
+	  },
+	  _fetchMorePosts: function _fetchMorePosts(offset) {
+	    PostActions.fetchPosts(ADDITIONAL_REQUEST_SIZE, offset);
+	  },
+	  _onScroll: function _onScroll(e) {
+	    var scrollDiff = $('#post-index').height() - (window.scrollY + window.innerHeight);
+	
+	    if (PostIndexStore.hasMorePosts() && scrollDiff < 300) {
+	      // this.setState({loading: true});
+	      var offset = Object.keys(this.state.posts).length;
+	      this._fetchMorePosts(offset);
+	    }
+	  },
+	  _onSideScroll: function _onSideScroll() {
+	    var scrollTop = $(".post-show-right-scroll-container").scrollTop();
+	    var scrollDiff = $(".post-show-post-index-container").height() - scrollTop;
+	
+	    if (PostIndexStore.hasMorePosts() && scrollDiff < 700) {
+	      // this.setState({loading: true});
+	      var offset = Object.keys(this.state.posts).length;
+	      this._fetchMorePosts(offset);
+	    }
+	  },
+	  render: function render() {
+	    var posts = this.state.posts;
+	    var keys = Object.keys(posts);
+	    var activeKey = keys[PostIndexStore.activePostIndex()];
+	
+	    if (this.state.context === "post") {
+	      return React.createElement(
+	        'div',
+	        { className: 'post-show-right' },
+	        React.createElement(
+	          'div',
+	          { className: 'post-show-post-index-header' },
+	          React.createElement(
+	            'h2',
+	            null,
+	            'Most Viral Images'
+	          ),
+	          React.createElement(
+	            'h3',
+	            null,
+	            'sorted by popularity'
+	          )
+	        ),
+	        React.createElement(
+	          'div',
+	          { id: 'post-index', className: 'post-show-right-scroll-container', onScroll: this._onSideScroll },
+	          React.createElement(
+	            'div',
+	            { className: 'post-show-post-index-container' },
+	            keys.map(function (key) {
+	              return React.createElement(PostIndexItem, { key: key, post: posts[key], active: key === activeKey ? true : false });
+	            })
+	          )
+	        )
+	      );
+	    } else {
+	      return React.createElement(
+	        'div',
+	        { className: 'post-index-content' },
+	        React.createElement(SentenceSorting, null),
+	        React.createElement(
+	          'div',
+	          { id: 'post-index', className: "post-index-container" },
+	          keys.map(function (key) {
+	            return React.createElement(PostIndexItem, { key: key, post: posts[key] });
+	          })
+	        )
+	      );
+	    }
+	  }
+	});
+	
+	module.exports = PostIndex;
+
+/***/ },
+/* 289 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Store = __webpack_require__(259).Store;
+	var PostConstants = __webpack_require__(286);
+	var VoteConstants = __webpack_require__(277);
+	var dispatcher = __webpack_require__(255);
+	
+	var _posts = {};
+	var _hasMorePosts = true;
+	var _activePostIndex = void 0;
+	
+	var PostIndexStore = new Store(dispatcher);
+	
+	PostIndexStore.hasMorePosts = function () {
+	  return _hasMorePosts;
+	};
+	PostIndexStore.activePostIndex = function () {
+	  return _activePostIndex;
+	};
+	
+	PostIndexStore.all = function () {
+	  return Object.assign({}, _posts);
+	};
+	
+	PostIndexStore.find = function (postId) {
+	  return Object.assign({}, _posts[postId]);
+	};
+	
+	PostIndexStore.indexOf = function (postId) {
+	  return Object.keys(_posts).find(function (key) {
+	    return _posts[key].id === parseInt(postId);
+	  });
+	};
+	
+	PostIndexStore.updateActiveIndex = function (index) {
+	  _activePostIndex = parseInt(index);
+	};
+	
+	PostIndexStore.nextId = function () {
+	  return _posts[_activePostIndex + 1].id;
+	};
+	
+	PostIndexStore.prevId = function () {
+	  return _posts[_activePostIndex - 1].id;
+	};
+	
+	PostIndexStore.add = function (post) {};
+	
+	function appendPosts(posts) {
+	  _hasMorePosts = !!Object.keys(posts).length;
+	
+	  _posts = Object.assign(_posts, posts);
+	  PostIndexStore.__emitChange();
+	};
+	
+	function resetAllPosts(posts) {
+	  _hasMorePosts = !!Object.keys(posts).length;
+	  _posts = posts;
+	  PostIndexStore.__emitChange();
+	};
+	
+	// used before post detail store
+	//
+	// keep the post thumb for display in index
+	// function resetSinglePost(post) {
+	//   // Object.assign(_posts[post.id], post);
+	//   let thumb = _posts[post.id].thumb;
+	//   _posts[post.id] = post;
+	//   _posts[post.id]['thumb'] = thumb;
+	//   PostIndexStore.__emitChange();
+	// };
+	
+	PostIndexStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case PostConstants.POSTS_RECEIVED:
+	      resetAllPosts(payload.posts);
+	      break;
+	    case PostConstants.APPEND_POSTS:
+	      appendPosts(payload.posts);
+	      break;
+	  }
+	};
+	
+	module.exports = PostIndexStore;
+
+/***/ },
+/* 290 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	
 	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var PostIndexItem = React.createClass({
-	  displayName: 'PostIndexItem',
+	  displayName: "PostIndexItem",
 	  getInitialState: function getInitialState() {
 	    return { displayInfo: false, postShow: this.props.active !== undefined };
 	  },
@@ -35608,36 +36296,36 @@
 	    var className = this.props.active ? "post-active" : "post";
 	
 	    var postInfo = React.createElement(
-	      'div',
+	      "div",
 	      { className: this.state.displayInfo ? "post-info" : "post-info-hidden" },
 	      React.createElement(
-	        'div',
-	        { className: 'post-info-top' },
+	        "div",
+	        { className: "post-info-top" },
 	        React.createElement(
-	          'span',
+	          "span",
 	          null,
 	          post.title
 	        )
 	      ),
 	      React.createElement(
-	        'div',
-	        { className: 'post-info-bottom' },
+	        "div",
+	        { className: "post-info-bottom" },
 	        React.createElement(
-	          'span',
+	          "span",
 	          null,
 	          post.points,
-	          ' points'
+	          " points"
 	        )
 	      )
 	    );
 	
 	    return React.createElement(
-	      'div',
+	      "div",
 	      null,
 	      React.createElement(
-	        'div',
+	        "div",
 	        { className: className, onClick: this.handleClick, onMouseOver: this.showInfo, onMouseLeave: this.hideInfo },
-	        React.createElement('img', { alt: true, src: post.thumb, autoPlay: 'false' }),
+	        React.createElement("img", { alt: true, src: post.thumb, autoPlay: "false" }),
 	        this.state.postShow ? postInfo : undefined
 	      ),
 	      this.state.postShow ? undefined : postInfo
@@ -35648,12 +36336,10 @@
 	module.exports = PostIndexItem;
 
 /***/ },
-/* 281 */
-/***/ function(module, exports, __webpack_require__) {
+/* 291 */
+/***/ function(module, exports) {
 
 	"use strict";
-	
-	var React = __webpack_require__(1);
 	
 	var SentenceSorting = React.createClass({
 	  displayName: "SentenceSorting",
@@ -35669,103 +36355,15 @@
 	module.exports = SentenceSorting;
 
 /***/ },
-/* 282 */
+/* 292 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var dispatcher = __webpack_require__(275);
-	var Store = __webpack_require__(255).Store;
-	var SessionConstants = __webpack_require__(283);
-	var VoteConstants = __webpack_require__(274);
-	
-	var SessionStore = new Store(dispatcher);
-	
-	var _currentUser = {};
-	var _currentUserHasBeenFetched = false;
-	
-	var _login = function _login(currentUser) {
-	  _currentUser = currentUser;
-	  _currentUserHasBeenFetched = true;
-	};
-	
-	var _logout = function _logout() {
-	  _currentUser = {};
-	  _currentUserHasBeenFetched = true;
-	};
-	
-	SessionStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case SessionConstants.LOGIN:
-	      _login(payload.currentUser);
-	      SessionStore.__emitChange();
-	      break;
-	    case SessionConstants.LOGOUT:
-	      _logout();
-	      SessionStore.__emitChange();
-	      break;
-	    case VoteConstants.VOTE_RECEIVED:
-	      SessionStore.__emitChange();
-	      break;
-	    case VoteConstants.VOTE_REMOVED:
-	      SessionStore.__emitChange();
-	      break;
-	  }
-	};
-	
-	SessionStore.currentUser = function () {
-	  return Object.assign({}, _currentUser);
-	};
-	
-	SessionStore.currentUserHasBeenFetched = function () {
-	  return !!_currentUserHasBeenFetched;
-	};
-	
-	SessionStore.isUserLoggedIn = function () {
-	  return !!_currentUser.id;
-	};
-	
-	SessionStore._addVote = function (vote) {
-	  if (vote.votable_type === "Post") {
-	    _currentUser.post_votes[vote.votable_id] = { vote_type: vote.vote_type };
-	  } else {
-	    _currentUser.comment_votes[vote.votable_id] = { vote_type: vote.vote_type };
-	  }
-	};
-	
-	SessionStore._removeVote = function (vote) {
-	  if (vote.votable_type === "Post") {
-	    _currentUser.post_votes[vote.votable_id] = "";
-	  } else {
-	    _currentUser.comment_votes[vote.votable_id] = "";
-	  }
-	};
-	
-	module.exports = SessionStore;
-
-/***/ },
-/* 283 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var SessionConstants = {
-		LOGIN: "LOGIN",
-		LOGOUT: "LOGOUT"
-	};
-	
-	module.exports = SessionConstants;
-
-/***/ },
-/* 284 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var Store = __webpack_require__(255).Store;
-	var PostConstants = __webpack_require__(273);
-	var VoteConstants = __webpack_require__(274);
-	var dispatcher = __webpack_require__(275);
+	var Store = __webpack_require__(259).Store;
+	var PostConstants = __webpack_require__(286);
+	var VoteConstants = __webpack_require__(277);
+	var dispatcher = __webpack_require__(255);
 	
 	var _posts = {};
 	
@@ -35797,17 +36395,16 @@
 	module.exports = PostDetailStore;
 
 /***/ },
-/* 285 */
+/* 293 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var PostIndexStore = __webpack_require__(254);
-	var PostDetailStore = __webpack_require__(284);
-	var PostActions = __webpack_require__(278);
-	var PostIndex = __webpack_require__(253);
-	var PostDetail = __webpack_require__(286);
+	var PostIndexStore = __webpack_require__(289);
+	var PostDetailStore = __webpack_require__(292);
+	var PostActions = __webpack_require__(285);
+	var PostIndex = __webpack_require__(288);
+	var PostDetail = __webpack_require__(294);
 	var hashHistory = __webpack_require__(168).hashHistory;
 	
 	var PostShow = React.createClass({
@@ -35869,20 +36466,19 @@
 	module.exports = PostShow;
 
 /***/ },
-/* 286 */
+/* 294 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var Linkify = __webpack_require__(287);
-	var ImageDetail = __webpack_require__(295);
-	var CommentDetail = __webpack_require__(298);
-	var CommentCreate = __webpack_require__(299);
-	var PostActions = __webpack_require__(278);
-	var VoteActions = __webpack_require__(301);
-	var SessionStore = __webpack_require__(282);
-	var TimeUtil = __webpack_require__(300);
+	var Linkify = __webpack_require__(295);
+	var ImageDetail = __webpack_require__(303);
+	var CommentDetail = __webpack_require__(306);
+	var CommentCreate = __webpack_require__(307);
+	var PostActions = __webpack_require__(285);
+	var VoteActions = __webpack_require__(309);
+	var SessionStore = __webpack_require__(254);
+	var TimeUtil = __webpack_require__(308);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
@@ -36130,7 +36726,7 @@
 	module.exports = PostDetail;
 
 /***/ },
-/* 287 */
+/* 295 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36151,11 +36747,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _linkifyIt = __webpack_require__(288);
+	var _linkifyIt = __webpack_require__(296);
 	
 	var _linkifyIt2 = _interopRequireDefault(_linkifyIt);
 	
-	var _tlds = __webpack_require__(294);
+	var _tlds = __webpack_require__(302);
 	
 	var _tlds2 = _interopRequireDefault(_tlds);
 	
@@ -36301,7 +36897,7 @@
 
 
 /***/ },
-/* 288 */
+/* 296 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36456,7 +37052,7 @@
 	function compile(self) {
 	
 	  // Load & clone RE patterns.
-	  var re = self.re = assign({}, __webpack_require__(289));
+	  var re = self.re = assign({}, __webpack_require__(297));
 	
 	  // Define dynamic patterns
 	  var tlds = self.__tlds__.slice();
@@ -36933,16 +37529,16 @@
 
 
 /***/ },
-/* 289 */
+/* 297 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	// Use direct extract instead of `regenerate` to reduse browserified size
-	var src_Any = exports.src_Any = __webpack_require__(290).source;
-	var src_Cc  = exports.src_Cc = __webpack_require__(291).source;
-	var src_Z   = exports.src_Z  = __webpack_require__(292).source;
-	var src_P   = exports.src_P  = __webpack_require__(293).source;
+	var src_Any = exports.src_Any = __webpack_require__(298).source;
+	var src_Cc  = exports.src_Cc = __webpack_require__(299).source;
+	var src_Z   = exports.src_Z  = __webpack_require__(300).source;
+	var src_P   = exports.src_P  = __webpack_require__(301).source;
 	
 	// \p{\Z\P\Cc\CF} (white spaces + control + format + punctuation)
 	var src_ZPCc = exports.src_ZPCc = [ src_Z, src_P, src_Cc ].join('|');
@@ -37101,31 +37697,31 @@
 
 
 /***/ },
-/* 290 */
+/* 298 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /***/ },
-/* 291 */
+/* 299 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\x1F\x7F-\x9F]/
 
 /***/ },
-/* 292 */
+/* 300 */
 /***/ function(module, exports) {
 
 	module.exports=/[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/
 
 /***/ },
-/* 293 */
+/* 301 */
 /***/ function(module, exports) {
 
 	module.exports=/[!-#%-\*,-/:;\?@\[-\]_\{\}\xA1\xA7\xAB\xB6\xB7\xBB\xBF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E42\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]|\uD800[\uDD00-\uDD02\uDF9F\uDFD0]|\uD801\uDD6F|\uD802[\uDC57\uDD1F\uDD3F\uDE50-\uDE58\uDE7F\uDEF0-\uDEF6\uDF39-\uDF3F\uDF99-\uDF9C]|\uD804[\uDC47-\uDC4D\uDCBB\uDCBC\uDCBE-\uDCC1\uDD40-\uDD43\uDD74\uDD75\uDDC5-\uDDC9\uDDCD\uDDDB\uDDDD-\uDDDF\uDE38-\uDE3D\uDEA9]|\uD805[\uDCC6\uDDC1-\uDDD7\uDE41-\uDE43\uDF3C-\uDF3E]|\uD809[\uDC70-\uDC74]|\uD81A[\uDE6E\uDE6F\uDEF5\uDF37-\uDF3B\uDF44]|\uD82F\uDC9F|\uD836[\uDE87-\uDE8B]/
 
 /***/ },
-/* 294 */
+/* 302 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -38556,14 +39152,13 @@
 
 
 /***/ },
-/* 295 */
+/* 303 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var ImageDetailHeader = __webpack_require__(296);
-	var ImageDetailDescription = __webpack_require__(297);
+	var ImageDetailHeader = __webpack_require__(304);
+	var ImageDetailDescription = __webpack_require__(305);
 	
 	var Player = function Player(props) {
 	  var videourl = props.videourl.replace('.gifv', '.mp4').replace('.gif', '.mp4');
@@ -38593,12 +39188,10 @@
 	module.exports = ImageDetail;
 
 /***/ },
-/* 296 */
-/***/ function(module, exports, __webpack_require__) {
+/* 304 */
+/***/ function(module, exports) {
 
 	"use strict";
-	
-	var React = __webpack_require__(1);
 	
 	var ImageDetailHeader = React.createClass({
 	  displayName: "ImageDetailHeader",
@@ -38618,20 +39211,19 @@
 	module.exports = ImageDetailHeader;
 
 /***/ },
-/* 297 */
+/* 305 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
-	var React = __webpack_require__(1);
-	var Linkify = __webpack_require__(287);
+	var Linkify = __webpack_require__(295);
 	
 	var ImageDetailDescription = React.createClass({
-	  displayName: 'ImageDetailDescription',
+	  displayName: "ImageDetailDescription",
 	  render: function render() {
 	    return React.createElement(
-	      'div',
-	      { className: 'image-detail-description' },
+	      "div",
+	      { className: "image-detail-description" },
 	      React.createElement(
 	        Linkify,
 	        null,
@@ -38644,16 +39236,15 @@
 	module.exports = ImageDetailDescription;
 
 /***/ },
-/* 298 */
+/* 306 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var CommentCreate = __webpack_require__(299);
-	var SessionStore = __webpack_require__(282);
-	var TimeUtil = __webpack_require__(300);
-	var VoteActions = __webpack_require__(301);
+	var CommentCreate = __webpack_require__(307);
+	var SessionStore = __webpack_require__(254);
+	var TimeUtil = __webpack_require__(308);
+	var VoteActions = __webpack_require__(309);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
@@ -38830,14 +39421,13 @@
 	module.exports = CommentDetail;
 
 /***/ },
-/* 299 */
+/* 307 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var React = __webpack_require__(1);
-	var SessionStore = __webpack_require__(282);
-	var PostActions = __webpack_require__(278);
+	var SessionStore = __webpack_require__(254);
+	var PostActions = __webpack_require__(285);
 	
 	var CommentCreate = React.createClass({
 	  displayName: 'CommentCreate',
@@ -38897,7 +39487,7 @@
 	module.exports = CommentCreate;
 
 /***/ },
-/* 300 */
+/* 308 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -38934,15 +39524,15 @@
 	module.exports = TimeUtil;
 
 /***/ },
-/* 301 */
+/* 309 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var VoteConstants = __webpack_require__(274);
-	var VoteApiUtil = __webpack_require__(302);
-	var SessionStore = __webpack_require__(282);
-	var dispatcher = __webpack_require__(275);
+	var VoteConstants = __webpack_require__(277);
+	var VoteApiUtil = __webpack_require__(310);
+	var SessionStore = __webpack_require__(254);
+	var dispatcher = __webpack_require__(255);
 	
 	var VoteActions = {
 	  createVote: function createVote(vote) {
@@ -38977,7 +39567,7 @@
 	module.exports = VoteActions;
 
 /***/ },
-/* 302 */
+/* 310 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39020,640 +39610,27 @@
 	module.exports = VoteApiUtil;
 
 /***/ },
-/* 303 */
-/***/ function(module, exports, __webpack_require__) {
+/* 311 */
+/***/ function(module, exports) {
 
-	'use strict';
-	
-	var React = __webpack_require__(1);
+	"use strict";
 	
 	var UserShow = React.createClass({
-	  displayName: 'UserShow',
+	  displayName: "UserShow",
 	  render: function render() {
 	    return React.createElement(
-	      'div',
+	      "div",
 	      null,
 	      React.createElement(
-	        'h2',
+	        "h2",
 	        null,
-	        '        User pages coming soon'
+	        "        User pages coming soon"
 	      )
 	    );
 	  }
 	});
 	
 	module.exports = UserShow;
-
-/***/ },
-/* 304 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var SessionApiUtil = __webpack_require__(305);
-	var ErrorActions = __webpack_require__(306);
-	var dispatcher = __webpack_require__(275);
-	var SessionConstants = __webpack_require__(283);
-	var hashHistory = __webpack_require__(168).hashHistory;
-	
-	var SessionActions = {
-	  signup: function signup(user) {
-	    SessionApiUtil.signup(user, this.receiveCurrentUser, ErrorActions.setErrors);
-	  },
-	
-	  login: function login(user) {
-	    SessionApiUtil.login(user, this.receiveCurrentUser, ErrorActions.setErrors);
-	  },
-	
-	  logout: function logout() {
-	    SessionApiUtil.logout(SessionActions.removeCurrentUser);
-	  },
-	  fetchCurrentUser: function fetchCurrentUser(complete) {
-	    SessionApiUtil.fetchCurrentUser(SessionActions.receiveCurrentUser, complete);
-	  },
-	  receiveCurrentUser: function receiveCurrentUser(currentUser) {
-	    dispatcher.dispatch({
-	      actionType: SessionConstants.LOGIN,
-	      currentUser: currentUser
-	    });
-	  },
-	  removeCurrentUser: function removeCurrentUser() {
-	    dispatcher.dispatch({
-	      actionType: SessionConstants.LOGOUT
-	    });
-	    hashHistory.push("/");
-	  }
-	};
-	
-	module.exports = SessionActions;
-
-/***/ },
-/* 305 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var SessionApiUtil = {
-		login: function login(user, success, _error) {
-			$.ajax({
-				url: '/api/session',
-				type: 'POST',
-				data: { user: user },
-				success: success,
-				error: function error(xhr) {
-					var errors = xhr.responseJSON;
-					_error("login", errors);
-				}
-			});
-		},
-		logout: function logout(success) {
-			$.ajax({
-				url: '/api/session',
-				method: 'DELETE',
-				success: success,
-				error: function error() {
-					console.log("Logout error in SessionApiUtil#logout");
-				}
-			});
-		},
-		signup: function signup(user, success, _error2) {
-			$.ajax({
-				url: '/api/user',
-				type: 'POST',
-				dataType: 'json',
-				data: { user: user },
-				success: success,
-				error: function error(xhr) {
-					var errors = xhr.responseJSON;
-					_error2("signup", errors);
-				}
-			});
-		},
-		fetchCurrentUser: function fetchCurrentUser(success, _complete) {
-			$.ajax({
-				url: '/api/session',
-				method: 'GET',
-				success: success,
-				error: function error(xhr) {
-					console.log("Error in SessionApiUtil#fetchCurrentUser");
-				},
-				complete: function complete() {
-					_complete();
-				}
-			});
-		}
-	};
-	
-	module.exports = SessionApiUtil;
-
-/***/ },
-/* 306 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var dispatcher = __webpack_require__(275);
-	var ErrorConstants = __webpack_require__(307);
-	
-	var ErrorActions = {
-	  setErrors: function setErrors(form, errors) {
-	    dispatcher.dispatch({
-	      actionType: ErrorConstants.SET_ERRORS,
-	      form: form,
-	      errors: errors
-	    });
-	  },
-	  clearErrors: function clearErrors() {
-	    dispatcher.dispatch({
-	      actionType: ErrorConstants.CLEAR_ERRORS
-	    });
-	  }
-	};
-	
-	module.exports = ErrorActions;
-
-/***/ },
-/* 307 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var ErrorConstants = {
-	  SET_ERRORS: "SET_ERRORS",
-	  CLEAR_ERRORS: "CLEAR_ERRORS"
-	};
-	
-	module.exports = ErrorConstants;
-
-/***/ },
-/* 308 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	var React = __webpack_require__(1);
-	var Link = __webpack_require__(168).Link;
-	var SessionStore = __webpack_require__(282);
-	var SessionActions = __webpack_require__(304);
-	var ErrorStore = __webpack_require__(309);
-	
-	var Modal = __webpack_require__(230);
-	
-	var UserNav = React.createClass({
-	  displayName: 'UserNav',
-	
-	
-	  DEMO_USERNAME: "demo",
-	  DEMO_PASSWORD: "password",
-	
-	  demoLoginHandler: function demoLoginHandler(e) {
-	    e.preventDefault();
-	    this.setState({ username: "", password: "", mode: "login" });
-	    var _username = this.DEMO_USERNAME.split("").slice();
-	    this.fillDemoUsername(_username);
-	  },
-	
-	
-	  fillDemoUsername: function fillDemoUsername(_username) {
-	    var self = this;
-	    if (_username.length > 0) {
-	      setTimeout(function () {
-	        self.setState({
-	          username: self.state.username + _username.shift()
-	        });
-	
-	        self.fillDemoUsername(_username);
-	      }, 120);
-	    } else {
-	      var _password = this.DEMO_PASSWORD.split("").slice();
-	      this.fillDemoPassword(_password);
-	    }
-	  },
-	
-	  fillDemoPassword: function fillDemoPassword(_password) {
-	    var _this = this;
-	
-	    var self = this;
-	    if (_password.length > 0) {
-	      setTimeout(function () {
-	        self.setState({
-	          password: self.state.password + _password.shift()
-	        });
-	        self.fillDemoPassword(_password);
-	      }, 120);
-	    } else {
-	      (function () {
-	        var e = { preventDefault: function preventDefault() {} };
-	        setTimeout(function () {
-	          _this.handleDemoSubmit(e);
-	        }, 500);
-	      })();
-	    }
-	  },
-	
-	  handleDemoSubmit: function handleDemoSubmit(e) {
-	    e.preventDefault();
-	
-	    var formData = { username: this.state.username, password: this.state.password };
-	
-	    SessionActions.login(formData);
-	  },
-	
-	
-	  contextTypes: {
-	    router: React.PropTypes.object.isRequired
-	  },
-	
-	  getInitialState: function getInitialState() {
-	    return { username: "", password: "", mode: this.props.mode, modalOpen: false };
-	  },
-	  componentDidMount: function componentDidMount() {
-	    this.errorListener = ErrorStore.addListener(this.forceUpdate.bind(this));
-	    this.sessionListener = SessionStore.addListener(this.redirectIfLoggedIn);
-	  },
-	  componentWillUnmount: function componentWillUnmount() {
-	    this.errorListener.remove();
-	    this.sessionListener.remove();
-	  },
-	  redirectIfLoggedIn: function redirectIfLoggedIn() {
-	    if (SessionStore.isUserLoggedIn()) {
-	      this.closeModal();
-	    }
-	  },
-	  handleSubmit: function handleSubmit(e) {
-	    e.preventDefault();
-	
-	    var formData = { username: this.state.username, password: this.state.password };
-	
-	    if (this.state.mode === "login") {
-	      SessionActions.login(formData);
-	    } else {
-	      SessionActions.signup(formData);
-	    }
-	  },
-	  fieldErrors: function fieldErrors(field) {
-	    var errors = ErrorStore.formErrors(this.state.mode);
-	
-	    if (!errors[field]) {
-	      return;
-	    }
-	
-	    var messages = errors[field].map(function (errorMsg, i) {
-	      return React.createElement(
-	        'li',
-	        { key: i },
-	        errorMsg
-	      );
-	    });
-	
-	    return React.createElement(
-	      'ul',
-	      null,
-	      messages
-	    );
-	  },
-	  update: function update(property) {
-	    var _this2 = this;
-	
-	    return function (e) {
-	      return _this2.setState(_defineProperty({}, property, e.target.value));
-	    };
-	  },
-	
-	
-	  openLogin: function openLogin() {
-	    this.setState({ modalOpen: true, mode: "login" });
-	  },
-	
-	  openSignup: function openSignup() {
-	    this.setState({ modalOpen: true, mode: "sign up" });
-	  },
-	
-	  closeModal: function closeModal() {
-	    this.setState({ modalOpen: false });
-	  },
-	
-	  customStyle: function customStyle() {
-	    return {
-	      overlay: {
-	        backgroundColor: 'rgba(0, 0, 0, 0.9)'
-	      },
-	      content: {
-	        position: 'absolute',
-	        border: 'none',
-	        background: '#2B2B2B',
-	        overflow: 'auto',
-	        WebkitOverflowScrolling: 'touch',
-	        borderRadius: '0px',
-	        outline: 'none',
-	        padding: '20px'
-	      }
-	    };
-	  },
-	
-	  render: function render() {
-	    var navLink = void 0;
-	    if (this.state.mode === "login") {
-	      navLink = React.createElement(
-	        'a',
-	        { onClick: this.openSignup },
-	        'sign up instead'
-	      );
-	    } else {
-	      navLink = React.createElement(
-	        'a',
-	        { onClick: this.openLogin },
-	        'login instead'
-	      );
-	    }
-	
-	    if (SessionStore.isUserLoggedIn()) {
-	      return React.createElement(
-	        'ul',
-	        { className: 'user-nav' },
-	        React.createElement(
-	          'li',
-	          { className: 'header-name' },
-	          'Hi, ',
-	          SessionStore.currentUser().username,
-	          '!'
-	        ),
-	        React.createElement(
-	          'li',
-	          null,
-	          React.createElement(
-	            'a',
-	            { className: 'logout-button', onClick: SessionActions.logout },
-	            'logout'
-	          )
-	        )
-	      );
-	    } else {
-	      return React.createElement(
-	        'ul',
-	        { className: 'user-nav' },
-	        React.createElement(
-	          'li',
-	          { className: 'signin-button' },
-	          React.createElement(
-	            'a',
-	            { onClick: this.openLogin, className: 'signin-link' },
-	            'sign in'
-	          )
-	        ),
-	        React.createElement(
-	          'li',
-	          { className: 'signup-button' },
-	          React.createElement(
-	            'a',
-	            { onClick: this.openSignup, className: 'signup-link' },
-	            'sign up'
-	          )
-	        ),
-	        React.createElement(
-	          Modal,
-	          { className: 'login-modal', isOpen: this.state.modalOpen, onRequestClose: this.closeModal, style: this.customStyle() },
-	          React.createElement(
-	            'button',
-	            { className: 'close-modal', onClick: this.closeModal },
-	            'X'
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'login-form-container' },
-	            React.createElement(
-	              'form',
-	              { onSubmit: this.handleSubmit, className: 'login-form-box' },
-	              'Welcome!',
-	              React.createElement('br', null),
-	              'Please ',
-	              this.state.mode,
-	              ' or ',
-	              navLink,
-	              React.createElement('br', null),
-	              this.fieldErrors("base"),
-	              React.createElement(
-	                'span',
-	                null,
-	                'imagr'
-	              ),
-	              React.createElement(
-	                'div',
-	                { className: 'login-form' },
-	                this.fieldErrors("username"),
-	                React.createElement('input', { type: 'text',
-	                  value: this.state.username,
-	                  onChange: this.update("username"),
-	                  className: 'login-input-username',
-	                  placeholder: 'Username' }),
-	                this.fieldErrors("password"),
-	                React.createElement('input', { type: 'password',
-	                  value: this.state.password,
-	                  onChange: this.update("password"),
-	                  className: 'login-input-password',
-	                  placeholder: 'Password' }),
-	                React.createElement(
-	                  'div',
-	                  { className: 'login-submit-container' },
-	                  React.createElement('input', { id: 'demo-login', type: 'demo-submit', formAction: 'none', className: 'modal-submit', value: 'Demo Login', onClick: this.demoLoginHandler, readOnly: true }),
-	                  React.createElement('input', { type: 'submit', value: 'Submit' })
-	                )
-	              )
-	            )
-	          )
-	        )
-	      );
-	    }
-	  }
-	});
-	
-	module.exports = UserNav;
-
-/***/ },
-/* 309 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var Store = __webpack_require__(255).Store;
-	var dispatcher = __webpack_require__(275);
-	var ErrorConstants = __webpack_require__(307);
-	
-	var ErrorStore = new Store(dispatcher);
-	
-	var _errors = {};
-	var _form = "";
-	
-	function setErrors(payload) {
-	  _errors = payload.errors;
-	  _form = payload.form;
-	  ErrorStore.__emitChange();
-	}
-	
-	function clearErrors() {
-	  _errors = {};
-	  _form = "";
-	  ErrorStore.__emitChange();
-	}
-	
-	ErrorStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case ErrorConstants.SET_ERRORS:
-	      setErrors(payload);
-	      break;
-	    case ErrorConstants.CLEAR_ERRORS:
-	      clearErrors();
-	      break;
-	  }
-	};
-	
-	ErrorStore.formErrors = function (form) {
-	  if (form !== _form) {
-	    return {};
-	  }
-	
-	  // copies the _errors object into a new object
-	  var result = {};
-	  for (var field in _errors) {
-	    result[field] = Array.from(_errors[field]);
-	  }
-	
-	  return result;
-	};
-	
-	ErrorStore.form = function () {
-	  return _form;
-	};
-	
-	module.exports = ErrorStore;
-
-/***/ },
-/* 310 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-	
-	var React = __webpack_require__(1);
-	var ImageUploadButton = __webpack_require__(311);
-	
-	var ImageUploadForm = React.createClass({
-	  displayName: 'ImageUploadForm',
-	
-	  getInitialState: function getInitialState() {
-	    return { image_url: this.props.image_url };
-	  },
-	
-	  handleUpload: function handleUpload(results) {
-	    this.props.updateState(this.props.ordinal, "image_url", results.url);
-	    this.setState({ image_url: results.url });
-	  },
-	
-	  update: function update(property) {
-	    var _this = this;
-	
-	    return function (e) {
-	      _this.props.updateState(_this.props.ordinal, property, e.target.value);
-	      _this.setState(_defineProperty({}, property, e.target.value));
-	    };
-	  },
-	  upload: function upload(e) {
-	    var _this2 = this;
-	
-	    e.preventDefault();
-	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
-	      if (!error) {
-	        _this2.handleUpload(results[0]);
-	      }
-	    });
-	  },
-	  removeSelf: function removeSelf() {
-	    this.props.removeImage(this.props.ordinal);
-	  },
-	
-	
-	  render: function render() {
-	    var imageOption = void 0;
-	
-	    if (this.state.image_url) {
-	      imageOption = React.createElement(
-	        'div',
-	        { className: 'image-upload-image-container' },
-	        React.createElement('img', { src: this.state.image_url }),
-	        React.createElement(
-	          'div',
-	          { className: 'image-edit-remove' },
-	          React.createElement(
-	            'div',
-	            { className: 'edit-image-button', onClick: this.upload },
-	            React.createElement('span', { className: 'glyphicon glyphicon-pencil' })
-	          ),
-	          React.createElement(
-	            'div',
-	            { className: 'remove-image-button', onClick: this.removeSelf },
-	            React.createElement('span', { className: 'glyphicon glyphicon-trash' })
-	          )
-	        )
-	      );
-	    } else {
-	      imageOption = React.createElement(
-	        'button',
-	        { className: 'image-upload-button', onClick: this.upload },
-	        'Upload Image(s)'
-	      );
-	    }
-	
-	    return React.createElement(
-	      'div',
-	      { className: 'image-upload-container' },
-	      React.createElement('input', { type: 'text', value: this.props.title, onChange: this.update("title"), placeholder: 'Image Caption(optional)' }),
-	      React.createElement(
-	        'div',
-	        { className: 'image-upload-image-option-container' },
-	        imageOption
-	      ),
-	      React.createElement('textarea', { value: this.props.description, onChange: this.update("description"), placeholder: 'Image Description(optional)' })
-	    );
-	  }
-	});
-	
-	module.exports = ImageUploadForm;
-
-/***/ },
-/* 311 */
-/***/ function(module, exports, __webpack_require__) {
-
-	"use strict";
-	
-	var React = __webpack_require__(1);
-	
-	var UploadImageButton = React.createClass({
-	  displayName: "UploadImageButton",
-	
-	  upload: function upload(e) {
-	    var _this = this;
-	
-	    e.preventDefault();
-	    cloudinary.openUploadWidget(CLOUDINARY_OPTIONS, function (error, results) {
-	      if (!error) {
-	        _this.props.postImage(results[0]);
-	      }
-	    });
-	  },
-	
-	  render: function render() {
-	    return React.createElement(
-	      "button",
-	      { className: "image-upload-button", onClick: this.upload },
-	      "Upload Image(s)"
-	    );
-	  }
-	});
-	
-	module.exports = UploadImageButton;
 
 /***/ }
 /******/ ]);

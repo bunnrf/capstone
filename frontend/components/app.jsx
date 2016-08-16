@@ -1,4 +1,3 @@
-const React = require('react');
 const Topbar = require('./topbar');
 const PostIndex = require('./post_index');
 const SessionStore = require('../stores/session_store');

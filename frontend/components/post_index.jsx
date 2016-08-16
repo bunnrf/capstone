@@ -1,4 +1,3 @@
-const React = require('react');
 const PostIndexStore = require('../stores/post_index_store');
 const PostActions = require('../actions/post_actions');
 const PostIndexItem = require('./post_index_item');

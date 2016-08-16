@@ -1,4 +1,3 @@
-const React = require('react');
 const Linkify = require('react-linkify');
 const ImageDetail = require('./image_detail');
 const CommentDetail = require('./comment_detail');

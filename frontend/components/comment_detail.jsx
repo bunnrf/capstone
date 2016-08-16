@@ -1,4 +1,3 @@
-const React = require('react');
 const CommentCreate = require('./comment_create');
 const SessionStore = require('../stores/session_store');
 const TimeUtil = require('../util/time_util');

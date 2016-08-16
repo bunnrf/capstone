@@ -1,4 +1,3 @@
-const React = require('react');
 const Linkify = require('react-linkify');
 
 const ImageDetailDescription = React.createClass({

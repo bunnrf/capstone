@@ -1,4 +1,3 @@
-const React = require('react');
 
 const UserShow = React.createClass({
   render(){

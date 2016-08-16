@@ -1,4 +1,3 @@
-const React = require('react');
 const ImageDetailHeader = require('./image_detail_header');
 const ImageDetailDescription = require('./image_detail_description');
 

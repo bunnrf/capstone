@@ -1,4 +1,3 @@
-const React = require('react');
 
 const SentenceSorting = React.createClass({
 

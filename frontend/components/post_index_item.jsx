@@ -1,4 +1,3 @@
-const React = require('react');
 const hashHistory = require('react-router').hashHistory;
 
 const PostIndexItem = React.createClass({

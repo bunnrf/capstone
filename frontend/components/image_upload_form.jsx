@@ -1,4 +1,3 @@
-const React = require('react');
 const ImageUploadButton = require('./image_upload_button');
 
 const ImageUploadForm = React.createClass({

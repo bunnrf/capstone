@@ -1,4 +1,3 @@
-const React = require('react');
 
 const UploadImageButton = React.createClass({
   upload: function (e) {

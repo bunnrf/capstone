@@ -1,4 +1,3 @@
-const React = require('react');
 const UserNav = require('./user_nav');
 const ImageUploadForm = require('./image_upload_form');
 const PostActions = require('../actions/post_actions');

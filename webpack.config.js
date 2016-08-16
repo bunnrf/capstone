@@ -21,6 +21,10 @@ module.exports = {
       }
     ]
   },
+  externals: {
+    "react": "React",
+    "react-dom": "ReactDOM"
+  },
   devtool: 'source-maps',
   resolve: {
     extensions: ["", ".js", ".jsx" ]
