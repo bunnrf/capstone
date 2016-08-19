@@ -8163,17 +8163,9 @@
 	  },
 	
 	  // unused
-	  toggleMenuDisplay: function toggleMenuDisplay() {
-	    $(".menu-list").css("display", this.state.menuOpen ? "none" : "flex");
+	  toggleMenuDisplay: function toggleMenuDisplay(e) {
+	    e.preventDefault();
 	    this.setState({ menuOpen: !this.state.menuOpen });
-	  },
-	
-	  openMenuDisplay: function openMenuDisplay() {
-	    $(".menu-list").css("display", "flex");
-	  },
-	
-	  hideMenuDisplay: function hideMenuDisplay() {
-	    $(".menu-list").css("display", "none");
 	  },
 	
 	  customStyle: function customStyle() {
@@ -8220,7 +8212,7 @@
 	            { className: 'menu-container' },
 	            React.createElement(
 	              'a',
-	              { className: 'menu-icon', onFocus: this.openMenuDisplay, onBlur: this.hideMenuDisplay, tabIndex: '0' },
+	              { className: 'menu-icon', onFocus: this.toggleMenuDisplay, onBlur: this.toggleMenuDisplay, tabIndex: '0' },
 	              React.createElement('div', null),
 	              React.createElement('div', null),
 	              React.createElement('div', null)
@@ -8237,7 +8229,9 @@
 	          ),
 	          React.createElement(
 	            'div',
-	            { className: 'menu-list' },
+	            { className: 'menu-list', style: this.state.menuOpen ? { display: "flex" } : { display: "none" }, onMouseDown: function onMouseDown(e) {
+	                return e.preventDefault();
+	              } },
 	            React.createElement(
 	              'div',
 	              null,
@@ -16369,10 +16363,6 @@
 	      })
 	    );
 	  },
-	
-	
-	  // Use onclick to set focused state instead of onfocus because focus event isnt triggered
-	  // after selected state changed.
 	  render: function render() {
 	    return React.createElement(
 	      "div",
@@ -16437,7 +16427,7 @@
 	  TAGS_RECEIVED: "TAGS_RECEIVED",
 	  MOST_VIRAL: "Most Viral",
 	  MOST_POPULAR: "Popularity",
-	  MOST_RECENT: "Most Recent",
+	  MOST_RECENT: "Newest First",
 	  HIGHEST_SCORING: "Highest Scoring"
 	};
 	

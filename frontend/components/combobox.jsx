@@ -41,8 +41,6 @@ const Combobox = React.createClass({
     )
   },
 
-  // Use onclick to set focused state instead of onfocus because focus event isnt triggered
-  // after selected state changed.
   render() {
     return(
       <div className={ this.props.className } onClick={ this.focus } onBlur={ this.blur } tabIndex="0">

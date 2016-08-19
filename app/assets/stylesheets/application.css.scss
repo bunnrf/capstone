@@ -178,6 +178,7 @@ button:hover, [type="submit"]:hover, [type="button"]:hover, [type="demo-submit"]
   background: #efefef;
   border-radius: 5px;
   overflow: hidden;
+  z-index: 10;
 }
 
 .menu-list div {
