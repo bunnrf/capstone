@@ -8,12 +8,29 @@ class Api::PostsController < ApplicationController
   end
 
   def most_popular
-    @posts = Post.most_popular(params[:limit], params[:offset])
+    if params[:tag]
+      @posts = Post.most_popular(params[:limit], params[:offset]).with_tag(params[:tag])
+    else
+      @posts = Post.most_popular(params[:limit], params[:offset])
+    end
     render :index
   end
 
   def most_recent
-    @posts = Post.most_recent(params[:limit], params[:offset])
+    if params[:tag]
+      @posts = Post.most_recent(params[:limit], params[:offset]).with_tag(params[:tag])
+    else
+      @posts = Post.most_recent(params[:limit], params[:offset])
+    end
+    render :index
+  end
+
+  def highest_scoring
+    if params[:tag]
+      @posts = Post.highest_scoring(params[:limit], params[:offset]).with_tag(params[:tag])
+    else
+      @posts = Post.highest_scoring(params[:limit], params[:offset])
+    end
     render :index
   end
 

@@ -59,10 +59,13 @@ Rails.application.routes.draw do
   namespace :api, defaults: { format: :json } do
     get '/posts/most_popular/', to: 'posts#most_popular'
     get '/posts/most_recent/', to: 'posts#most_recent'
+    get '/posts/highest_scoring/', to: 'posts#highest_scoring'
     resources :posts
     resources :comments, only: [:create, :show]
-    resources :votes, only: [:create, :update, :destroy]
+    resources :taggings, only: [:create, :destroy]
+    resources :tags, only: [:index, :create, :show]
     resources :users, only: [:create, :show]
+    resources :votes, only: [:create, :update, :destroy]
     resource :session, only: [:create, :destroy, :show]
   end
 

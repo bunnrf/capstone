@@ -1,5 +1,4 @@
 const Combobox = require('./combobox');
-const SearchStore = require('../stores/search_store');
 
 const SentenceSorting = React.createClass({
   getInitialState() {
@@ -25,13 +24,13 @@ const SentenceSorting = React.createClass({
           { this.state.filter === "Most Viral" ? "The" : "Posts categorized as" }
         </span>
 
-        <Combobox className="combobox filter" update={ this.updateFilter } selected={ this.state.filter } options={ ["Most Viral", "Funny", "Dogs"] } />
+        <Combobox className="combobox filter" update={ this.updateFilter } selected={ this.state.filter } options={ this.props.filterOptions } />
 
         <span className="between">
           { this.state.filter === "Most Viral" ? "images on the internet, sorted by" : " sorted by" }
         </span>
 
-        <Combobox className="combobox sort" update={ this.updateSort } selected={ this.state.sort } options={ ["Popularity", "Most Recent", "Highest Scoring"] } />
+        <Combobox className="combobox sort" update={ this.updateSort } selected={ this.state.sort } options={ this.props.sortOptions } />
       </div>
     )
   }

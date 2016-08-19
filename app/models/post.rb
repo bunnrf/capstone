@@ -4,6 +4,8 @@ class Post < ActiveRecord::Base
   belongs_to :author, class_name: "User"
   has_many :comments, inverse_of: :post
   has_many :images, inverse_of: :post
+  has_many :taggings
+  has_many :tags, through: :taggings
   has_many :votes, as: :votable
   has_many :voters, through: :votes, source: :voter
   accepts_nested_attributes_for :images
@@ -17,17 +19,25 @@ class Post < ActiveRecord::Base
   end
 
   def self.most_popular(limit, offset)
-    index.limit(limit).offset(offset).order("vote_points DESC")
+    index.limit(limit).offset(offset).order("view_count DESC")
   end
 
   def self.most_recent(limit, offset)
     index.limit(limit).offset(offset).order("created_at DESC")
   end
 
+  def self.highest_scoring(limit, offset)
+    index.limit(limit).offset(offset).order("vote_points DESC")
+  end
+
   def self.show(post_id)
     select("posts.*").where(posts: { id: post_id } )
     .joins(:images).joins(:author).with_points
     .group("posts.id")
+  end
+
+  def self.with_tag(tag_name)
+    joins(:tags).where(tags: { name: tag_name } )
   end
 
   def self.with_thumbs

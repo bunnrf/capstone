@@ -23,16 +23,16 @@ const PostIndexItem = React.createClass({
 
     const postInfo = (<div className={ this.state.displayInfo ? "post-info" : "post-info-hidden" }>
       <div className="post-info-top">
-        <span>{post.title}</span>
+        <span>{ post.title }</span>
       </div>
       <div className="post-info-bottom">
-        <span>{post.points} points</span>
+        <span>{ post.view_count + " view" + s(post.view_count) } · { post.points + " point" + s(post.points) }</span>
       </div>
     </div>)
 
     return(
       <div>
-        <div className={className} onClick={ this.handleClick } onMouseOver={ this.showInfo } onMouseLeave={ this.hideInfo }>
+        <div className={ className } onClick={ this.handleClick } onMouseOver={ this.showInfo } onMouseLeave={ this.hideInfo }>
           <img alt src={ post.thumb } autoPlay="false" />
           { this.state.postShow ? postInfo : undefined }
         </div>
@@ -41,5 +41,9 @@ const PostIndexItem = React.createClass({
     );
   }
 });
+
+function s(count) {
+  return (count === 1 ? "" : "s");
+}
 
 module.exports = PostIndexItem;

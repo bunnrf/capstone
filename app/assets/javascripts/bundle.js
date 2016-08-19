@@ -15791,6 +15791,7 @@
 	'use strict';
 	
 	var PostConstants = __webpack_require__(122);
+	var SearchConstants = __webpack_require__(130);
 	var PostApiUtil = __webpack_require__(123);
 	var dispatcher = __webpack_require__(91);
 	
@@ -15804,10 +15805,13 @@
 	
 	    if (options) {
 	      switch (options.sortOption) {
-	        case "Most Recent":
+	        case SearchConstants.MOST_RECENT:
 	          PostApiUtil.fetchMostRecentPosts(callback, limit, offset, options.filterOption);
 	          break;
-	        case "Popularity":
+	        case SearchConstants.HIGHEST_SCORING:
+	          PostApiUtil.fetchHighestScoringPosts(callback, limit, offset, options.filterOption);
+	          break;
+	        case SearchConstants.MOST_POPULAR:
 	        default:
 	          PostApiUtil.fetchMostPopularPosts(callback, limit, offset, options.filterOption);
 	      }
@@ -15869,9 +15873,11 @@
 
 /***/ },
 /* 123 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	
+	var SearchConstants = __webpack_require__(130);
 	
 	var PostApiUtil = {
 	  fetchAllPosts: function fetchAllPosts(callback) {
@@ -15894,16 +15900,9 @@
 	  },
 	
 	  fetchMostPopularPosts: function fetchMostPopularPosts(callback, limit, offset, tag) {
-	    var data = void 0;
-	    if (tag === "Most Viral") {
-	      data = { limit: limit, offset: offset };
-	    } else {
-	      data = { limit: limit, offset: offset, tag: tag };
-	    }
-	
 	    $.ajax({
 	      url: "api/posts/most_popular",
-	      data: data,
+	      data: buildData(limit, offset, tag),
 	      success: function success(posts) {
 	        callback(posts);
 	      }
@@ -15911,16 +15910,19 @@
 	  },
 	
 	  fetchMostRecentPosts: function fetchMostRecentPosts(callback, limit, offset, tag) {
-	    var data = void 0;
-	    if (tag === "Most Viral") {
-	      data = { limit: limit, offset: offset };
-	    } else {
-	      data = { limit: limit, offset: offset, tag: tag };
-	    }
-	
 	    $.ajax({
 	      url: "api/posts/most_recent",
-	      data: data,
+	      data: buildData(limit, offset, tag),
+	      success: function success(posts) {
+	        callback(posts);
+	      }
+	    });
+	  },
+	
+	  fetchHighestScoringPosts: function fetchHighestScoringPosts(callback, limit, offset, tag) {
+	    $.ajax({
+	      url: "api/posts/highest_scoring",
+	      data: buildData(limit, offset, tag),
 	      success: function success(posts) {
 	        callback(posts);
 	      }
@@ -15959,6 +15961,10 @@
 	  }
 	};
 	
+	function buildData(limit, offset, tag) {
+	  return tag === SearchConstants.MOST_VIRAL ? { limit: limit, offset: offset } : { limit: limit, offset: offset, tag: tag };
+	}
+	
 	module.exports = PostApiUtil;
 
 /***/ },
@@ -15971,9 +15977,12 @@
 	var PostActions = __webpack_require__(121);
 	var PostIndexItem = __webpack_require__(126);
 	var SentenceSorting = __webpack_require__(127);
+	var SearchStore = __webpack_require__(129);
+	var SearchActions = __webpack_require__(151);
 	
 	var INITIAL_REQUEST_SIZE = 40;
 	var ADDITIONAL_REQUEST_SIZE = 20;
+	var TAG_LIMIT = 11;
 	
 	var PostIndex = React.createClass({
 	  displayName: 'PostIndex',
@@ -15981,22 +15990,30 @@
 	    return { posts: PostIndexStore.all(),
 	      context: this.props.context,
 	      activePostIndex: this.props.activePostIndex,
+	      fetching: false,
 	      filterOption: "Most Viral",
 	      sortOption: "Popularity" };
 	  },
-	  _onChange: function _onChange() {
-	    this.setState({ posts: PostIndexStore.all() });
+	  _onPostChange: function _onPostChange() {
+	    this.setState({ posts: PostIndexStore.all(), fetching: false });
+	  },
+	  _onSearchChange: function _onSearchChange() {
+	    this.setState({ tags: SearchStore.filterOptions() });
 	  },
 	  componentDidMount: function componentDidMount() {
 	    if (this.state.context === "splash") {
 	      window.addEventListener('scroll', this._onScroll);
 	    }
-	    this.postsListener = PostIndexStore.addListener(this._onChange);
-	    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0);
+	    this.postsListener = PostIndexStore.addListener(this._onPostChange);
+	    this._fetchPosts(INITIAL_REQUEST_SIZE, 0);
+	
+	    this.tagsListener = SearchStore.addListener(this._onSearchChange);
+	    SearchActions.fetchTags(TAG_LIMIT);
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
 	    window.removeEventListener('scroll', this._onScroll);
 	    this.postsListener.remove();
+	    this.tagsListener.remove();
 	  },
 	  componentWillReceiveProps: function componentWillReceiveProps(newProps) {
 	    if (this.state.context !== "post" && newProps.context === "post") {
@@ -16007,16 +16024,19 @@
 	    }
 	    this.setState({ context: newProps.context, activePostIndex: newProps.activePostIndex });
 	  },
-	  _fetchMorePosts: function _fetchMorePosts(offset) {
+	  _fetchPosts: function _fetchPosts(limit, offset) {
 	    var options = { filterOption: this.state.filterOption,
 	      sortOption: this.state.sortOption };
-	    PostActions.fetchPosts(ADDITIONAL_REQUEST_SIZE, offset, options);
+	    PostActions.fetchPosts(limit, offset, options);
 	  },
-	  _onScroll: function _onScroll(e) {
+	  _fetchMorePosts: function _fetchMorePosts(offset) {
+	    this._fetchPosts(ADDITIONAL_REQUEST_SIZE, offset);
+	  },
+	  _onScroll: function _onScroll() {
 	    var scrollDiff = $('#post-index').height() - (window.scrollY + window.innerHeight);
 	
-	    if (PostIndexStore.hasMorePosts() && scrollDiff < 300) {
-	      // this.setState({loading: true});
+	    if (PostIndexStore.hasMorePosts() && !this.state.fetching && scrollDiff < 300) {
+	      this.setState({ fetching: true });
 	      var offset = Object.keys(this.state.posts).length;
 	      this._fetchMorePosts(offset);
 	    }
@@ -16025,23 +16045,17 @@
 	    var scrollTop = $(".post-show-right-scroll-container").scrollTop();
 	    var scrollDiff = $(".post-show-post-index-container").height() - scrollTop;
 	
-	    if (PostIndexStore.hasMorePosts() && scrollDiff < 700) {
-	      // this.setState({loading: true});
+	    if (PostIndexStore.hasMorePosts() && !this.state.fetching && scrollDiff < 700) {
+	      this.setState({ fetching: true });
 	      var offset = Object.keys(this.state.posts).length;
 	      this._fetchMorePosts(offset);
 	    }
 	  },
 	  updateFilter: function updateFilter(filterOption) {
-	    var options = { filterOption: filterOption,
-	      sortOption: this.state.sortOption };
-	    this.setState({ filterOption: filterOption });
-	    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0, options);
+	    this.setState({ filterOption: filterOption }, this._fetchPosts.bind(this, INITIAL_REQUEST_SIZE, 0));
 	  },
 	  updateSort: function updateSort(sortOption) {
-	    var options = { filterOption: this.state.filterOption,
-	      sortOption: sortOption };
-	    this.setState({ sortOption: sortOption });
-	    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0, options);
+	    this.setState({ sortOption: sortOption }, this._fetchPosts.bind(this, INITIAL_REQUEST_SIZE, 0));
 	  },
 	  render: function render() {
 	    var posts = this.state.posts;
@@ -16082,7 +16096,9 @@
 	      return React.createElement(
 	        'div',
 	        { className: 'post-index-content' },
-	        React.createElement(SentenceSorting, { filterOption: this.state.filterOption, sortOption: this.state.sortOption, updateFilter: this.updateFilter, updateSort: this.updateSort }),
+	        React.createElement(SentenceSorting, { filterOption: this.state.filterOption, sortOption: this.state.sortOption,
+	          updateFilter: this.updateFilter, updateSort: this.updateSort,
+	          filterOptions: this.state.tags, sortOptions: SearchStore.sortOptions() }),
 	        React.createElement(
 	          'div',
 	          { id: 'post-index', className: "post-index-container" },
@@ -16230,8 +16246,9 @@
 	        React.createElement(
 	          "span",
 	          null,
-	          post.points,
-	          " points"
+	          post.view_count + " view" + s(post.view_count),
+	          " · ",
+	          post.points + " point" + s(post.points)
 	        )
 	      )
 	    );
@@ -16250,19 +16267,22 @@
 	  }
 	});
 	
+	function s(count) {
+	  return count === 1 ? "" : "s";
+	}
+	
 	module.exports = PostIndexItem;
 
 /***/ },
 /* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 	
 	var Combobox = __webpack_require__(128);
-	var SearchStore = __webpack_require__(129);
 	
 	var SentenceSorting = React.createClass({
-	  displayName: 'SentenceSorting',
+	  displayName: "SentenceSorting",
 	  getInitialState: function getInitialState() {
 	    return { filter: this.props.filterOption, sort: this.props.sortOption };
 	  },
@@ -16277,20 +16297,20 @@
 	  },
 	  render: function render() {
 	    return React.createElement(
-	      'div',
-	      { className: 'sentence-sorting' },
+	      "div",
+	      { className: "sentence-sorting" },
 	      React.createElement(
-	        'span',
-	        { className: 'before' },
+	        "span",
+	        { className: "before" },
 	        this.state.filter === "Most Viral" ? "The" : "Posts categorized as"
 	      ),
-	      React.createElement(Combobox, { className: 'combobox filter', update: this.updateFilter, selected: this.state.filter, options: ["Most Viral", "Funny", "Dogs"] }),
+	      React.createElement(Combobox, { className: "combobox filter", update: this.updateFilter, selected: this.state.filter, options: this.props.filterOptions }),
 	      React.createElement(
-	        'span',
-	        { className: 'between' },
+	        "span",
+	        { className: "between" },
 	        this.state.filter === "Most Viral" ? "images on the internet, sorted by" : " sorted by"
 	      ),
-	      React.createElement(Combobox, { className: 'combobox sort', update: this.updateSort, selected: this.state.sort, options: ["Popularity", "Most Recent", "Highest Scoring"] })
+	      React.createElement(Combobox, { className: "combobox sort", update: this.updateSort, selected: this.state.sort, options: this.props.sortOptions })
 	    );
 	  }
 	});
@@ -16379,22 +16399,28 @@
 	var SearchConstants = __webpack_require__(130);
 	var dispatcher = __webpack_require__(91);
 	
-	var _tags = [];
+	var _tags = [SearchConstants.MOST_VIRAL];
 	var SearchStore = new Store(dispatcher);
 	
-	SearchStore.tags = function () {
+	SearchStore.filterOptions = function () {
 	  return _tags;
+	};
+	SearchStore.sortOptions = function () {
+	  return [SearchConstants.MOST_POPULAR, SearchConstants.MOST_RECENT, SearchConstants.HIGHEST_SCORING];
 	};
 	
 	function resetAllTags(tags) {
-	  _tags = tags;
+	  _tags = [SearchConstants.MOST_VIRAL];
+	  Object.keys(tags).forEach(function (key) {
+	    _tags.push(tags[key]["name"]);
+	  });
 	  SearchStore.__emitChange();
 	};
 	
 	SearchStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case SearchConstants.TAGS_RECEIVED:
-	      SearchStore.resetAllTags(payload.tags);
+	      resetAllTags(payload.tags);
 	      break;
 	  }
 	};
@@ -16408,7 +16434,11 @@
 	"use strict";
 	
 	var SearchConstants = {
-	  TAGS_RECEIVED: "TAGS_RECEIVED"
+	  TAGS_RECEIVED: "TAGS_RECEIVED",
+	  MOST_VIRAL: "Most Viral",
+	  MOST_POPULAR: "Popularity",
+	  MOST_RECENT: "Most Recent",
+	  HIGHEST_SCORING: "Highest Scoring"
 	};
 	
 	module.exports = SearchConstants;
@@ -16699,7 +16729,6 @@
 	        'loading...'
 	      );
 	    }
-	
 	    if (this.state.headerFixed === true) {
 	      var headerHeight = $(".post-header-fixed").eq(0).height() || $(".post-header").eq(0).height();
 	      style = { paddingTop: headerHeight + 20 + 'px' };
@@ -16766,8 +16795,9 @@
 	            React.createElement(
 	              'span',
 	              { className: 'points' },
-	              post.points,
-	              ' points'
+	              post.points + " point" + s(post.points),
+	              ' · ',
+	              post.view_count + " view" + s(post.view_count)
 	            )
 	          )
 	        )
@@ -16781,6 +16811,10 @@
 	    );
 	  }
 	});
+	
+	function s(count) {
+	  return count === 1 ? "" : "s";
+	}
 	
 	module.exports = PostDetail;
 
@@ -19688,6 +19722,53 @@
 	});
 	
 	module.exports = UserShow;
+
+/***/ },
+/* 151 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var SearchApiUtil = __webpack_require__(152);
+	var SearchConstants = __webpack_require__(130);
+	var dispatcher = __webpack_require__(91);
+	
+	var SearchActions = {
+	  fetchTags: function fetchTags() {
+	    var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
+	
+	    SearchApiUtil.fetchTags(this.receiveTags, limit);
+	  },
+	
+	  receiveTags: function receiveTags(tags) {
+	    dispatcher.dispatch({
+	      actionType: SearchConstants.TAGS_RECEIVED,
+	      tags: tags
+	    });
+	  }
+	};
+	
+	module.exports = SearchActions;
+
+/***/ },
+/* 152 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var SearchApiUtil = {
+	  fetchTags: function fetchTags(callback, limit) {
+	    $.ajax({
+	      url: 'api/tags',
+	      data: { limit: limit },
+	      success: function success(tags) {
+	        callback(tags);
+	      }
+	    });
+	  }
+	};
+	
+	module.exports = SearchApiUtil;
 
 /***/ }
 /******/ ]);

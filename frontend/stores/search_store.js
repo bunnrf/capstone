@@ -2,20 +2,28 @@ const Store = require('flux/utils').Store;
 const SearchConstants = require('../constants/search_constants');
 const dispatcher = require('../dispatcher/dispatcher');
 
-let _tags = [];
+let _tags = [SearchConstants.MOST_VIRAL];
 const SearchStore = new Store(dispatcher);
 
-SearchStore.tags = () => _tags;
+SearchStore.filterOptions = () => _tags;
+SearchStore.sortOptions = function() {
+  return [SearchConstants.MOST_POPULAR,
+          SearchConstants.MOST_RECENT,
+          SearchConstants.HIGHEST_SCORING]
+}
 
 function resetAllTags (tags) {
-  _tags = tags;
+  _tags = [SearchConstants.MOST_VIRAL];
+  Object.keys(tags).forEach((key) => {
+    _tags.push(tags[key]["name"]);
+  });
   SearchStore.__emitChange();
 };
 
 SearchStore.__onDispatch = function(payload) {
   switch (payload.actionType) {
     case SearchConstants.TAGS_RECEIVED:
-      SearchStore.resetAllTags(payload.tags);
+      resetAllTags(payload.tags);
       break;
   }
 };

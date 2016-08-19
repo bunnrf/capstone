@@ -1,3 +1,5 @@
+const SearchConstants = require('../constants/search_constants');
+
 const PostApiUtil = {
   fetchAllPosts: function(callback) {
     $.ajax({
@@ -19,16 +21,9 @@ const PostApiUtil = {
   },
 
   fetchMostPopularPosts: function(callback, limit, offset, tag) {
-    let data;
-    if (tag === "Most Viral") {
-      data = { limit: limit, offset: offset };
-    } else {
-      data = { limit: limit, offset: offset, tag: tag };
-    }
-
     $.ajax({
       url: "api/posts/most_popular",
-      data: data,
+      data: buildData(limit, offset, tag),
       success: function(posts) {
         callback(posts);
       }
@@ -36,16 +31,19 @@ const PostApiUtil = {
   },
 
   fetchMostRecentPosts: function(callback, limit, offset, tag) {
-    let data;
-    if (tag === "Most Viral") {
-      data = { limit: limit, offset: offset };
-    } else {
-      data = { limit: limit, offset: offset, tag: tag };
-    }
-
     $.ajax({
       url: "api/posts/most_recent",
-      data: data,
+      data: buildData(limit, offset, tag),
+      success: function(posts) {
+        callback(posts);
+      }
+    });
+  },
+
+  fetchHighestScoringPosts: function(callback, limit, offset, tag) {
+    $.ajax({
+      url: "api/posts/highest_scoring",
+      data: buildData(limit, offset, tag),
       success: function(posts) {
         callback(posts);
       }
@@ -83,5 +81,11 @@ const PostApiUtil = {
     });
   }
 };
+
+function buildData(limit, offset, tag) {
+  return (tag === SearchConstants.MOST_VIRAL ?
+    { limit: limit, offset: offset } :
+    { limit: limit, offset: offset, tag: tag })
+}
 
 module.exports = PostApiUtil;

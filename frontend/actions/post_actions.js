@@ -1,4 +1,5 @@
 const PostConstants = require('../constants/post_constants');
+const SearchConstants = require('../constants/search_constants');
 const PostApiUtil = require('../util/post_api_util');
 const dispatcher = require('../dispatcher/dispatcher');
 
@@ -12,12 +13,15 @@ const PostActions = {
 
     if (options) {
       switch (options.sortOption) {
-        case "Most Recent":
-        PostApiUtil.fetchMostRecentPosts(callback, limit, offset, options.filterOption);
-        break;
-        case "Popularity":
+        case SearchConstants.MOST_RECENT:
+          PostApiUtil.fetchMostRecentPosts(callback, limit, offset, options.filterOption);
+          break;
+        case SearchConstants.HIGHEST_SCORING:
+          PostApiUtil.fetchHighestScoringPosts(callback, limit, offset, options.filterOption);
+          break;
+        case SearchConstants.MOST_POPULAR:
         default:
-        PostApiUtil.fetchMostPopularPosts(callback, limit, offset, options.filterOption);
+          PostApiUtil.fetchMostPopularPosts(callback, limit, offset, options.filterOption);
       }
     } else {
       PostApiUtil.fetchPosts(callback, limit, offset);

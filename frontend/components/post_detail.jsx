@@ -150,7 +150,6 @@ const PostDetail = React.createClass({
         loading...
       </div>
     }
-
     if (this.state.headerFixed === true) {
       let headerHeight = $(".post-header-fixed").eq(0).height() || $(".post-header").eq(0).height();
       style = { paddingTop: headerHeight + 20 + 'px' };
@@ -177,7 +176,7 @@ const PostDetail = React.createClass({
           <div className="post-footer">
             <div className="upvote-button" onClick={ this.toggleUpvote }><span className={ upvoteClass } /></div>
             <div className="downvote-button" onClick={ this.toggleDownvote }><span className={ downvoteClass } /></div>
-            <div className="post-stats"><span className="points">{ post.points } points</span></div>
+            <div className="post-stats"><span className="points">{ post.points + " point" + s(post.points) } · { post.view_count + " view" + s(post.view_count) }</span></div>
           </div>
         </div>
         <div className="post-comments-container">
@@ -188,5 +187,9 @@ const PostDetail = React.createClass({
     )
   }
 });
+
+function s(count) {
+  return (count === 1 ? "" : "s");
+}
 
 module.exports = PostDetail;

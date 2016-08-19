@@ -28,12 +28,12 @@ http://www.ottobib.com - Easy bibliography maker
 https://www.p2pu.org/en/ - online peer-to-peer learning community
 http://bigthink.com/ - interesting videos and articles to make you better informed
 http://academicearth.org - another huge collection of free online courses
-http://demonstrations.wolfram.com/topics.html - WolframAlpha also offers visual demonstrations of a bunch of different concepts.", author_id: 1 },
+http://demonstrations.wolfram.com/topics.html - WolframAlpha also offers visual demonstrations of a bunch of different concepts.", author_id: 1, view_count: 61_501 },
 
-                      { title: "To brighten your day", author_id: 1 },
-                      { title: "10 Foods you should learn to cook in your 20's", author_id: 2 },
-                      { title: "Wallpaper Dump", author_id: 3 },
-                      { title: "just dogs being dogs", author_id: 3 },
+                      { title: "To brighten your day", author_id: 1, view_count: 132_241 },
+                      { title: "10 Foods you should learn to cook in your 20's", author_id: 2, view_count: 57_874 },
+                      { title: "Wallpaper Dump", author_id: 3, view_count: 88_989 },
+                      { title: "just dogs being dogs", author_id: 3, view_count: 88_043 },
                       { title: "Improve your excel skills", description: "Excel is fun: https://www.youtube.com/user/ExcelIsFun#p/p
 Contextures: http://www.contextures.com/
 The spreadsheet page: http://spreadsheetpage.com/
@@ -61,16 +61,16 @@ Excel Listserve: http://peach.ease.lsoft.com/archives/excel-g.html
 Allexperts: http://www.allexperts.com/browse.cgi?catLvl=3&catID=1059
 Google groups: https://groups.google.com/forum/?fromgroups#!forum/microsoft.public.excel
 PC world: http://www.pcworld.com/article/229504/five_excel_nightmares_and_how_to_fix_them.html
-PC world: http://www.pcworld.com/article/220782/use_microsoft_excel_for_everything.html", author_id: 1 },
-                      { title: "My roommate and I built an infinity table.", author_id: 2 },
-                      { title: "Some Strange Fruit from Around the World", description: "Source: http://wunderpix.com/strangest-fruits-in-the-world/", author_id: 1 },
-                      { title: "We got new neighbors. They have dogs.", author_id: 2 },
-                      { title: "Don't drink and drive", author_id: 3 },
-                      { title: "Me and My Hero", description: "It was SUCH an honor to speak at TED earlier this year. But the most amazing moment for me may have been this, which happened right after my talk. I know. I KNOW.", author_id: 4 },
-                      { title: "This website lets you track pokemon from your browser in realtime", description: "https://pokevision.com/", author_id: 3 },
-                      { title: "so my friend's cat does this...", author_id: 3 },
-                      { title: "Bill Nye Reaction Gifs", author_id: 3 },
-                      { title: "Great gifts for science geeks.", author_id: 3 }])
+PC world: http://www.pcworld.com/article/220782/use_microsoft_excel_for_everything.html", author_id: 1, view_count: 49_094 },
+                      { title: "My roommate and I built an infinity table.", author_id: 2, view_count: 33_333 },
+                      { title: "Some Strange Fruit from Around the World", description: "Source: http://wunderpix.com/strangest-fruits-in-the-world/", author_id: 1, view_count: 33_331 },
+                      { title: "We got new neighbors. They have dogs.", author_id: 2, view_count: 29_659 },
+                      { title: "Don't drink and drive", author_id: 3, view_count: 28_143 },
+                      { title: "Me and My Hero", description: "It was SUCH an honor to speak at TED earlier this year. But the most amazing moment for me may have been this, which happened right after my talk. I know. I KNOW.", author_id: 4, view_count: 50_259 },
+                      { title: "This website lets you track pokemon from your browser in realtime", description: "https://pokevision.com/", author_id: 3, view_count: 12_855 },
+                      { title: "so my friend's cat does this...", author_id: 3, view_count: 36_603 },
+                      { title: "Bill Nye Reaction Gifs", author_id: 3, view_count: 36_108 },
+                      { title: "Great gifts for science geeks.", author_id: 3, view_count: 11_992 }])
 
 images = Image.create([
 
@@ -319,12 +319,14 @@ http://www.kleinbottle.com/baby_klein.htm", image_url: "http://i.imgur.com/WiQSp
 p "fixed posts created", Time.now - t
 t = Time.now
 
-RANDOM_USER_COUNT = 200
+RANDOM_USER_COUNT = 100
 RANDOM_COMMENT_COUNT = 500
 RANDOM_VOTES_COUNT = 2000
-RANDOM_POSTS_COUNT = 1000
+RANDOM_POSTS_COUNT = 750
 TOTAL_USER_COUNT = RANDOM_USER_COUNT + User.count
 FIXED_POSTS_COUNT = Post.count
+TAG_NAMES = ["Funny", "Science and Tech", "Gaming", "Creativity", "Dogs", "Cats", "Awesome", "Storytime", "Educational", "Food", "Movies and TV"]
+RANDOM_TAGS_COUNT = 250
 
 def create_random_comment
   { body: Faker::StarWars.quote.html_safe.truncate(126), commenter_id: rand(TOTAL_USER_COUNT) + 1  }
@@ -399,14 +401,53 @@ p "random votes created", Time.now - t
 t = Time.now
 
 random_image_urls = File.readlines(File.dirname(__FILE__) + "/urls.txt").map(&:chomp).push("http://i.imgur.com/h9M99vS.jpg")
-
-Post.create(Array.new(RANDOM_POSTS_COUNT) { { title:Faker::Book.title.html_safe.truncate(126), author_id: rand(TOTAL_USER_COUNT) + 1, images_attributes: [ { description: (rand(10) > 7 ? Faker::Hacker.say_something_smart.html_safe : nil), image_url: random_image_urls.sample, ordinal: 0 } ] } } )
+Post.create(Array.new(RANDOM_POSTS_COUNT) { { title:Faker::Book.title.html_safe.truncate(126), author_id: rand(TOTAL_USER_COUNT) + 1, images_attributes: [ { description: (rand(10) > 7 ? Faker::Hacker.say_something_smart.html_safe : nil), image_url: random_image_urls.sample, ordinal: 0 } ], view_count: rand(10_000) } } )
 p "random posts created", Time.now - t
 t = Time.now
 
 total_posts_count = Post.count
 Comment.create(Array.new(RANDOM_COMMENT_COUNT) { create_comment(rand(total_posts_count) + 1) } )
 p "random comments created", Time.now - t
+t = Time.now
+
+Tag.create(TAG_NAMES.map { |name| { name: name } } )
+Tagging.create([ { tag_id: 1, post_id: 2 },
+             { tag_id: 1, post_id: 5 },
+             { tag_id: 1, post_id: 9 },
+             { tag_id: 1, post_id: 10 },
+             { tag_id: 1, post_id: 13 },
+             { tag_id: 1, post_id: 14 },
+             { tag_id: 2, post_id: 7 },
+             { tag_id: 2, post_id: 12 },
+             { tag_id: 2, post_id: 15 },
+             { tag_id: 3, post_id: 12 },
+             { tag_id: 4, post_id: 7 },
+             { tag_id: 4, post_id: 11 },
+             { tag_id: 5, post_id: 2 },
+             { tag_id: 5, post_id: 5 },
+             { tag_id: 5, post_id: 9 },
+             { tag_id: 6, post_id: 13 },
+             { tag_id: 7, post_id: 4 },
+             { tag_id: 7, post_id: 7 },
+             { tag_id: 7, post_id: 8 },
+             { tag_id: 7, post_id: 10 },
+             { tag_id: 7, post_id: 11 },
+             { tag_id: 7, post_id: 15 },
+             { tag_id: 8, post_id: 7 },
+             { tag_id: 8, post_id: 11 },
+             { tag_id: 9, post_id: 1 },
+             { tag_id: 9, post_id: 3 },
+             { tag_id: 9, post_id: 6 },
+             { tag_id: 9, post_id: 7 },
+             { tag_id: 9, post_id: 8 },
+             { tag_id: 9, post_id: 15 },
+             { tag_id: 10, post_id: 3 },
+             { tag_id: 10, post_id: 8 },
+             { tag_id: 11, post_id: 11 },
+             { tag_id: 11, post_id: 14 } ])
+Tagging.create(Array.new(RANDOM_TAGS_COUNT) { { tag_id: rand(11) + 1, post_id: rand(total_posts_count) + FIXED_POSTS_COUNT + 1 } })
+Tagging.create(Array.new(RANDOM_TAGS_COUNT) { { tag_id: 1, post_id: rand(total_posts_count) + FIXED_POSTS_COUNT + 1 } })
+p "taggings created", Time.now - t
 t = Time.now
 
 # heroku db row limit is 10000

@@ -1,4 +1,4 @@
-json.extract! post, :id, :title, :description, :images, :author
+json.extract! post, :id, :title, :description, :images, :author, :view_count
 json.set! :points, post["vote_points"]
 
 comments_by_parent = Comment.from_post_by_parent(post.id)

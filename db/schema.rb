@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160711173416) do
+ActiveRecord::Schema.define(version: 20160819175608) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -35,20 +35,34 @@ ActiveRecord::Schema.define(version: 20160711173416) do
     t.integer  "post_id",     null: false
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
-    t.integer  "ordinal"
+    t.integer  "ordinal",     null: false
   end
 
   add_index "images", ["post_id"], name: "index_images_on_post_id", using: :btree
 
   create_table "posts", force: :cascade do |t|
-    t.string   "title",       null: false
+    t.string   "title",                   null: false
     t.text     "description"
-    t.integer  "author_id",   null: false
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.integer  "author_id",               null: false
+    t.datetime "created_at",              null: false
+    t.datetime "updated_at",              null: false
+    t.integer  "view_count",  default: 0
   end
 
   add_index "posts", ["author_id"], name: "index_posts_on_author_id", using: :btree
+  add_index "posts", ["view_count"], name: "index_posts_on_view_count", using: :btree
+
+  create_table "taggings", force: :cascade do |t|
+    t.integer "tag_id",  null: false
+    t.integer "post_id", null: false
+  end
+
+  add_index "taggings", ["post_id"], name: "index_taggings_on_post_id", using: :btree
+  add_index "taggings", ["tag_id"], name: "index_taggings_on_tag_id", using: :btree
+
+  create_table "tags", force: :cascade do |t|
+    t.string "name", null: false
+  end
 
   create_table "users", force: :cascade do |t|
     t.string   "username",        null: false
