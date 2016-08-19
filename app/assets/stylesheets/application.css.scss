@@ -154,11 +154,12 @@ button:hover, [type="submit"]:hover, [type="button"]:hover, [type="demo-submit"]
     display: flex;
     flex-direction: column;
     padding-top: 5px;
+    outline: 0px solid transparent;
     z-index: 10;
     div {
       width: 18px;
       height: 2px;
-      background: #fff;
+      background: #ffffff;
       opacity: .9;
       margin-bottom: 2px;
     }
@@ -506,6 +507,63 @@ input:focus {
   margin-right: auto;
   font-size: 22px;
   height: 75px;
+  width: 100%;
+  line-height: 33px;
+  text-align: center;
+  vertical-align: baseline;
+}
+
+.before, .between {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+}
+
+.combobox {
+  cursor: pointer;
+  display: inline-block;
+  padding: 0 5px;
+  outline: 0px solid transparent;
+  position: relative;
+}
+
+.combobox .selection {
+  border-bottom: 3px solid #39C442;
+}
+
+.combobox .selection:hover {
+  color: #39C442;
+}
+
+.combobox .menu {
+  color: #565656;
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  background: #efefef;
+  border-radius: 5px;
+  overflow: hidden;
+  text-align: left;
+  white-space: nowrap;
+  z-index: 200;
+}
+
+.combobox .selected-item {
+  color: #39C442;
+  border-bottom: 2px solid #cccccc;
+}
+
+.combobox .item {
+  padding: 4px;
+  font-size: .8em;
+}
+
+.combobox .item:hover {
+  color: black;
+  background: #ababab;
 }
 
 .post-index-container {

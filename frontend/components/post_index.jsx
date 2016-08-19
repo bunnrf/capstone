@@ -8,7 +8,11 @@ const ADDITIONAL_REQUEST_SIZE = 20;
 
 const PostIndex = React.createClass({
   getInitialState() {
-    return { posts: PostIndexStore.all(), context: this.props.context, activePostIndex: this.props.activePostIndex }
+    return { posts: PostIndexStore.all(),
+             context: this.props.context,
+             activePostIndex: this.props.activePostIndex,
+             filterOption: "Most Viral",
+             sortOption: "Popularity" }
   },
 
   _onChange() {
@@ -39,7 +43,9 @@ const PostIndex = React.createClass({
   },
 
   _fetchMorePosts(offset) {
-    PostActions.fetchPosts(ADDITIONAL_REQUEST_SIZE, offset);
+    const options = { filterOption: this.state.filterOption,
+                      sortOption: this.state.sortOption }
+    PostActions.fetchPosts(ADDITIONAL_REQUEST_SIZE, offset, options);
   },
 
   _onScroll(e) {
@@ -61,6 +67,20 @@ const PostIndex = React.createClass({
       const offset = Object.keys(this.state.posts).length;
       this._fetchMorePosts(offset);
     }
+  },
+
+  updateFilter(filterOption) {
+    const options = { filterOption: filterOption,
+                      sortOption: this.state.sortOption }
+    this.setState( { filterOption: filterOption } );
+    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0, options);
+  },
+
+  updateSort(sortOption) {
+    const options = { filterOption: this.state.filterOption,
+                      sortOption: sortOption }
+    this.setState( { sortOption: sortOption } );
+    PostActions.fetchPosts(INITIAL_REQUEST_SIZE, 0, options);
   },
 
   render() {
@@ -87,7 +107,7 @@ const PostIndex = React.createClass({
     } else {
       return(
         <div className="post-index-content">
-          <SentenceSorting />
+          <SentenceSorting filterOption={ this.state.filterOption } sortOption={ this.state.sortOption } updateFilter={ this.updateFilter } updateSort={ this.updateSort } />
           <div id="post-index" className={"post-index-container"}>
             {keys.map((key) => {
               return <PostIndexItem key={ key } post={ posts[key] }/>;

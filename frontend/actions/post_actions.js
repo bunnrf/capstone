@@ -7,9 +7,21 @@ const PostActions = {
     PostApiUtil.fetchAllPosts(this.receiveAllPosts)
   },
 
-  fetchPosts: function(limit, offset) {
+  fetchPosts: function(limit, offset, options) {
     const callback = offset ? this.appendPosts : this.receiveAllPosts;
-    PostApiUtil.fetchPosts(callback, limit, offset);
+
+    if (options) {
+      switch (options.sortOption) {
+        case "Most Recent":
+        PostApiUtil.fetchMostRecentPosts(callback, limit, offset, options.filterOption);
+        break;
+        case "Popularity":
+        default:
+        PostApiUtil.fetchMostPopularPosts(callback, limit, offset, options.filterOption);
+      }
+    } else {
+      PostApiUtil.fetchPosts(callback, limit, offset);
+    }
   },
 
   fetchSinglePost: function(id) {

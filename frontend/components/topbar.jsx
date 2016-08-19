@@ -108,9 +108,18 @@ const Topbar = React.createClass({
 		this.setState({ images: this.state.images.concat( { title: undefined, image_url: null, description: undefined, ordinal: this.state.images.length } ) });
 	},
 
+  // unused
   toggleMenuDisplay: function() {
     $(".menu-list").css("display", this.state.menuOpen ? "none" : "flex");
     this.setState( { menuOpen: !this.state.menuOpen } );
+  },
+
+  openMenuDisplay: function() {
+    $(".menu-list").css("display", "flex");
+  },
+
+  hideMenuDisplay: function() {
+    $(".menu-list").css("display", "none");
   },
 
   customStyle: function() {
@@ -137,7 +146,7 @@ const Topbar = React.createClass({
         <div className="nav-container">
           <ul className="main-nav">
             <li className="logo-container"><a href="#/" className="logo">imagr</a></li>
-            <li className="menu-container"><a className="menu-icon" onClick={ this.toggleMenuDisplay }><div></div><div></div><div></div></a></li>
+            <li className="menu-container"><a className="menu-icon" onFocus={ this.openMenuDisplay } onBlur={ this.hideMenuDisplay } tabIndex="0"><div></div><div></div><div></div></a></li>
             <li className="upload-container"><div className="upload-button" onClick={ this.openModal }>upload images</div></li>
             <div className="menu-list">
               <div><a href="#/">Home</a></div>

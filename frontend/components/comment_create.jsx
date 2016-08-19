@@ -35,7 +35,7 @@ const CommentCreate = React.createClass({
     return (e) => this.setState( { body: e.target.value } );
   },
 
-  render: function() {
+  render() {
     if (this.state.focused) {
       return (
         <div className="comment-create-focused">

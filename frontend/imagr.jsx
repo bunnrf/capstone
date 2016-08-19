@@ -25,7 +25,7 @@ const appRouter = (
 
 function _ensureLoggedIn(nextState, replace) {
   if (!SessionStore.isUserLoggedIn()){
-    replace('/login');
+    replace('/');
   }
 }
 

@@ -1,3 +1,4 @@
+
 @posts.each_with_index do |post, idx|
   json.set! (params[:offset].to_i + idx) do
     json.extract! post, :id, :title, :description
