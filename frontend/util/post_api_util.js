@@ -70,13 +70,13 @@ const PostApiUtil = {
     });
   },
 
-  createComment: function(comment, callback) {
+  createComment: function(comment, postId, callback) {
     $.ajax({
       url: "api/comments",
       method: "POST",
       data: { comment: comment },
       success: function(resp) {
-        callback(resp);
+        callback(resp, postId);
       }
     });
   }

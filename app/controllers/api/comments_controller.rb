@@ -6,7 +6,7 @@ class Api::CommentsController < ApplicationController
 
     if comment.save
       @comment = comment
-      render '/api/comments/comment'
+      render '/api/comments/new'
     else
       render json: comment, status: :unprocessable_entity
     end

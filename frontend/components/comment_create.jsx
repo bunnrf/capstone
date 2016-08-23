@@ -26,6 +26,9 @@ const CommentCreate = React.createClass({
       );
       PostActions.createComment(comment);
       this.setState( { body: "", focused: false } );
+      if (this.props.commentAdded) {
+        this.props.commentAdded();
+      }
     } else {
       $(".signin-link")[0].click();
     }

@@ -99,7 +99,7 @@ const PostDetail = React.createClass({
     let post = this.props.post;
     let imagesIndex = [];
     let description;
-    let commentsIndex = [];
+    let commentIndex = [];
     let style = { paddingTop: 0 };
     let authorData;
     let post_votes;
@@ -132,12 +132,12 @@ const PostDetail = React.createClass({
       </div>
     }
     if (post.comments_by_parent) {
-      commentsIndex = post.comments_by_parent[""].sort((a, b) => {
+      commentIndex = post.comments_by_parent[""].sort((a, b) => {
         return b.points - a.points;
       }).map((topLevelComment) => {
         let voteStatus = undefined;
         if (comment_votes && comment_votes[topLevelComment.id]) {
-          voteStatus = comment_votes[topLevelComment.id]["vote_type"]
+          voteStatus = comment_votes[topLevelComment.id]["vote_type"];
         }
         return <CommentDetail key={ topLevelComment.id } postId={ post.id } comment={ topLevelComment } voteStatus={ voteStatus } commentsByParent={ post.comments_by_parent } commentVotes={ comment_votes }/>
       });
@@ -182,8 +182,7 @@ const PostDetail = React.createClass({
         </div>
         <div className="post-comments-container">
           <CommentCreate postId={ post.id }/>
-          post[PostConstants.NEW_COMMENT] ? <CommentDetail postId={ post.id } comment={ post[PostConstants.NEW_COMMENT] } voteStatus={ true } commentsByParent={ post.comments_by_parent } commentVotes={ comment_votes }/>
-          { commentsIndex }
+          { commentIndex }
         </div>
       </div>
     )

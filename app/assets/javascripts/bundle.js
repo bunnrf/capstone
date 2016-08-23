@@ -15845,13 +15845,14 @@
 	  },
 	
 	  createComment: function createComment(comment) {
-	    PostApiUtil.createComment(comment, this.receiveSinglePost);
-	    // PostApiUtil.createComment(comment, this.receiveComment);
+	    // PostApiUtil.createComment(comment, this.receiveSinglePost);
+	    PostApiUtil.createComment(comment, comment.post_id, this.receiveComment);
 	  },
-	  receiveComment: function receiveComment(comment) {
+	  receiveComment: function receiveComment(comment, postId) {
 	    dispatcher.dispatch({
 	      actionType: PostConstants.COMMENT_RECEIVED,
-	      comment: comment
+	      comment: comment,
+	      postId: postId
 	    });
 	  }
 	};
@@ -15869,7 +15870,7 @@
 	  POST_RECEIVED: "POST_RECEIVED",
 	  APPEND_POSTS: "APPEND_POSTS",
 	  COMMENT_RECEIVED: "COMMENT_RECEIVED",
-	  NEW_COMMENT: "NEW_COMMENT"
+	  COMMENTS_BY_PARENT: "comments_by_parent"
 	};
 	
 	module.exports = PostConstants;
@@ -15968,13 +15969,13 @@
 	    });
 	  },
 	
-	  createComment: function createComment(comment, callback) {
+	  createComment: function createComment(comment, postId, callback) {
 	    $.ajax({
 	      url: "api/comments",
 	      method: "POST",
 	      data: { comment: comment },
 	      success: function success(resp) {
-	        callback(resp);
+	        callback(resp, postId);
 	      }
 	    });
 	  }
@@ -16513,8 +16514,14 @@
 	  PostDetailStore.__emitChange();
 	};
 	
-	function addNewComment(comment) {
-	  _posts[comment.post_id][PostConstants.NEW_COMMENT] = comment;
+	function addNewComment(comment, postId) {
+	  comment["points"] = 999999;
+	  var parentArray = _posts[postId][PostConstants.COMMENTS_BY_PARENT][comment.parent_comment_id || ""];
+	  if (parentArray) {
+	    parentArray.push(comment);
+	  } else {
+	    _posts[postId][PostConstants.COMMENTS_BY_PARENT][comment.parent_comment_id] = [comment];
+	  }
 	  PostDetailStore.__emitChange();
 	};
 	
@@ -16530,7 +16537,7 @@
 	      resetSinglePost(payload.post);
 	      break;
 	    case PostConstants.COMMENT_RECEIVED:
-	      addNewComment(payload.comment);
+	      addNewComment(payload.comment, payload.postId);
 	      break;
 	  }
 	};
@@ -16703,7 +16710,7 @@
 	    var post = this.props.post;
 	    var imagesIndex = [];
 	    var description = void 0;
-	    var commentsIndex = [];
+	    var commentIndex = [];
 	    var style = { paddingTop: 0 };
 	    var authorData = void 0;
 	    var post_votes = void 0;
@@ -16742,7 +16749,7 @@
 	      );
 	    }
 	    if (post.comments_by_parent) {
-	      commentsIndex = post.comments_by_parent[""].sort(function (a, b) {
+	      commentIndex = post.comments_by_parent[""].sort(function (a, b) {
 	        return b.points - a.points;
 	      }).map(function (topLevelComment) {
 	        var voteStatus = undefined;
@@ -16858,9 +16865,7 @@
 	        'div',
 	        { className: 'post-comments-container' },
 	        React.createElement(CommentCreate, { postId: post.id }),
-	        'post[PostConstants.NEW_COMMENT] ? ',
-	        React.createElement(CommentDetail, { postId: post.id, comment: post[PostConstants.NEW_COMMENT], voteStatus: true, commentsByParent: post.comments_by_parent, commentVotes: comment_votes }),
-	        commentsIndex
+	        commentIndex
 	      )
 	    );
 	  }
@@ -19392,6 +19397,7 @@
 	var SessionStore = __webpack_require__(90);
 	var TimeUtil = __webpack_require__(149);
 	var VoteActions = __webpack_require__(150);
+	var CommentIndex = __webpack_require__(153);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
@@ -19442,17 +19448,23 @@
 	  toggleReply: function toggleReply() {
 	    this.setState({ displayReply: !this.state.displayReply, displayChildren: this.state.displayChildren && !this.state.displayReply });
 	  },
+	  commentAdded: function commentAdded() {
+	    this.setState({ displayReply: false, displayChildren: true });
+	  },
 	  toggleChildren: function toggleChildren(e) {
 	    if (e.target.id !== "reply") {
 	      this.setState({ displayChildren: !this.state.displayChildren });
 	    }
 	  },
 	  render: function render() {
+	    var _this = this;
+	
 	    var comment = this.props.comment;
-	    var comment_votes = this.props.commentVotes;
+	    var commentVotes = this.props.commentVotes;
 	    var upvoteClass = "upvote glyphicon glyphicon-arrow-up";
 	    var downvoteClass = "downvote glyphicon glyphicon-arrow-down";
-	    var pointsText = comment.points + (comment.points === 1 ? " point" : " points");
+	    var pointsText = void 0;
+	    var voteStatus = void 0;
 	
 	    var children = void 0;
 	    var commentsByParent = this.props.commentsByParent;
@@ -19471,11 +19483,11 @@
 	        children = commentsByParent[comment.id].sort(function (a, b) {
 	          return b.points - a.points;
 	        }).map(function (childComment) {
-	          var voteStatus = undefined;
-	          if (comment_votes && comment_votes[childComment.id]) {
-	            voteStatus = comment_votes[childComment.id]["vote_type"];
+	          voteStatus = undefined;
+	          if (commentVotes && commentVotes[childComment.id]) {
+	            voteStatus = commentVotes[childComment.id]["vote_type"];
 	          }
-	          return React.createElement(CommentDetail, { key: childComment.id, comment: childComment, voteStatus: voteStatus, commentsByParent: commentsByParent, commentVotes: comment_votes });
+	          return React.createElement(CommentDetail, { key: childComment.id, comment: childComment, postId: _this.props.postId, voteStatus: voteStatus, commentsByParent: commentsByParent, commentVotes: commentVotes });
 	        });
 	      } else {
 	        expandOption = React.createElement(
@@ -19490,7 +19502,7 @@
 	      commentCreate = React.createElement(
 	        'div',
 	        { className: 'comment-comment-create' },
-	        React.createElement(CommentCreate, { postId: this.props.postId, parentCommentId: comment.id })
+	        React.createElement(CommentCreate, { postId: this.props.postId, parentCommentId: comment.id, commentAdded: this.commentAdded })
 	      );
 	    }
 	
@@ -19498,6 +19510,13 @@
 	      upvoteClass = "upvote upvoted glyphicon glyphicon-arrow-up";
 	    } else if (this.state.voteStatus === "downvote") {
 	      downvoteClass = "downvote downvoted glyphicon glyphicon-arrow-down";
+	    }
+	
+	    // so new comments appear on top
+	    if (comment.points === 999999) {
+	      pointsText = "0 points";
+	    } else {
+	      pointsText = comment.points + (comment.points === 1 ? " point" : " points");
 	    }
 	
 	    return React.createElement(
@@ -19538,7 +19557,7 @@
 	              ' ',
 	              pointsText,
 	              ' : ',
-	              TimeUtil.timeSince(comment.time_since),
+	              comment.time_since ? TimeUtil.timeSince(comment.time_since) : "just now",
 	              repliesText,
 	              ' ',
 	              React.createElement(
@@ -19555,10 +19574,10 @@
 	          )
 	        )
 	      ),
-	      commentCreate,
 	      React.createElement(
 	        'div',
 	        { className: 'comment-children' },
+	        commentCreate,
 	        children
 	      )
 	    );
@@ -19596,6 +19615,9 @@
 	      var comment = Object.assign({}, { body: this.state.body, commenter_id: SessionStore.currentUser().id, post_id: this.props.postId, parent_comment_id: this.props.parentCommentId });
 	      PostActions.createComment(comment);
 	      this.setState({ body: "", focused: false });
+	      if (this.props.commentAdded) {
+	        this.props.commentAdded();
+	      }
 	    } else {
 	      $(".signin-link")[0].click();
 	    }
@@ -19776,6 +19798,43 @@
 	});
 	
 	module.exports = UserShow;
+
+/***/ },
+/* 153 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var React = __webpack_require__(4);
+	var CommentDetail = __webpack_require__(147);
+	
+	var CommentIndex = React.createClass({
+	  displayName: 'CommentIndex',
+	  render: function render() {
+	    var _this = this;
+	
+	    var commentVotes = currentUser["comment_votes"];
+	    var voteStatus = void 0;
+	
+	    var comments = this.props.commentsByParent[this.props.parentId].sort(function (a, b) {
+	      return b.points - a.points;
+	    }).map(function (childComment) {
+	      voteStatus = undefined;
+	      if (commentVotes && commentVotes[childComment.id]) {
+	        voteStatus = commentVotes[childComment.id]["vote_type"];
+	      }
+	      return React.createElement(CommentDetail, { key: childComment.id, comment: childComment, postId: _this.props.postId, voteStatus: voteStatus, commentsByParent: _this.props.commentsByParent, commentVotes: commentVotes });
+	    });
+	    console.log(comments);
+	    return React.createElement(
+	      'div',
+	      { className: 'comment_index' },
+	      comments
+	    );
+	  }
+	});
+	
+	module.exports = CommentIndex;
 
 /***/ }
 /******/ ]);

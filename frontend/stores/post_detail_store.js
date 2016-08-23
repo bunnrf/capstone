@@ -16,8 +16,14 @@ function resetSinglePost(post) {
   PostDetailStore.__emitChange();
 };
 
-function addNewComment(comment) {
-  _posts[comment.post_id][PostConstants.NEW_COMMENT] = comment;
+function addNewComment(comment, postId) {
+  comment["points"] = 999999;
+  const parentArray = _posts[postId][PostConstants.COMMENTS_BY_PARENT][comment.parent_comment_id || ""];
+  if (parentArray) {
+    parentArray.push(comment);
+  } else {
+    _posts[postId][PostConstants.COMMENTS_BY_PARENT][comment.parent_comment_id] = [comment];
+  }
   PostDetailStore.__emitChange();
 };
 
@@ -33,7 +39,7 @@ PostDetailStore.__onDispatch = function(payload) {
       resetSinglePost(payload.post);
       break;
     case PostConstants.COMMENT_RECEIVED:
-      addNewComment(payload.comment);
+      addNewComment(payload.comment, payload.postId);
       break;
   }
 }
