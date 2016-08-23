@@ -451,7 +451,7 @@ p "taggings created", Time.now - t
 t = Time.now
 
 # heroku db row limit is 10000
-row_count = User.count + Post.count + Image.count + Comment.count + Vote.count
+row_count = User.count + Post.count + Image.count + Comment.count + Vote.count + Tag.count + Tagging.count
 puts "Total row count: #{row_count}, creating #{9900 - row_count} votes..."
 
 comments_count = Comment.count

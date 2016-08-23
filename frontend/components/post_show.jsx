@@ -26,14 +26,9 @@ const PostShow = React.createClass({
 
   componentDidMount() {
     PostActions.fetchSinglePost(this.props.params.postId);
-    this.PostIndexListener = PostIndexStore.addListener(this._onPostsChange);
     this.PostDetailListener = PostDetailStore.addListener(this._onPostChange);
     window.addEventListener("keydown", this.handleArrows);
     PostIndexStore.updateActiveIndex(PostIndexStore.indexOf(this.props.params.postId));
-  },
-
-  _onPostsChange() {
-
   },
 
   _onPostChange() {
@@ -47,7 +42,6 @@ const PostShow = React.createClass({
   },
 
   componentWillUnmount() {
-    this.PostIndexListener.remove();
     this.PostDetailListener.remove();
     window.removeEventListener("keydown", this.handleArrows);
   },

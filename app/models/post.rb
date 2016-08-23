@@ -30,6 +30,10 @@ class Post < ActiveRecord::Base
     index.limit(limit).offset(offset).order("vote_points DESC")
   end
 
+  def self.match_title(string)
+    match(:title, string)
+  end
+
   def self.show(post_id)
     select("posts.*").where(posts: { id: post_id } )
     .joins(:images).joins(:author).with_points
@@ -48,6 +52,10 @@ class Post < ActiveRecord::Base
   def self.with_points
     select("COUNT(CASE WHEN votes.vote_type = 'upvote' THEN votes.* END) - COUNT(CASE WHEN votes.vote_type = 'downvote' THEN votes.* END) AS vote_points")
     .joins("LEFT JOIN votes ON posts.id = votes.votable_id AND votes.votable_type = 'Post'")
+  end
+
+  def self.match(col, string)
+    where(Post.arel_table[col].matches("%#{string}%"))
   end
 
   def thumb

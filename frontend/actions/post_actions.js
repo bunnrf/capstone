@@ -59,6 +59,14 @@ const PostActions = {
 
   createComment(comment) {
     PostApiUtil.createComment(comment, this.receiveSinglePost);
+    // PostApiUtil.createComment(comment, this.receiveComment);
+  },
+
+  receiveComment(comment) {
+    dispatcher.dispatch({
+      actionType: PostConstants.COMMENT_RECEIVED,
+      comment: comment
+    })
   }
 }
 

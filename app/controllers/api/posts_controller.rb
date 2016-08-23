@@ -38,25 +38,9 @@ class Api::PostsController < ApplicationController
     @post = Post.show(params[:id])[0]
   end
 
-  def new
-
-  end
-
   def create
     @post = Post.create!(post_params)
     render :show
-  end
-
-  def edit
-
-  end
-
-  def update
-
-  end
-
-  def destroy
-
   end
 
   private

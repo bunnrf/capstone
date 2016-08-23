@@ -4,7 +4,8 @@ const CommentDetail = require('./comment_detail');
 const CommentCreate = require('./comment_create');
 const PostActions = require('../actions/post_actions');
 const VoteActions = require('../actions/vote_actions');
-const SessionStore = require('../stores/session_store')
+const SessionStore = require('../stores/session_store');
+const PostConstants = require('../constants/post_constants');
 const TimeUtil = require('../util/time_util');
 
 const PostDetail = React.createClass({
@@ -118,7 +119,7 @@ const PostDetail = React.createClass({
       }
     }
 
-    if(post.images){
+    if (post.images){
       imagesIndex = post.images.sort((a, b) => {
         return a.ordinal - b.ordinal;
       }).map((image) => {
@@ -181,6 +182,7 @@ const PostDetail = React.createClass({
         </div>
         <div className="post-comments-container">
           <CommentCreate postId={ post.id }/>
+          post[PostConstants.NEW_COMMENT] ? <CommentDetail postId={ post.id } comment={ post[PostConstants.NEW_COMMENT] } voteStatus={ true } commentsByParent={ post.comments_by_parent } commentVotes={ comment_votes }/>
           { commentsIndex }
         </div>
       </div>

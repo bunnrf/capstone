@@ -54,12 +54,12 @@
 	var Modal = __webpack_require__(65);
 	
 	var App = __webpack_require__(87);
-	var PostIndexStore = __webpack_require__(125);
-	var PostDetailStore = __webpack_require__(131);
+	var PostIndexStore = __webpack_require__(126);
+	var PostDetailStore = __webpack_require__(133);
 	var SessionStore = __webpack_require__(90);
-	var PostIndex = __webpack_require__(124);
-	var PostShow = __webpack_require__(132);
-	var UserShow = __webpack_require__(150);
+	var PostIndex = __webpack_require__(125);
+	var PostShow = __webpack_require__(134);
+	var UserShow = __webpack_require__(152);
 	var SessionActions = __webpack_require__(114);
 	
 	var appRouter = React.createElement(
@@ -8001,7 +8001,7 @@
 	'use strict';
 	
 	var Topbar = __webpack_require__(88);
-	var PostIndex = __webpack_require__(124);
+	var PostIndex = __webpack_require__(125);
 	var SessionStore = __webpack_require__(90);
 	
 	module.exports = React.createClass({
@@ -15785,8 +15785,8 @@
 	'use strict';
 	
 	var PostConstants = __webpack_require__(122);
-	var SearchConstants = __webpack_require__(130);
-	var PostApiUtil = __webpack_require__(123);
+	var SearchConstants = __webpack_require__(123);
+	var PostApiUtil = __webpack_require__(124);
 	var dispatcher = __webpack_require__(91);
 	
 	var PostActions = {
@@ -15846,6 +15846,13 @@
 	
 	  createComment: function createComment(comment) {
 	    PostApiUtil.createComment(comment, this.receiveSinglePost);
+	    // PostApiUtil.createComment(comment, this.receiveComment);
+	  },
+	  receiveComment: function receiveComment(comment) {
+	    dispatcher.dispatch({
+	      actionType: PostConstants.COMMENT_RECEIVED,
+	      comment: comment
+	    });
 	  }
 	};
 	
@@ -15860,18 +15867,36 @@
 	var PostConstants = {
 	  POSTS_RECEIVED: "POSTS_RECEIVED",
 	  POST_RECEIVED: "POST_RECEIVED",
-	  APPEND_POSTS: "APPEND_POSTS"
+	  APPEND_POSTS: "APPEND_POSTS",
+	  COMMENT_RECEIVED: "COMMENT_RECEIVED",
+	  NEW_COMMENT: "NEW_COMMENT"
 	};
 	
 	module.exports = PostConstants;
 
 /***/ },
 /* 123 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var SearchConstants = {
+	  TAGS_RECEIVED: "TAGS_RECEIVED",
+	  MOST_VIRAL: "Most Viral",
+	  MOST_POPULAR: "Popularity",
+	  MOST_RECENT: "Newest First",
+	  HIGHEST_SCORING: "Highest Scoring"
+	};
+	
+	module.exports = SearchConstants;
+
+/***/ },
+/* 124 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
-	var SearchConstants = __webpack_require__(130);
+	var SearchConstants = __webpack_require__(123);
 	
 	var PostApiUtil = {
 	  fetchAllPosts: function fetchAllPosts(callback) {
@@ -15962,17 +15987,17 @@
 	module.exports = PostApiUtil;
 
 /***/ },
-/* 124 */
+/* 125 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var PostIndexStore = __webpack_require__(125);
+	var PostIndexStore = __webpack_require__(126);
 	var PostActions = __webpack_require__(121);
-	var PostIndexItem = __webpack_require__(126);
-	var SentenceSorting = __webpack_require__(127);
-	var SearchStore = __webpack_require__(129);
-	var SearchActions = __webpack_require__(151);
+	var PostIndexItem = __webpack_require__(127);
+	var SentenceSorting = __webpack_require__(128);
+	var SearchStore = __webpack_require__(130);
+	var SearchActions = __webpack_require__(131);
 	
 	var INITIAL_REQUEST_SIZE = 40;
 	var ADDITIONAL_REQUEST_SIZE = 20;
@@ -16108,7 +16133,7 @@
 	module.exports = PostIndex;
 
 /***/ },
-/* 125 */
+/* 126 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16197,7 +16222,7 @@
 	module.exports = PostIndexStore;
 
 /***/ },
-/* 126 */
+/* 127 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -16268,12 +16293,12 @@
 	module.exports = PostIndexItem;
 
 /***/ },
-/* 127 */
+/* 128 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
-	var Combobox = __webpack_require__(128);
+	var Combobox = __webpack_require__(129);
 	
 	var SentenceSorting = React.createClass({
 	  displayName: "SentenceSorting",
@@ -16312,7 +16337,7 @@
 	module.exports = SentenceSorting;
 
 /***/ },
-/* 128 */
+/* 129 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -16380,13 +16405,13 @@
 	module.exports = Combobox;
 
 /***/ },
-/* 129 */
+/* 130 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var Store = __webpack_require__(95).Store;
-	var SearchConstants = __webpack_require__(130);
+	var SearchConstants = __webpack_require__(123);
 	var dispatcher = __webpack_require__(91);
 	
 	var _tags = [SearchConstants.MOST_VIRAL];
@@ -16418,23 +16443,54 @@
 	module.exports = SearchStore;
 
 /***/ },
-/* 130 */
-/***/ function(module, exports) {
+/* 131 */
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 	
-	var SearchConstants = {
-	  TAGS_RECEIVED: "TAGS_RECEIVED",
-	  MOST_VIRAL: "Most Viral",
-	  MOST_POPULAR: "Popularity",
-	  MOST_RECENT: "Newest First",
-	  HIGHEST_SCORING: "Highest Scoring"
+	var SearchApiUtil = __webpack_require__(132);
+	var SearchConstants = __webpack_require__(123);
+	var dispatcher = __webpack_require__(91);
+	
+	var SearchActions = {
+	  fetchTags: function fetchTags() {
+	    var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
+	
+	    SearchApiUtil.fetchTags(this.receiveTags, limit);
+	  },
+	
+	  receiveTags: function receiveTags(tags) {
+	    dispatcher.dispatch({
+	      actionType: SearchConstants.TAGS_RECEIVED,
+	      tags: tags
+	    });
+	  }
 	};
 	
-	module.exports = SearchConstants;
+	module.exports = SearchActions;
 
 /***/ },
-/* 131 */
+/* 132 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	var SearchApiUtil = {
+	  fetchTags: function fetchTags(callback, limit) {
+	    $.ajax({
+	      url: 'api/tags',
+	      data: { limit: limit },
+	      success: function success(tags) {
+	        callback(tags);
+	      }
+	    });
+	  }
+	};
+	
+	module.exports = SearchApiUtil;
+
+/***/ },
+/* 133 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16457,6 +16513,11 @@
 	  PostDetailStore.__emitChange();
 	};
 	
+	function addNewComment(comment) {
+	  _posts[comment.post_id][PostConstants.NEW_COMMENT] = comment;
+	  PostDetailStore.__emitChange();
+	};
+	
 	PostDetailStore.__onDispatch = function (payload) {
 	  switch (payload.actionType) {
 	    case PostConstants.POST_RECEIVED:
@@ -16468,22 +16529,25 @@
 	    case VoteConstants.VOTE_REMOVED:
 	      resetSinglePost(payload.post);
 	      break;
+	    case PostConstants.COMMENT_RECEIVED:
+	      addNewComment(payload.comment);
+	      break;
 	  }
 	};
 	
 	module.exports = PostDetailStore;
 
 /***/ },
-/* 132 */
+/* 134 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var PostIndexStore = __webpack_require__(125);
-	var PostDetailStore = __webpack_require__(131);
+	var PostIndexStore = __webpack_require__(126);
+	var PostDetailStore = __webpack_require__(133);
 	var PostActions = __webpack_require__(121);
-	var PostIndex = __webpack_require__(124);
-	var PostDetail = __webpack_require__(133);
+	var PostIndex = __webpack_require__(125);
+	var PostDetail = __webpack_require__(135);
 	var hashHistory = __webpack_require__(1).hashHistory;
 	
 	var PostShow = React.createClass({
@@ -16506,12 +16570,10 @@
 	  },
 	  componentDidMount: function componentDidMount() {
 	    PostActions.fetchSinglePost(this.props.params.postId);
-	    this.PostIndexListener = PostIndexStore.addListener(this._onPostsChange);
 	    this.PostDetailListener = PostDetailStore.addListener(this._onPostChange);
 	    window.addEventListener("keydown", this.handleArrows);
 	    PostIndexStore.updateActiveIndex(PostIndexStore.indexOf(this.props.params.postId));
 	  },
-	  _onPostsChange: function _onPostsChange() {},
 	  _onPostChange: function _onPostChange() {
 	    this.setState({ post: PostDetailStore.find(this.props.params.postId) });
 	  },
@@ -16521,7 +16583,6 @@
 	    PostIndexStore.updateActiveIndex(PostIndexStore.indexOf(props.params.postId));
 	  },
 	  componentWillUnmount: function componentWillUnmount() {
-	    this.PostIndexListener.remove();
 	    this.PostDetailListener.remove();
 	    window.removeEventListener("keydown", this.handleArrows);
 	  },
@@ -16545,19 +16606,20 @@
 	module.exports = PostShow;
 
 /***/ },
-/* 133 */
+/* 135 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var Linkify = __webpack_require__(134);
-	var ImageDetail = __webpack_require__(142);
-	var CommentDetail = __webpack_require__(145);
-	var CommentCreate = __webpack_require__(146);
+	var Linkify = __webpack_require__(136);
+	var ImageDetail = __webpack_require__(144);
+	var CommentDetail = __webpack_require__(147);
+	var CommentCreate = __webpack_require__(148);
 	var PostActions = __webpack_require__(121);
-	var VoteActions = __webpack_require__(148);
+	var VoteActions = __webpack_require__(150);
 	var SessionStore = __webpack_require__(90);
-	var TimeUtil = __webpack_require__(147);
+	var PostConstants = __webpack_require__(122);
+	var TimeUtil = __webpack_require__(149);
 	
 	var PostDetail = React.createClass({
 	  displayName: 'PostDetail',
@@ -16796,6 +16858,8 @@
 	        'div',
 	        { className: 'post-comments-container' },
 	        React.createElement(CommentCreate, { postId: post.id }),
+	        'post[PostConstants.NEW_COMMENT] ? ',
+	        React.createElement(CommentDetail, { postId: post.id, comment: post[PostConstants.NEW_COMMENT], voteStatus: true, commentsByParent: post.comments_by_parent, commentVotes: comment_votes }),
 	        commentsIndex
 	      )
 	    );
@@ -16809,7 +16873,7 @@
 	module.exports = PostDetail;
 
 /***/ },
-/* 134 */
+/* 136 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -16830,11 +16894,11 @@
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _linkifyIt = __webpack_require__(135);
+	var _linkifyIt = __webpack_require__(137);
 	
 	var _linkifyIt2 = _interopRequireDefault(_linkifyIt);
 	
-	var _tlds = __webpack_require__(141);
+	var _tlds = __webpack_require__(143);
 	
 	var _tlds2 = _interopRequireDefault(_tlds);
 	
@@ -16980,7 +17044,7 @@
 
 
 /***/ },
-/* 135 */
+/* 137 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -17135,7 +17199,7 @@
 	function compile(self) {
 	
 	  // Load & clone RE patterns.
-	  var re = self.re = assign({}, __webpack_require__(136));
+	  var re = self.re = assign({}, __webpack_require__(138));
 	
 	  // Define dynamic patterns
 	  var tlds = self.__tlds__.slice();
@@ -17612,16 +17676,16 @@
 
 
 /***/ },
-/* 136 */
+/* 138 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	// Use direct extract instead of `regenerate` to reduse browserified size
-	var src_Any = exports.src_Any = __webpack_require__(137).source;
-	var src_Cc  = exports.src_Cc = __webpack_require__(138).source;
-	var src_Z   = exports.src_Z  = __webpack_require__(139).source;
-	var src_P   = exports.src_P  = __webpack_require__(140).source;
+	var src_Any = exports.src_Any = __webpack_require__(139).source;
+	var src_Cc  = exports.src_Cc = __webpack_require__(140).source;
+	var src_Z   = exports.src_Z  = __webpack_require__(141).source;
+	var src_P   = exports.src_P  = __webpack_require__(142).source;
 	
 	// \p{\Z\P\Cc\CF} (white spaces + control + format + punctuation)
 	var src_ZPCc = exports.src_ZPCc = [ src_Z, src_P, src_Cc ].join('|');
@@ -17780,31 +17844,31 @@
 
 
 /***/ },
-/* 137 */
+/* 139 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/
 
 /***/ },
-/* 138 */
+/* 140 */
 /***/ function(module, exports) {
 
 	module.exports=/[\0-\x1F\x7F-\x9F]/
 
 /***/ },
-/* 139 */
+/* 141 */
 /***/ function(module, exports) {
 
 	module.exports=/[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/
 
 /***/ },
-/* 140 */
+/* 142 */
 /***/ function(module, exports) {
 
 	module.exports=/[!-#%-\*,-/:;\?@\[-\]_\{\}\xA1\xA7\xAB\xB6\xB7\xBB\xBF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2308-\u230B\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E42\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA8FC\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]|\uD800[\uDD00-\uDD02\uDF9F\uDFD0]|\uD801\uDD6F|\uD802[\uDC57\uDD1F\uDD3F\uDE50-\uDE58\uDE7F\uDEF0-\uDEF6\uDF39-\uDF3F\uDF99-\uDF9C]|\uD804[\uDC47-\uDC4D\uDCBB\uDCBC\uDCBE-\uDCC1\uDD40-\uDD43\uDD74\uDD75\uDDC5-\uDDC9\uDDCD\uDDDB\uDDDD-\uDDDF\uDE38-\uDE3D\uDEA9]|\uD805[\uDCC6\uDDC1-\uDDD7\uDE41-\uDE43\uDF3C-\uDF3E]|\uD809[\uDC70-\uDC74]|\uD81A[\uDE6E\uDE6F\uDEF5\uDF37-\uDF3B\uDF44]|\uD82F\uDC9F|\uD836[\uDE87-\uDE8B]/
 
 /***/ },
-/* 141 */
+/* 143 */
 /***/ function(module, exports) {
 
 	module.exports = [
@@ -19235,13 +19299,13 @@
 
 
 /***/ },
-/* 142 */
+/* 144 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var ImageDetailHeader = __webpack_require__(143);
-	var ImageDetailDescription = __webpack_require__(144);
+	var ImageDetailHeader = __webpack_require__(145);
+	var ImageDetailDescription = __webpack_require__(146);
 	
 	var Player = function Player(props) {
 	  var videourl = props.videourl.replace('.gifv', '.mp4').replace('.gif', '.mp4');
@@ -19271,7 +19335,7 @@
 	module.exports = ImageDetail;
 
 /***/ },
-/* 143 */
+/* 145 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -19294,12 +19358,12 @@
 	module.exports = ImageDetailHeader;
 
 /***/ },
-/* 144 */
+/* 146 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
-	var Linkify = __webpack_require__(134);
+	var Linkify = __webpack_require__(136);
 	
 	var ImageDetailDescription = React.createClass({
 	  displayName: "ImageDetailDescription",
@@ -19319,15 +19383,15 @@
 	module.exports = ImageDetailDescription;
 
 /***/ },
-/* 145 */
+/* 147 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var CommentCreate = __webpack_require__(146);
+	var CommentCreate = __webpack_require__(148);
 	var SessionStore = __webpack_require__(90);
-	var TimeUtil = __webpack_require__(147);
-	var VoteActions = __webpack_require__(148);
+	var TimeUtil = __webpack_require__(149);
+	var VoteActions = __webpack_require__(150);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
@@ -19504,7 +19568,7 @@
 	module.exports = CommentDetail;
 
 /***/ },
-/* 146 */
+/* 148 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -19568,7 +19632,7 @@
 	module.exports = CommentCreate;
 
 /***/ },
-/* 147 */
+/* 149 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -19605,13 +19669,13 @@
 	module.exports = TimeUtil;
 
 /***/ },
-/* 148 */
+/* 150 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	var VoteConstants = __webpack_require__(113);
-	var VoteApiUtil = __webpack_require__(149);
+	var VoteApiUtil = __webpack_require__(151);
 	var SessionStore = __webpack_require__(90);
 	var dispatcher = __webpack_require__(91);
 	
@@ -19648,7 +19712,7 @@
 	module.exports = VoteActions;
 
 /***/ },
-/* 149 */
+/* 151 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -19691,7 +19755,7 @@
 	module.exports = VoteApiUtil;
 
 /***/ },
-/* 150 */
+/* 152 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -19712,53 +19776,6 @@
 	});
 	
 	module.exports = UserShow;
-
-/***/ },
-/* 151 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	var SearchApiUtil = __webpack_require__(152);
-	var SearchConstants = __webpack_require__(130);
-	var dispatcher = __webpack_require__(91);
-	
-	var SearchActions = {
-	  fetchTags: function fetchTags() {
-	    var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
-	
-	    SearchApiUtil.fetchTags(this.receiveTags, limit);
-	  },
-	
-	  receiveTags: function receiveTags(tags) {
-	    dispatcher.dispatch({
-	      actionType: SearchConstants.TAGS_RECEIVED,
-	      tags: tags
-	    });
-	  }
-	};
-	
-	module.exports = SearchActions;
-
-/***/ },
-/* 152 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var SearchApiUtil = {
-	  fetchTags: function fetchTags(callback, limit) {
-	    $.ajax({
-	      url: 'api/tags',
-	      data: { limit: limit },
-	      success: function success(tags) {
-	        callback(tags);
-	      }
-	    });
-	  }
-	};
-	
-	module.exports = SearchApiUtil;
 
 /***/ }
 /******/ ]);

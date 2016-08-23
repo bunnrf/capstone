@@ -8,15 +8,7 @@ class Api::TagsController < ApplicationController
 
     render json: @tags
   end
-
-  def create
-
-  end
-
-  def show
-
-  end
-
+  
   private
   def tag_params
     params.require(:tag).permit(:name)
