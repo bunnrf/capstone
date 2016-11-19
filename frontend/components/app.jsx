@@ -9,11 +9,7 @@ module.exports = React.createClass({
 
   render() {
     let context;
-    if (this.props.location.pathname === "/") {
-      context = "splash";
-    } else {
-      context = "post";
-    }
+    context = (this.props.location.pathname === "/" ? "splash" : "post");
 
     // used before storing active post index in post store
     // { this.props.children ? React.cloneElement(this.props.children, { updateActive: this.updateActive } ) : undefined }

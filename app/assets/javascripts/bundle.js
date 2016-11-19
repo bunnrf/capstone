@@ -59,7 +59,7 @@
 	var SessionStore = __webpack_require__(90);
 	var PostIndex = __webpack_require__(125);
 	var PostShow = __webpack_require__(134);
-	var UserShow = __webpack_require__(152);
+	var UserShow = __webpack_require__(153);
 	var SessionActions = __webpack_require__(114);
 	
 	var appRouter = React.createElement(
@@ -8011,11 +8011,7 @@
 	  },
 	  render: function render() {
 	    var context = void 0;
-	    if (this.props.location.pathname === "/") {
-	      context = "splash";
-	    } else {
-	      context = "post";
-	    }
+	    context = this.props.location.pathname === "/" ? "splash" : "post";
 	
 	    // used before storing active post index in post store
 	    // { this.props.children ? React.cloneElement(this.props.children, { updateActive: this.updateActive } ) : undefined }
@@ -19397,7 +19393,7 @@
 	var SessionStore = __webpack_require__(90);
 	var TimeUtil = __webpack_require__(149);
 	var VoteActions = __webpack_require__(150);
-	var CommentIndex = __webpack_require__(153);
+	var CommentIndex = __webpack_require__(152);
 	
 	var CommentDetail = React.createClass({
 	  displayName: 'CommentDetail',
@@ -19778,29 +19774,6 @@
 
 /***/ },
 /* 152 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	var UserShow = React.createClass({
-	  displayName: "UserShow",
-	  render: function render() {
-	    return React.createElement(
-	      "div",
-	      null,
-	      React.createElement(
-	        "h2",
-	        null,
-	        "        User pages coming soon"
-	      )
-	    );
-	  }
-	});
-	
-	module.exports = UserShow;
-
-/***/ },
-/* 153 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -19835,6 +19808,29 @@
 	});
 	
 	module.exports = CommentIndex;
+
+/***/ },
+/* 153 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	var UserShow = React.createClass({
+	  displayName: "UserShow",
+	  render: function render() {
+	    return React.createElement(
+	      "div",
+	      null,
+	      React.createElement(
+	        "h2",
+	        null,
+	        "        User pages coming soon"
+	      )
+	    );
+	  }
+	});
+	
+	module.exports = UserShow;
 
 /***/ }
 /******/ ]);
